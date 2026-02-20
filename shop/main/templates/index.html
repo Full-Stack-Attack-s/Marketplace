@@ -1,12 +1,88 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
 </head>
-<body>
-<h1>jhjhjhj </h1>
-<a href="http://127.0.0.1:8000/cart/">Корзина</a>
-<img src="/static/img/1.png" alt="">
+<body class="body">
+<div class="container">
+    <header class="header">
+        <a href="http://127.0.0.1:8000/" class="logo">VSYODO</a>
+        <div class="search-box">
+            <input type="text" placeholder="Найти на VSYODO">
+        </div>
+        <nav class="navigation">
+            <div class="header-icons">
+            <a href="http://127.0.0.1:8000/profile/" class="icon profile">👤</a>
+            <a href="http://127.0.0.1:8000/cart/" class="icon cart">🛒
+                <span class="cart-count">0</span>
+            </a>
+            </div>
+        </nav>
+    </header>
+
+    <section class="sale-section">
+        <div class="carousel">
+            <button class="carousel-btn">←</button>
+            <div class="sale-banner">winter sale</div>
+            <button class="carousel-btn right">→</button>
+        </div>
+    </section>
+
+    <section class="products-section">
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="{% static 'img/1.webp' %}" alt="Логотип">
+                </div>
+                <div class="product-info">
+                    <div class="product-price">999 ₽</div>
+                    <div class="product-seller">seller / товар</div>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="{% static 'img/2.webp' %}" alt="Логотип">
+                </div>
+                <div class="product-info">
+                    <div class="product-price">999 ₽</div>
+                    <div class="product-seller">seller / товар</div>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="{% static 'img/3.webp' %}" alt="Логотип">
+                </div>
+                <div class="product-info">
+                    <div class="product-price">999 ₽</div>
+                    <div class="product-seller">seller / товар</div>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">
+                   <img src="{% static 'img/4.webp' %}" alt="Логотип">
+                </div>
+                <div class="product-info">
+                    <div class="product-price">999 ₽</div>
+                    <div class="product-seller">seller / товар</div>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="{% static 'img/5.webp' %}" alt="Логотип">
+                </div>
+                <div class="product-info">
+                    <div class="product-price">999 ₽</div>
+                    <div class="product-seller">seller / товар</div>
+                </div>
+            </div>
+        </div>
+</div>
 </body>
 </html>
