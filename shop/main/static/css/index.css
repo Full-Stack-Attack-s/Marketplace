@@ -1,6 +1,5 @@
 header {
     background: linear-gradient(135deg, #66d9a8 0%, #89e4f0 100%);
-    padding: 50px 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -38,12 +37,9 @@ header {
 .header-icons {
     display: flex;
     align-items: center;
-    gap: 40px;
 }
 
 .icon {
-    width: 60px;
-    height: 60px;
     background: white;
     border-radius: 50%;
     display: flex;
@@ -77,9 +73,7 @@ header {
     font-weight: bold;
 }
 
-
 .sale-section {
-    padding: 60px 100px;
     background: white;
 }
 
@@ -92,8 +86,6 @@ header {
 }
 
 .carousel-btn {
-    width: 300px;
-    height: 200px;
     background: linear-gradient(135deg, #e066ff 0%, #c0c0c0 100%);
     border: none;
     border-radius: 15px;
@@ -156,20 +148,8 @@ header {
 
 .product-image {
     width: 100%;
-    height: 200px;  /* Фиксированная высота */
     background: linear-gradient(135deg, #b8e8d4 0%, #a8e6cf 100%);
     border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.product-image img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: cover;  /* или 'cover' если нужно заполнить всю область */
-    width: auto;
-    height: auto;
 }
 
 .product-info {
