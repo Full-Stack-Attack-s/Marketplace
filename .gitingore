@@ -7,6 +7,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Игнорировать все папки __pycache__ в любых подпапках
+**/__pycache__/
+*.py[cod]
+*$py.class
 # Distribution / packaging
 .Python
 build/
