@@ -8,3 +8,5 @@ def cart(request):
     return render(request, "cart.html")
 def profile(request):
     return render(request, "profile.html")
+def cards   (request):
+    return render(request, "cards.html")

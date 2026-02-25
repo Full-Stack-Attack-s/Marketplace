@@ -92,6 +92,8 @@ header {
 }
 
 .carousel-btn {
+    width: 290px;
+    height: 200px;
     background: linear-gradient(135deg, #e066ff 0%, #c0c0c0 100%);
     border: none;
     border-radius: 15px;
@@ -124,6 +126,17 @@ header {
     font-weight: bold;
     color: #c96ba8;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sale-banner:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.sale-banner:active {
+    transform: scale(0.98);
 }
 
 /* Products Grid */
@@ -142,7 +155,7 @@ header {
 
 .product-card {
     background: white;
-    border-radius: 20px;
+    border-radius: 15px;
     overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
     cursor: pointer;
@@ -154,10 +167,15 @@ header {
 }
 
 .product-image {
+    overflow: hidden;
+    position: relative;
+}
+
+.product-image img {
     width: 100%;
-    height: 250px;
-    background: linear-gradient(135deg, #b8e8d4 0%, #a8e6cf 100%);
-    border-radius: 20px;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top; /* смещаем к верху, чтобы важное было видно */
 }
 
 .product-info {
