@@ -1,39 +1,7 @@
-<!DOCTYPE html>
+{% extends "base.html"%}
+{% block title%}MainPage{% endblock title %}
 {% load static %}
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="{% static 'css/index.css' %}">
-</head>
-<body class="body">
-<div class="container">
-    <header class="header">
-        <a href="http://127.0.0.1:8000/" class="logo">VSYODO</a>
-        <div class="search-box">
-            <input type="text" placeholder="Найти на VSYODO">
-        </div>
-        <nav class="navigation">
-            <div class="header-icons">
-            <a href="http://127.0.0.1:8000/profile/" class="icon profile">
-                <img src="{% static 'img/icon profile.png' %}" alt="icon profile">
-            </a>
-            <a href="http://127.0.0.1:8000/cart/" class="icon cart">
-                <img src="{% static 'img/icon cart.png' %}" alt="icon cart">
-                <span class="cart-count">0</span>
-            </a>
-            </div>
-        </nav>
-    </header>
-
-    <section class="sale-section">
-        <div class="carousel">
-            <button class="carousel-btn">←</button>
-            <div class="sale-banner">winter sale</div>
-            <button class="carousel-btn right">→</button>
-        </div>
-    </section>
-
+{% block content%}
     <section class="products-section">
         <div class="products-grid">
             <div class="product-card">
@@ -140,6 +108,4 @@
             </div>
         </div>
     </section>
-</div>
-</body>
-</html>
+{% endblock content %}

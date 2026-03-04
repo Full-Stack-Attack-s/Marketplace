@@ -22,7 +22,7 @@ header {
 
 .search-box {
     flex: 1;
-    max-width: 700px;
+    max-width: 250px;
     margin: 0 40px;
 }
 

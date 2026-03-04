@@ -1,13 +1,7 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Корзина</title>
-    <link rel="stylesheet" href="/static/css/cart.css">
-</head>
-<body>
-
-<div class="container">
+{% extends "base.html"%}
+{% block title%}Cart{% endblock title %}
+{% load static %}
+{% block content%}
 
     <h1>Корзина</h1>
 
@@ -36,9 +30,8 @@
         <button class="order-btn">Оформить заказ</button>
     </div>
 
-</div>
+
 
 <script src="/static/js/cart.js"></script>
 
-</body>
-</html>
+{% endblock content %}
