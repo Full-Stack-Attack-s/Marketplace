@@ -6,6 +6,11 @@ __pycache__/
 
 # C extensions
 *.so
+.venv/
+venv/
+**/__pycache__/
+.idea/
+db.sqlite3
 
 # Игнорировать все папки __pycache__ в любых подпапках
 **/__pycache__/
