@@ -1,6 +1,13 @@
+.body {
+    font-family: "Open Sans", sans-serif;
+    color: white;
+    background-color: black;
+    margin: 0;
+}
+
 header {
     background: linear-gradient(135deg, #66d9a8 0%, #89e4f0 100%);
-    padding: 20px 40px;
+    padding: 40px 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -23,7 +30,7 @@ header {
 
 .search-box input {
     width: 100%;
-    padding: 15px 25px;
+    padding: 20px 25px;
     border: none;
     border-radius: 30px;
     font-size: 16px;
@@ -42,8 +49,8 @@ header {
 }
 
 .icon {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     background: white;
     border-radius: 50%;
     display: flex;
@@ -94,7 +101,7 @@ header {
 .carousel-btn {
     width: 290px;
     height: 200px;
-    background: linear-gradient(135deg, #e066ff 0%, #c0c0c0 100%);
+    background: linear-gradient(135deg, #66d9a8 0%, #89e4f0 100%);
     border: none;
     border-radius: 15px;
     cursor: pointer;
@@ -111,7 +118,7 @@ header {
 }
 
 .carousel-btn.right {
-    background: linear-gradient(135deg, #c0c0c0 0%, #8b4789 100%);
+    background: linear-gradient(135deg, #66d9a8 0%, #89e4f0 100%);
 }
 
 .sale-banner {
@@ -185,7 +192,7 @@ header {
 .product-price {
     font-size: 20px;
     font-weight: bold;
-    color: #e066ff;
+    color: black;
     margin-bottom: 5px;
 }
 
