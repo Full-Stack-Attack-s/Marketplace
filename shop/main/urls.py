@@ -7,4 +7,5 @@ urlpatterns = [
     path("cart/", views.cart, name="cart"),
     path("profile/", views.profile, name="profile"),
     path("cards/", views.cards, name="cards"),
+    # path("products/<int:product_id>/", views., name = "detail")
 ]
