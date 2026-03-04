@@ -1,7 +1,4 @@
 .body {
-    font-family: "Open Sans", sans-serif;
-    color: white;
-    background-color: black;
     margin: 0;
 }
 
@@ -15,6 +12,7 @@ header {
 }
 
 .logo {
+    font-family: 'AniMe Vision - MB_EN', cursive;
     font-size: 42px;
     font-weight: bold;
     color: #000;
@@ -131,7 +129,7 @@ header {
     justify-content: center;
     font-size: 64px;
     font-weight: bold;
-    color: #c96ba8;
+    color: #66d9a8;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
     cursor: pointer;
     transition: all 0.3s ease;
