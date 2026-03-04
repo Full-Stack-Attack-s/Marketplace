@@ -7,6 +7,23 @@ __pycache__/
 # C extensions
 *.so
 
+# Виртуальные окружения
+.venv/
+venv/
+env/
+ENV/
+
+# Кэш Python
+**/__pycache__/
+*.py[cod]
+
+# База данных
+db.sqlite3
+
+# Папки редакторов
+.idea/
+.vscode/
+
 # Игнорировать все папки __pycache__ в любых подпапках
 **/__pycache__/
 *.py[cod]
@@ -132,6 +149,25 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Created by https://www.toptal.com/developers/gitignore/api/venv
+# Edit at https://www.toptal.com/developers/gitignore?templates=venv
+
+### venv ###
+# Virtualenv
+# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
+.Python
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+[Ss]cripts
+pyvenv.cfg
+.venv
+pip-selfcheck.json
+
+# End of https://www.toptal.com/developers/gitignore/api/venv
 
 # Spyder project settings
 .spyderproject
