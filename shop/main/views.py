@@ -1,9 +1,12 @@
 from django.shortcuts import render
+from . import models
 
 # Create your views here.
 from django.http import HttpResponse
 def index(request):
-    return render(request,"index.html")
+    products=models.Product.objects.all()
+    return render(request,"index.html", {"products":products})
+
 def cart(request):
     return render(request, "cart.html")
 def profile(request):
