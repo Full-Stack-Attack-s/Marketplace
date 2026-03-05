@@ -3,3 +3,4 @@ __pycache__/
 .venv
 shop/media
 .idea
+shop/main/migrations/00*
