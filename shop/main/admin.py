@@ -10,7 +10,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'parent', 'slug')
+    list_display = ('name', 'parent', 'slug', 'id')
     # Магия автозаполнения слага из названия
     prepopulated_fields = {'slug': ('name',)}
 
