@@ -1,7 +1,16 @@
+import uuid
 from django.db import models
 from django.conf import settings
 from pytils.translit import slugify
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from decimal import Decimal
+
+
+# TODO 1. Добавить валидацию для полей, например, для email или для числовых полей.
+# TODO 2. Изменить id на UUIDField для всех моделей, чтобы обеспечить уникальность и безопасность идентификаторов при переходе на PostgreSQL.
 
 class Category(models.Model):
     name = models.CharField("Название", max_length=100)
@@ -84,11 +93,11 @@ class Product(models.Model):
     # Связь "Многие к одному": у одной категории может быть много товаров
     id = models.AutoField(primary_key=True)
     name = models.CharField("Название", max_length=200)
-    category_id = models.ForeignKey(Category,
+    category = models.ForeignKey(Category,
         on_delete=models.CASCADE,
         verbose_name= "Категория",
         related_name="products")
-    brand_id = models.ForeignKey(Brand,
+    brand = models.ForeignKey(Brand,
         on_delete=models.CASCADE,
         verbose_name="Бренд")
     description = models.TextField("Описание", blank=True)
@@ -120,7 +129,7 @@ class Product(models.Model):
 
 class Product_variants(models.Model):
     id = models.AutoField(primary_key=True)
-    product_id = models.ForeignKey(
+    product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
     )
@@ -135,13 +144,13 @@ class Product_variants(models.Model):
     
     @property
     def name(self):
-        # Поле ForeignKey называется product_id, поэтому обращаемся к нему
-        return self.product_id.name
+        # Поле ForeignKey называется product, поэтому обращаемся к нему
+        return self.product.name
 
     @property
     def main_image_url(self):
         # Ищем первую попавшуюся картинку для этого товара
-        first_image = self.product_id.product_images_set.first()
+        first_image = self.product.product_images_set.first()
         if first_image and first_image.image:
             return first_image.image.url
         # Если картинок нет, возвращаем путь к заглушке
@@ -156,9 +165,9 @@ class Product_variants(models.Model):
         verbose_name_plural = "Варианты продуктов"
 # В идеале добавить вес, размеры для расчёта доставки.
 
-class Category_id(models.Model):
+class CategoryAttribute(models.Model):
     id = models.AutoField(primary_key=True)
-    category_id = models.ForeignKey(
+    category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,
         verbose_name="Категория",
@@ -184,7 +193,7 @@ class Category_id(models.Model):
 
 class Product_images(models.Model):
     id = models.AutoField(primary_key=True)
-    product_id = models.ForeignKey(
+    product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
     )
@@ -204,7 +213,7 @@ class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 # 1. Для авторизованных пользователей
-    user_id = models.ForeignKey(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL, # Ссылка на встроенную модель User
         on_delete=models.CASCADE,
         null=True,  # Может быть пустым, если это гость
@@ -212,7 +221,7 @@ class Cart(models.Model):
         related_name='cart'
     )
     # 2. Для анонимных гостей
-    session_key = models.CharField(max_length=40, null=True, blank=True)
+    session_key = models.CharField("Ключ сессии", max_length=40, null=True, blank=True)
 
     def __str__(self):
         if self.user:
@@ -241,16 +250,202 @@ class CartItem(models.Model):
     class Meta:
         verbose_name = "Товар в корзине"
         verbose_name_plural = "Товары в корзинах"
+# ---------------------------------- AUTH & IDENTITY MODELS ----------------------------------
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('Email обязателен!')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        # set_password автоматически создает password_hash и сохраняет его в поле password
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('role', 'admin')
+        return self.create_user(email, password, **extra_fields)
+
+class User(AbstractBaseUser, PermissionsMixin):
+    ROLE_CHOICES = (
+        ('buyer', 'Покупатель'),
+        ('seller', 'Продавец'),
+        ('admin', 'Админ'),
+    )
+    
+    id = models.AutoField(primary_key=True, editable=False)
+    email = models.EmailField("Email", unique=True)
+    role = models.CharField("Роль", max_length=20, choices=ROLE_CHOICES, default='buyer')
+    is_active = models.BooleanField("Активен", default=True)
+    is_staff = models.BooleanField("Доступ в админку", default=False)
+    phone_number = models.CharField("Телефон", max_length=20, null=True, blank=True)
+
+    objects = CustomUserManager()
+
+    USERNAME_FIELD = 'email' # Логинимся по email
+    REQUIRED_FIELDS = []     # Дополнительных обязательных полей при создании нет
+
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+
+class UserProfile(models.Model):
+    # primary_key=True делает так, как на схеме: id профиля = id юзера
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='profile')
+    first_name = models.CharField("Имя", max_length=50, null=True, blank=True)
+    last_name = models.CharField("Фамилия", max_length=50, null=True, blank=True)
+    birth_date = models.DateField("Дата рождения", null=True, blank=True)
+    avatar = models.ImageField("Аватар", upload_to='avatars/', null=True, blank=True)
+    # preferences = models.JSONField("Настройки", default=dict, blank=True) 
+    # TODO: сделать при переходе на PostgreSQL
+    created_at = models.DateTimeField("Дата создания", auto_now_add=True)
+    class Meta:
+        verbose_name = "Профиль пользователя"
+        verbose_name_plural = "Профили пользователей"
+
+class Address(models.Model):
+    id = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
+    country = models.CharField("Страна", max_length=100, null=True, blank=True)
+    city = models.CharField("Город", max_length=100, null=True, blank=True)
+    street = models.CharField("Улица", max_length=255, null=True, blank=True)
+    zip_code = models.CharField("Индекс", max_length=20, null=True, blank=True)
+    is_default = models.BooleanField("Основной адрес", default=False)
+    
+    # ВАЖНО ПО PostGIS:
+    # На схеме есть поле location_geo со специфическим типом PostGIS(я думаю аддон поставим).
+    # Пока мы сидим на SQLite (db.sqlite3), это поле работать не будет. 
+    # Я его закомментировал. Когда перейдем на PostgreSQL, раскомментируем.
+    # location_geo = django.contrib.gis.db.models.PointField(geography=True, srid=4326, null=True, blank=True) 
+    # TODO: раскомментировать при переходе на PostgreSQL и установить PostGIS аддон для геолокации.
+
+class StoreProfile(models.Model):
+    # PK и FK одновременно: жесткая привязка к пользователю 1:1
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        primary_key=True, 
+        related_name='store_profile',
+        verbose_name="Пользователь (Продавец)"
+    )
+    
+    company_name = models.CharField("Название компании", max_length=255) # NN (Not Null)
+    description = models.TextField("Описание", null=True, blank=True)
+    logo = models.ImageField("Логотип", upload_to='store_logos/', null=True, blank=True)
+    
+    # max_digits=3, decimal_places=2 позволяет хранить значения от 0.00 до 9.99
+    # rating = models.DecimalField("Рейтинг", max_digits=3, decimal_places=2, default=0.00) 
+    # Отзывы и рейтинг не делаем, но если захотим база будет
+    
+    address = models.TextField("Юридический адрес", null=True, blank=True)
+    is_verified = models.BooleanField("Верифицирован", default=False)
+    created_at = models.DateTimeField("Дата создания", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Профиль магазина"
+        verbose_name_plural = "Профили магазинов"
+
+    def __str__(self):
+        return self.company_name
+    
+# Сигнал для автоматического создания профилей при регистрации нового пользователя
+@receiver(post_save, sender=User)
+def create_user_profiles(sender, instance, created, **kwargs):
+    if created:
+        # Обычный профиль (UserProfile) создаем для ВСЕХ
+        UserProfile.objects.create(user=instance)
+            
+        # А профиль магазина (StoreProfile) — ТОЛЬКО если роль 'seller'
+        StoreProfile.objects.create(
+                user=instance, 
+                company_name=f"Магазин пользователя {instance.email}"
+            )    
+
+# ---------------------------------- ORDER MANAGEMENT SYSTEM MODELS ----------------------------------
 
 class Order(models.Model):
     id = models.AutoField(primary_key=True)
-    user_id = models.ForeignKey(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name='orders'
     )
-    session_key = models.CharField(max_length=40, null=True, blank=True)
+
+    STATUS_CHOICES = (
+        ('pending', 'Ожидает оплаты'),
+        ('paid', 'Оплачен'),
+        ('shipped', 'Отправлен'),
+        ('completed', 'Завершен'),
+        ('cancelled', 'Отменен')
+    )
+    session_key = models.CharField("Ключ сессии", max_length=40, null=True, blank=True)
     created_at = models.DateTimeField("Дата создания",
-         auto_now_add=True)
+        auto_now_add=True)
+    updated_at = models.DateTimeField("Дата обновления",
+        auto_now=True)
+    status = models.CharField("Статус", max_length=20, choices=STATUS_CHOICES, default='pending')
+    total_amount = models.DecimalField("Общая сумма", max_digits=10, decimal_places=4, default=0.00)
+    version = models.IntegerField("Версия изменений", default=1)
+    cancellation_reason = models.TextField("Причина отмены", null=True, blank=True)
+    # delivery_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True) 
+    # Адрес доставки, можно расширить до отдельной модели OrderAddress для хранения истории изменений адресов в заказе.
+    class Meta:
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
+
+
+class OrderItem(models.Model):
+    id = models.AutoField(primary_key=True, editable=False)
+    
+    order = models.ForeignKey(
+        'Order', # Ссылка на твою модель Order
+        on_delete=models.CASCADE, 
+        related_name='items'
+    )
+    
+    # ВАЖНО: on_delete=models.SET_NULL. 
+    # Если продавец удалит товар из базы, в истории заказов он останется (просто без ссылки).
+    product_variant = models.ForeignKey(
+        'Product_variants', 
+        on_delete=models.SET_NULL, 
+        null=True,
+        verbose_name="Вариант товара"
+    )
+    
+    # Прямая ссылка на продавца облегчает расчет выплат (не надо делать сложные JOIN'ы)
+    seller = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='sold_items',
+        verbose_name="Продавец"
+    )
+    
+    quantity = models.PositiveIntegerField("Количество", default=1)
+    
+    # Snapshot: Цена фиксируется в момент оформления заказа
+    price_per_unit = models.DecimalField("Цена за штуку", max_digits=19, decimal_places=4)
+    
+    # Вычисляемое поле. Ставим blank=True, так как будем считать его автоматически
+    total_price = models.DecimalField("Итоговая цена", max_digits=19, decimal_places=4, blank=True)
+
+    def save(self, *args, **kwargs):
+        # Реализуем формулу со схемы: (quantity * price_per_unit) 
+        # Decimal нужен, чтобы не было багов с копейками при умножении
+        if self.price_per_unit is not None and self.quantity is not None:
+            raw_total = (Decimal(str(self.quantity)) * self.price_per_unit)
+
+            self.total_price = max(raw_total, Decimal('0.0000'))
+            
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Товар в заказе"
+        verbose_name_plural = "Товары в заказах"
+
+    def __str__(self):
+        return f"Order {self.order.id} | Товар ID: {self.variant} (x{self.quantity})"

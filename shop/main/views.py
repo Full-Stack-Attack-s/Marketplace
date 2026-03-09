@@ -16,3 +16,22 @@ def profile(request):
     return render(request, "profile.html")
 def cards(request):
     return render(request, "cards.html")
+
+def checkout_view(request):
+    # 1. Если сессии еще нет (гость ничего не делал на сайте), Джанго должен её физически создать
+    if not request.session.session_key:
+        request.session.create()
+
+    # 2. Забираем сгенерированный ключ (например, '5b3v2xjf...')
+    current_session_key = request.session.session_key
+
+    # 3. Создаем заказ и подставляем ключ в поле session_key
+    order = models.Order.objects.create(
+        session_key=current_session_key,
+        
+        # Сразу умная проверка: если юзер авторизован, пишем его объект в user_id. 
+        # Если нет (аноним) — пишем None (это разрешено твоим null=True)
+        user_id=request.user if request.user.is_authenticated else None
+    )
+    
+    # ... дальше логика добавления конкретных товаров в этот заказ ...

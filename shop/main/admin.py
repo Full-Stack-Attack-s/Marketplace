@@ -5,7 +5,7 @@ from .models import *
 from django.contrib import admin
 from .models import (
     Category, Brand, Product, Product_variants, 
-    Category_id, Product_images, Cart, CartItem
+    CategoryAttribute, Product_images, Cart, CartItem
 )
 
 @admin.register(Category)
@@ -43,7 +43,7 @@ class ProductAdmin(admin.ModelAdmin):
     # Подключаем встроенные блоки фото и цен
     inlines = [ProductVariantInline, ProductImageInline]
 
-@admin.register(Category_id)
+@admin.register(CategoryAttribute)
 class CategoryAttributeAdmin(admin.ModelAdmin):
     list_display = ('id', 'category_id', 'key', 'label', 'type', 'is_required')
     list_filter = ('category_id', 'type')
@@ -67,6 +67,27 @@ class ProductVariantAdmin(admin.ModelAdmin):
 @admin.register(Product_images)
 class ProductImageAdmin(admin.ModelAdmin):
     list_display = ('id', 'product_id', 'is_main', 'sort_order')
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user_id', 'session_key', 'created_at', 'updated_at')
+
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order_id', 'product_variant_id', 'quantity', 'total_price')
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('id', 'email', 'is_staff', 'is_active', 'role', 'phone_number')
+    search_fields = ('email', 'first_name', 'last_name')
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('user_id', 'first_name', 'last_name', )
+    search_fields = ('user_id__email', 'phone_number')
+
+
 
 
 # Register your models here.
