@@ -1,13 +1,6 @@
 from django.contrib import admin
 from .models import *
 
-
-from django.contrib import admin
-from .models import (
-    Category, Brand, Product, Product_variants, 
-    CategoryAttribute, Product_images, Cart, CartItem
-)
-
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'parent', 'id', 'slug', 'path')
@@ -25,12 +18,12 @@ class BrandAdmin(admin.ModelAdmin):
 
 # === INLINES (Встроенные блоки для Товара) ===
 class ProductVariantInline(admin.TabularInline):
-    model = Product_variants
+    model = Product_variant
     extra = 1  # Сколько пустых строк для добавления вариантов показывать сразу
     fields = ('sku', 'price', 'version')
 
 class ProductImageInline(admin.TabularInline):
-    model = Product_images
+    model = Product_image
     extra = 1
     fields = ('image', 'is_main', 'sort_order')
 
@@ -58,13 +51,18 @@ class CartAdmin(admin.ModelAdmin):
     list_display = ('id', 'user_id', 'session_key', 'created_at', 'updated_at')
     inlines = [CartItemInline]
 
+@admin.register(CartItem)
+class CartItemAdmin(admin.ModelAdmin):
+    list_display = ('id', 'cart_id', 'product_variant_id', 'quantity')
+    search_fields = ('cart__user__email', 'product_variant__sku')
+
 # Отдельная регистрация вариантов и картинок (если захочешь искать их вне товара)
-@admin.register(Product_variants)
+@admin.register(Product_variant)
 class ProductVariantAdmin(admin.ModelAdmin):
     list_display = ('id', 'product_id', 'sku', 'price', 'updated_at')
     search_fields = ('sku',)
 
-@admin.register(Product_images)
+@admin.register(Product_image)
 class ProductImageAdmin(admin.ModelAdmin):
     list_display = ('id', 'product_id', 'is_main', 'sort_order')
 
@@ -87,7 +85,31 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user_id', 'first_name', 'last_name', )
     search_fields = ('user_id__email', 'phone_number')
 
+@admin.register(StoreProfile)
+class StoreProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'company_name', 'is_verified', 'created_at')
+    search_fields = ('company_name', 'user__email')
+    list_filter = ('is_verified', 'created_at')
 
+@admin.register(Address)
+class AddressAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'street', 'city', 'zip_code', 'country')
+    search_fields = ('street', 'city', 'zip_code')
 
+@admin.register(Transaction)
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'amount', 'status', 'created_at')
+    search_fields = ('user__email', 'amount')
+
+@admin.register(Warehouse)
+class WarehouseAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'address')
+    search_fields = ('name', 'address')
+
+@admin.register(Stock)
+class StockAdmin(admin.ModelAdmin):
+    list_display = ('id', 'product_variant_id', 'warehouse_id', 'quantity', 'reserved_quantity')
+    search_fields = ('product_variant__sku', 'warehouse__name')
+    list_filter = ('warehouse', 'product_variant__product__category')
 
 # Register your models here.

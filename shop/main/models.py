@@ -7,6 +7,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from decimal import Decimal
+from django.core.validators import MinValueValidator
 
 
 # TODO 1. Добавить валидацию для полей, например, для email или для числовых полей.
@@ -127,14 +128,14 @@ class Product(models.Model):
         verbose_name = "Продукт"
         verbose_name_plural = "Продукты"
 
-class Product_variants(models.Model):
+class Product_variant(models.Model):
     id = models.AutoField(primary_key=True)
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
     )
     price = models.DecimalField("Цена",
-        max_digits=10, decimal_places=4)
+        max_digits=19, decimal_places=4, validators=[MinValueValidator(Decimal('0.00'))])
     version = models.IntegerField("Версия изменений",default=1)
     sku = models.TextField("Артикул", unique=True, blank=True)
     created_at = models.DateTimeField("Дата создания",
@@ -191,7 +192,7 @@ class CategoryAttribute(models.Model):
         verbose_name = "Атрибут категории"
         verbose_name_plural = "Атрибуты категорий"
 
-class Product_images(models.Model):
+class Product_image(models.Model):
     id = models.AutoField(primary_key=True)
     product = models.ForeignKey(
         Product,
@@ -239,7 +240,7 @@ class CartItem(models.Model):
         related_name='items'
     )
     product_variant = models.ForeignKey(
-        Product_variants,
+        Product_variant,
         on_delete=models.CASCADE
     )
     quantity = models.PositiveIntegerField(default=1, verbose_name="Количество")
@@ -320,7 +321,9 @@ class Address(models.Model):
     # Я его закомментировал. Когда перейдем на PostgreSQL, раскомментируем.
     # location_geo = django.contrib.gis.db.models.PointField(geography=True, srid=4326, null=True, blank=True) 
     # TODO: раскомментировать при переходе на PostgreSQL и установить PostGIS аддон для геолокации.
-
+    class Meta:
+        verbose_name = "Адрес"
+        verbose_name_plural = "Адреса"
 class StoreProfile(models.Model):
     # PK и FK одновременно: жесткая привязка к пользователю 1:1
     user = models.OneToOneField(
@@ -357,7 +360,8 @@ def create_user_profiles(sender, instance, created, **kwargs):
         # Обычный профиль (UserProfile) создаем для ВСЕХ
         UserProfile.objects.create(user=instance)
             
-        # А профиль магазина (StoreProfile) — ТОЛЬКО если роль 'seller'
+        # А профиль магазина (StoreProfile) — 
+    if instance.role == 'seller':
         StoreProfile.objects.create(
                 user=instance, 
                 company_name=f"Магазин пользователя {instance.email}"
@@ -388,11 +392,12 @@ class Order(models.Model):
     updated_at = models.DateTimeField("Дата обновления",
         auto_now=True)
     status = models.CharField("Статус", max_length=20, choices=STATUS_CHOICES, default='pending')
-    total_amount = models.DecimalField("Общая сумма", max_digits=10, decimal_places=4, default=0.00)
+    total_amount = models.DecimalField("Общая сумма", max_digits=19, decimal_places=4, default=0.00, validators=[MinValueValidator(Decimal('0.00'))])
     version = models.IntegerField("Версия изменений", default=1)
     cancellation_reason = models.TextField("Причина отмены", null=True, blank=True)
     # delivery_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True) 
     # Адрес доставки, можно расширить до отдельной модели OrderAddress для хранения истории изменений адресов в заказе.
+
     class Meta:
         verbose_name = "Заказ"
         verbose_name_plural = "Заказы"
@@ -410,7 +415,7 @@ class OrderItem(models.Model):
     # ВАЖНО: on_delete=models.SET_NULL. 
     # Если продавец удалит товар из базы, в истории заказов он останется (просто без ссылки).
     product_variant = models.ForeignKey(
-        'Product_variants', 
+        'Product_variant', 
         on_delete=models.SET_NULL, 
         null=True,
         verbose_name="Вариант товара"
@@ -428,10 +433,10 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField("Количество", default=1)
     
     # Snapshot: Цена фиксируется в момент оформления заказа
-    price_per_unit = models.DecimalField("Цена за штуку", max_digits=19, decimal_places=4)
+    price_per_unit = models.DecimalField("Цена за штуку", max_digits=19, decimal_places=4, validators=[MinValueValidator(Decimal('0.00'))])
     
     # Вычисляемое поле. Ставим blank=True, так как будем считать его автоматически
-    total_price = models.DecimalField("Итоговая цена", max_digits=19, decimal_places=4, blank=True)
+    total_price = models.DecimalField("Итоговая цена", max_digits=19, decimal_places=4, blank=True, validators=[MinValueValidator(Decimal('0.00'))])
 
     def save(self, *args, **kwargs):
         # Реализуем формулу со схемы: (quantity * price_per_unit) 
@@ -448,4 +453,50 @@ class OrderItem(models.Model):
         verbose_name_plural = "Товары в заказах"
 
     def __str__(self):
-        return f"Order {self.order.id} | Товар ID: {self.variant} (x{self.quantity})"
+        return f"Order {self.order.id} | Товар ID: {self.product_variant} (x{self.quantity})"
+    
+class Transaction(models.Model):
+    id = models.AutoField(primary_key=True, editable=False)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='transactions')
+    amount = models.DecimalField("Сумма транзакции", max_digits=19, decimal_places=4, validators=[MinValueValidator(Decimal('0.00'))])
+    transaction_id = models.CharField("ID транзакции", max_length=255, unique=True)
+    payment_method = models.CharField("Метод оплаты", max_length=50)
+    status = models.CharField("Статус транзакции", max_length=20)
+    created_at = models.DateTimeField("Дата создания", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Транзакция"
+        verbose_name_plural = "Транзакции"
+
+
+class Warehouse(models.Model):
+    id = models.AutoField(primary_key=True, editable=False)
+    name = models.CharField("Название склада", max_length=255)
+    store = models.ForeignKey(
+    StoreProfile, on_delete=models.CASCADE, related_name='warehouses', verbose_name="Продавец (Магазин)")
+    address = models.TextField("Адрес склада")
+    created_at = models.DateTimeField("Дата создания", auto_now_add=True)
+    is_active = models.BooleanField("Активный", default=True) # Для логической деактивации склада без удаления из базы
+    # country = models.CharField("Страна", max_length=100, null=True, blank=True)
+    # city = models.CharField("Город", max_length=100, null=True, blank=True)
+    # TODO: добавить геолокацию для оптимизации логистики при переходе на PostgreSQL и PostGIS (например, поле location_geo = PointField)
+    # TODO: решить вопрос необходимости полей city и country, если есть поле address. Возможно, стоит их добавить для удобства фильтрации и оптимизации логистики.
+
+    class Meta:
+        verbose_name = "Склад"
+        verbose_name_plural = "Склады"
+
+
+class Stock(models.Model):
+    id = models.AutoField(primary_key=True, editable=False)
+    product_variant = models.ForeignKey(Product_variant, on_delete=models.CASCADE, related_name='stock')
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='stock')
+    quantity = models.PositiveIntegerField("Количество на складе", default=0)
+    reserved_quantity = models.PositiveIntegerField("Зарезервированное количество", default=0) # Кол-во, зарезервированное в заказах, но еще не списанное
+
+    class Meta:
+        verbose_name = "Остаток на складе"
+        verbose_name_plural = "Остатки на складах"
+        unique_together = ('product_variant', 'warehouse')
+
+     
