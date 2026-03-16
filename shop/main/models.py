@@ -106,7 +106,7 @@ class Product(models.Model):
     created_at = models.DateTimeField("Дата создания", auto_now_add=True)
     updated_at = models.DateTimeField("Дата обновления",auto_now=True)
     # Добавляем слаг. unique=True обязателен, чтобы ссылки не дублировались.
-    slug = models.SlugField("Слаг", max_length=200, unique=True, null=True, blank=True)
+    slug = models.SlugField("Слаг", max_length=200, unique=True, null=True, blank=True, help_text="Заполняется автоматически!")
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -132,12 +132,12 @@ class Product_variant(models.Model):
     id = models.AutoField(primary_key=True)
     product = models.ForeignKey(
         Product,
-        on_delete=models.CASCADE,
+        on_delete=models.CASCADE, verbose_name="Продукт"
     )
     price = models.DecimalField("Цена",
         max_digits=19, decimal_places=4, validators=[MinValueValidator(Decimal('0.00'))])
     version = models.IntegerField("Версия изменений",default=1)
-    sku = models.TextField("Артикул", unique=True, blank=True)
+    sku = models.CharField("Артикул", unique=True, blank=True, help_text="Уникальный идентификатор варианта товара. Заполняется автоматически при сохранении.")
     created_at = models.DateTimeField("Дата создания",
         auto_now_add=True)
     updated_at = models.DateTimeField("Дата обновления",
@@ -160,6 +160,16 @@ class Product_variant(models.Model):
     def __str__(self):
         # Выводим артикул
         return str(self.sku)
+    
+    def save(self, *args, **kwargs):
+        if not self.sku:
+            
+
+            unique_hash = uuid.uuid4().hex[:8].upper()  # Генерируем уникальную часть для артикула
+            self.sku = f"PRD-{self.product.id}-{unique_hash}"
+
+        # Сохраняем за один SQL-запрос
+        super().save(*args, **kwargs)
     
     class Meta:
         verbose_name = "Вариант продукта"
@@ -457,11 +467,17 @@ class OrderItem(models.Model):
     
 class Transaction(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
+    STATUS_CHOICES = (
+        ('pending', 'Ожидает обработки'),
+        ('completed', 'Завершена'),
+        ('failed', 'Неудачная'),
+        ('refunded', 'Возвращена'),
+    )
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='transactions')
     amount = models.DecimalField("Сумма транзакции", max_digits=19, decimal_places=4, validators=[MinValueValidator(Decimal('0.00'))])
     transaction_id = models.CharField("ID транзакции", max_length=255, unique=True)
     payment_method = models.CharField("Метод оплаты", max_length=50)
-    status = models.CharField("Статус транзакции", max_length=20)
+    status = models.CharField("Статус транзакции", max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField("Дата создания", auto_now_add=True)
 
     class Meta:
@@ -498,5 +514,3 @@ class Stock(models.Model):
         verbose_name = "Остаток на складе"
         verbose_name_plural = "Остатки на складах"
         unique_together = ('product_variant', 'warehouse')
-
-     

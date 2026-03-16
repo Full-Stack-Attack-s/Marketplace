@@ -27,6 +27,8 @@ class ProductImageInline(admin.TabularInline):
     extra = 1
     fields = ('image', 'is_main', 'sort_order')
 
+
+
 # === АДМИНКА ТОВАРА ===
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -59,7 +61,7 @@ class CartItemAdmin(admin.ModelAdmin):
 # Отдельная регистрация вариантов и картинок (если захочешь искать их вне товара)
 @admin.register(Product_variant)
 class ProductVariantAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product_id', 'sku', 'price', 'updated_at')
+    list_display = ('name', 'product_id', 'sku', 'price', 'updated_at', 'id')
     search_fields = ('sku',)
 
 @admin.register(Product_image)
