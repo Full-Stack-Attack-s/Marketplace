@@ -4,32 +4,93 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Default title{% endblock title %}</title>
-    <!--    <link rel="stylesheet" href="{% static 'css/cart.css' %}">-->
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body class="body">
-<div class="container">
-    <header class="header">
-        <a href="/" class="logo">VSYODO</a>
-        <!--        <div class="search-box">-->
-        <!--            <input type="text" placeholder="Найти на VSYODO">-->
-        <!--        </div>-->
-        <nav class="navigation">
-            <div class="header-icons">
-                <a href="/profile" class="icon profile">
-                    <img src="{% static 'img/icon profile.png' %}" alt="icon profile">
-                </a>
-                <a href="/cart" class="icon cart">
-                    <img src="{% static 'img/icon cart.png' %}" alt="icon cart">
-                    <span class="cart-count">0</span>
-                </a>
-            </div>
-        </nav>
-    </header>
-</div>
-<div class="container">{% block content%}{% endblock content %}</div>
+    <!-- ШАПКА ДЛЯ КОМПЬЮТЕРА -->
+    <header class="header header-desktop">
+        <div class="header-content-desktop">
+            <a href="/" class="logo">VSYODO</a>
 
+            <a href="/catalog" class="icon catalog">
+                        <img src="{% static 'img/png-transparent-computer-icons-plain-text-encapsulated-postscript-github-miscellaneous-angle-text.png' %}" alt="Каталог">
+                    </a>
+
+            <div class="search-box">
+                <input type="text" placeholder="Найти на VSYODO">
+            </div>
+
+            <nav class="navigation">
+                <div class="header-icons">
+                    <!-- Кнопка смены темы -->
+                    <button class="icon theme-toggle" onclick="toggleTheme()">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                    <a href="/profile" class="icon profile">
+                        <img src="{% static 'img/icon profile.png' %}" alt="Профиль">
+                    </a>
+                    <a href="/cart" class="icon cart">
+                        <img src="{% static 'img/icon cart.png' %}" alt="Корзина">
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ШАПКА ДЛЯ ТЕЛЕФОНА -->
+    <header class="header header-mobile">
+        <div class="header-top-row">
+            <a href="/" class="logo">VSYODO</a>
+
+            <a href="/catalog" class="icon catalog">
+                        <img src="{% static 'img/png-transparent-computer-icons-plain-text-encapsulated-postscript-github-miscellaneous-angle-text.png' %}" alt="Каталог">
+                    </a>
+
+            <nav class="navigation">
+                <div class="header-icons">
+                    <!-- Кнопка смены темы -->
+                    <button class="icon theme-toggle" onclick="toggleTheme()">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                    <a href="/profile" class="icon profile">
+                        <img src="{% static 'img/icon profile.png' %}" alt="Профиль">
+                    </a>
+                    <a href="/cart" class="icon cart">
+                        <img src="{% static 'img/icon cart.png' %}" alt="Корзина">
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <div class="search-box">
+            <input type="text" placeholder="Найти на VSYODO">
+        </div>
+    </header>
+
+    <div class="container">{% block content %}{% endblock content %}</div>
+    <script src="/static/js/base.js"></script>
+
+    <!-- Нижняя навигация -->
+<!--    <nav class="bottom-nav">-->
+<!--        <a href="/" class="nav-item active">-->
+<!--            <span class="nav-icon">🏠</span>-->
+<!--            <span>Главная</span>-->
+<!--        </a>-->
+<!--        <a href="/catalog" class="nav-item">-->
+<!--            <span class="nav-icon">📂</span>-->
+<!--            <span>Каталог</span>-->
+<!--        </a>-->
+<!--        <a href="/cart" class="nav-item">-->
+<!--            <span class="nav-icon">🛒</span>-->
+<!--            <span>Корзина</span>-->
+<!--        </a>-->
+<!--        <a href="/profile" class="nav-item">-->
+<!--            <span class="nav-icon">👤</span>-->
+<!--            <span>Профиль</span>-->
+<!--        </a>-->
+<!--    </nav>-->
 </body>
 </html>
