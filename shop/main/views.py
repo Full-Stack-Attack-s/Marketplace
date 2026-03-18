@@ -17,6 +17,7 @@ def profile(request):
 def cards(request):
     return render(request, "cards.html")
 def catalog(request):
+<<<<<<< HEAD
     return render(request, "catalog.html")
 
 def checkout_view(request):
@@ -37,3 +38,6 @@ def checkout_view(request):
     )
     
     # ... дальше логика добавления конкретных товаров в этот заказ ...
+=======
+    return render(request, "catalog.html")
+>>>>>>> c8dd4a72b12c9a16a856768dc4b6dd81dba63164
