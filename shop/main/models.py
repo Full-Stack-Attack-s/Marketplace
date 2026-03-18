@@ -13,7 +13,7 @@ from django.core.validators import MinValueValidator
 # TODO 1. Добавить валидацию для полей, например, для email или для числовых полей.
 # TODO 2. Изменить id на UUIDField для всех моделей, чтобы обеспечить уникальность и безопасность идентификаторов при переходе на PostgreSQL.
 
-class Category(models.Model):
+class Categories(models.Model):
     name = models.CharField("Название", max_length=100)
     id = models.AutoField(primary_key=True)
     path = models.CharField(verbose_name="Путь", max_length=255, db_index=True, unique=True, null=True, blank=True, help_text="Заполняется автоматически!")
@@ -54,7 +54,7 @@ class Category(models.Model):
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
 
-class Brand(models.Model):
+class Brands(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.TextField("Название", max_length=100)
     slug = models.TextField("Слаг",unique=True, null=True, blank=True)
@@ -80,7 +80,7 @@ class Brand(models.Model):
         verbose_name = "Бренд"
         verbose_name_plural = "Бренды"
 
-class Product(models.Model):
+class Products(models.Model):
     STATUS_CHOICES = (
         ('draft', 'Черновик'),
         ('active', 'Активен'),
@@ -94,11 +94,11 @@ class Product(models.Model):
     # Связь "Многие к одному": у одной категории может быть много товаров
     id = models.AutoField(primary_key=True)
     name = models.CharField("Название", max_length=200)
-    category = models.ForeignKey(Category,
+    category = models.ForeignKey(Categories,
         on_delete=models.CASCADE,
         verbose_name= "Категория",
         related_name="products")
-    brand = models.ForeignKey(Brand,
+    brand = models.ForeignKey(Brands,
         on_delete=models.CASCADE,
         verbose_name="Бренд")
     description = models.TextField("Описание", blank=True)
@@ -128,10 +128,10 @@ class Product(models.Model):
         verbose_name = "Продукт"
         verbose_name_plural = "Продукты"
 
-class Product_variant(models.Model):
+class Product_variants(models.Model):
     id = models.AutoField(primary_key=True)
     product = models.ForeignKey(
-        Product,
+        Products,
         on_delete=models.CASCADE, verbose_name="Продукт"
     )
     price = models.DecimalField("Цена",
@@ -176,10 +176,10 @@ class Product_variant(models.Model):
         verbose_name_plural = "Варианты продуктов"
 # В идеале добавить вес, размеры для расчёта доставки.
 
-class CategoryAttribute(models.Model):
+class CategoryAttributes(models.Model):
     id = models.AutoField(primary_key=True)
     category = models.ForeignKey(
-        Category,
+        Categories,
         on_delete=models.CASCADE,
         verbose_name="Категория",
     )
@@ -202,10 +202,10 @@ class CategoryAttribute(models.Model):
         verbose_name = "Атрибут категории"
         verbose_name_plural = "Атрибуты категорий"
 
-class Product_image(models.Model):
+class Product_images(models.Model):
     id = models.AutoField(primary_key=True)
     product = models.ForeignKey(
-        Product,
+        Products,
         on_delete=models.CASCADE,
     )
     image = models.ImageField(upload_to="products/")
@@ -219,7 +219,7 @@ class Product_image(models.Model):
         verbose_name = "Изображение продукта"
         verbose_name_plural = "Изображения продуктов"
 
-class Cart(models.Model):
+class Carts(models.Model):
     id = models.AutoField(primary_key=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -242,15 +242,15 @@ class Cart(models.Model):
         verbose_name = "Корзина"
         verbose_name_plural = "Корзины"
 
-class CartItem(models.Model):
+class CartItems(models.Model):
     id = models.AutoField(primary_key=True)
     cart = models.ForeignKey(
-        Cart,
+        Carts,
         on_delete=models.CASCADE,
         related_name='items'
     )
     product_variant = models.ForeignKey(
-        Product_variant,
+        Product_variants,
         on_delete=models.CASCADE
     )
     quantity = models.PositiveIntegerField(default=1, verbose_name="Количество")
@@ -262,7 +262,7 @@ class CartItem(models.Model):
         verbose_name = "Товар в корзине"
         verbose_name_plural = "Товары в корзинах"
 # ---------------------------------- AUTH & IDENTITY MODELS ----------------------------------
-class CustomUserManager(BaseUserManager):
+class CustomUserManagers(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('Email обязателен!')
@@ -279,7 +279,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('role', 'admin')
         return self.create_user(email, password, **extra_fields)
 
-class User(AbstractBaseUser, PermissionsMixin):
+class Users(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = (
         ('buyer', 'Покупатель'),
         ('seller', 'Продавец'),
@@ -293,7 +293,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField("Доступ в админку", default=False)
     phone_number = models.CharField("Телефон", max_length=20, null=True, blank=True)
 
-    objects = CustomUserManager()
+    objects = CustomUserManagers()
 
     USERNAME_FIELD = 'email' # Логинимся по email
     REQUIRED_FIELDS = []     # Дополнительных обязательных полей при создании нет
@@ -302,9 +302,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
 
-class UserProfile(models.Model):
+class UserProfiles(models.Model):
     # primary_key=True делает так, как на схеме: id профиля = id юзера
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='profile')
+    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True, related_name='profile')
     first_name = models.CharField("Имя", max_length=50, null=True, blank=True)
     last_name = models.CharField("Фамилия", max_length=50, null=True, blank=True)
     birth_date = models.DateField("Дата рождения", null=True, blank=True)
@@ -316,9 +316,9 @@ class UserProfile(models.Model):
         verbose_name = "Профиль пользователя"
         verbose_name_plural = "Профили пользователей"
 
-class Address(models.Model):
+class Addresses(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='addresses')
     country = models.CharField("Страна", max_length=100, null=True, blank=True)
     city = models.CharField("Город", max_length=100, null=True, blank=True)
     street = models.CharField("Улица", max_length=255, null=True, blank=True)
@@ -334,7 +334,7 @@ class Address(models.Model):
     class Meta:
         verbose_name = "Адрес"
         verbose_name_plural = "Адреса"
-class StoreProfile(models.Model):
+class StoreProfiles(models.Model):
     # PK и FK одновременно: жесткая привязка к пользователю 1:1
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, 
@@ -364,22 +364,22 @@ class StoreProfile(models.Model):
         return self.company_name
     
 # Сигнал для автоматического создания профилей при регистрации нового пользователя
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=Users)
 def create_user_profiles(sender, instance, created, **kwargs):
     if created:
         # Обычный профиль (UserProfile) создаем для ВСЕХ
-        UserProfile.objects.create(user=instance)
+        UserProfiles.objects.create(user=instance)
             
         # А профиль магазина (StoreProfile) — 
     if instance.role == 'seller':
-        StoreProfile.objects.create(
+        StoreProfiles.objects.create(
                 user=instance, 
                 company_name=f"Магазин пользователя {instance.email}"
             )    
 
 # ---------------------------------- ORDER MANAGEMENT SYSTEM MODELS ----------------------------------
 
-class Order(models.Model):
+class Orders(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -413,7 +413,7 @@ class Order(models.Model):
         verbose_name_plural = "Заказы"
 
 
-class OrderItem(models.Model):
+class OrderItems(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     
     order = models.ForeignKey(
@@ -465,7 +465,7 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"Order {self.order.id} | Товар ID: {self.product_variant} (x{self.quantity})"
     
-class Transaction(models.Model):
+class Transactions(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     STATUS_CHOICES = (
         ('pending', 'Ожидает обработки'),
@@ -473,7 +473,7 @@ class Transaction(models.Model):
         ('failed', 'Неудачная'),
         ('refunded', 'Возвращена'),
     )
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='transactions')
+    order = models.ForeignKey(Orders, on_delete=models.CASCADE, related_name='transactions')
     amount = models.DecimalField("Сумма транзакции", max_digits=19, decimal_places=4, validators=[MinValueValidator(Decimal('0.00'))])
     transaction_id = models.CharField("ID транзакции", max_length=255, unique=True)
     payment_method = models.CharField("Метод оплаты", max_length=50)
@@ -485,11 +485,11 @@ class Transaction(models.Model):
         verbose_name_plural = "Транзакции"
 
 
-class Warehouse(models.Model):
+class Warehouses(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     name = models.CharField("Название склада", max_length=255)
     store = models.ForeignKey(
-    StoreProfile, on_delete=models.CASCADE, related_name='warehouses', verbose_name="Продавец (Магазин)")
+    StoreProfiles, on_delete=models.CASCADE, related_name='warehouses', verbose_name="Продавец (Магазин)")
     address = models.TextField("Адрес склада")
     created_at = models.DateTimeField("Дата создания", auto_now_add=True)
     is_active = models.BooleanField("Активный", default=True) # Для логической деактивации склада без удаления из базы
@@ -503,10 +503,10 @@ class Warehouse(models.Model):
         verbose_name_plural = "Склады"
 
 
-class Stock(models.Model):
+class Stocks(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
-    product_variant = models.ForeignKey(Product_variant, on_delete=models.CASCADE, related_name='stock')
-    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='stock')
+    product_variant = models.ForeignKey(Product_variants, on_delete=models.CASCADE, related_name='stock')
+    warehouse = models.ForeignKey(Warehouses, on_delete=models.CASCADE, related_name='stock')
     quantity = models.PositiveIntegerField("Количество на складе", default=0)
     reserved_quantity = models.PositiveIntegerField("Зарезервированное количество", default=0) # Кол-во, зарезервированное в заказах, но еще не списанное
 
@@ -514,3 +514,30 @@ class Stock(models.Model):
         verbose_name = "Остаток на складе"
         verbose_name_plural = "Остатки на складах"
         unique_together = ('product_variant', 'warehouse')
+
+
+class Messages(models.Model):
+    id = models.AutoField(primary_key=True, editable=False)
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='sent_messages',
+        verbose_name="Отправитель"
+    )
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='received_messages',
+        verbose_name="Получатель"
+    )
+    content = models.TextField("Содержание сообщения")
+    created_at = models.DateTimeField("Дата отправки", auto_now_add=True)
+    is_read = models.BooleanField("Прочитано", default=False)
+
+    class Meta:
+        verbose_name = "Сообщение"
+        verbose_name_plural = "Сообщения"
+
+    def __str__(self):
+        return f"Сообщение от {self.sender.email} к {self.recipient.email}"
+    

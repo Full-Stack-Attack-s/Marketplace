@@ -1,6 +1,6 @@
-shop/db.sqlite3
+# shop/db.sqlite3
 __pycache__/
 .venv
-shop/media
+# shop/media
 .idea
-shop/main/migrations/00*
+# shop/main/migrations/00*
