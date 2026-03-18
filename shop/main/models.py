@@ -417,7 +417,7 @@ class OrderItems(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     
     order = models.ForeignKey(
-        'Order', # Ссылка на твою модель Order
+        'Orders', # Ссылка на твою модель Order
         on_delete=models.CASCADE, 
         related_name='items'
     )
@@ -425,7 +425,7 @@ class OrderItems(models.Model):
     # ВАЖНО: on_delete=models.SET_NULL. 
     # Если продавец удалит товар из базы, в истории заказов он останется (просто без ссылки).
     product_variant = models.ForeignKey(
-        'Product_variant', 
+        'Product_variants', 
         on_delete=models.SET_NULL, 
         null=True,
         verbose_name="Вариант товара"
