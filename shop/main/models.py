@@ -8,47 +8,44 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from decimal import Decimal
 from django.core.validators import MinValueValidator
+from mptt.models import MPTTModel, TreeForeignKey
 
 
 # TODO 1. Добавить валидацию для полей, например, для email или для числовых полей.
 # TODO 2. Изменить id на UUIDField для всех моделей, чтобы обеспечить уникальность и безопасность идентификаторов при переходе на PostgreSQL.
 
-class Categories(models.Model):
-    name = models.CharField("Название", max_length=100)
+# Наследуемся от MPTTModel, а не от models.Model
+class Categories(MPTTModel):
     id = models.AutoField(primary_key=True)
-    path = models.CharField(verbose_name="Путь", max_length=255, db_index=True, unique=True, null=True, blank=True, help_text="Заполняется автоматически!")
-    # parent ссылается на эту же таблицу ('self')
-    parent = models.ForeignKey(verbose_name="Родительская категория", to='self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
-    slug = models.SlugField("Слаг", unique=True,  help_text="Заполняется автоматически!")
+    name = models.CharField("Название", max_length=100)
+    # Меняем ForeignKey на TreeForeignKey
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
+    slug = models.SlugField("Слаг", unique=True, help_text="Заполняется автоматически!")
 
+    class MPTTMeta:
+        order_insertion_by = ['name'] # Автоматическая сортировка по алфавиту
 
     def save(self, *args, **kwargs):
-        # 1. Сначала сохраняем, чтобы получить ID (если объект новый)
-        is_new = self.pk is None
-        if is_new:
-            super().save(*args, **kwargs)
-        # 1.1. Теперь у нас точно есть ID. Формируем "хвост" для слага
+        # 1. Генерируем базовый транслит, если слага еще нет
+        if not self.slug:
+            self.slug = slugify(self.name)
+            
+        # 2. Сохраняем в БД первый раз, чтобы получить ID (для новых записей)
+        super().save(*args, **kwargs)
+        
+        # 3. Учитываем старую логику: приклеиваем ID к слагу для 100% уникальности
         suffix = f"-{self.id}"
         if not str(self.slug).endswith(suffix):
             self.slug = f"{self.slug}{suffix}"
-
-        # 2. Формируем путь, только если поле path уже существует в классе
-        if self.parent:
-            # Приклеиваем ID к пути родителя
-            self.path = f"{self.parent.path}{self.id}/"
-        else:
-            # Если родителя нет — это корень
-            self.path = f"{self.id}/"
-
-        # 3. Финальное сохранение пути и слага
-        # (Добавь сюда свою логику слага из прошлых шагов)
-        super().save(*args, **kwargs)
+            # Делаем быстрое второе сохранение, обновляя ТОЛЬКО поле slug
+            super().save(update_fields=['slug'])
+        
 
     def __str__(self):
-        # Если есть родитель, рекурсивно вызываем его имя + текущее
-        if self.parent:
-            return f"{self.parent}  >  {self.name}"
-        return self.name
+        # get_ancestors() — это встроенный метод MPTT, который сам быстро 
+        # достает всю цепочку родителей из базы
+        ancestors = self.get_ancestors(include_self=True)
+        return ' > '.join([a.name for a in ancestors])
 
     class Meta:
         verbose_name = "Категория"
@@ -107,6 +104,8 @@ class Products(models.Model):
     updated_at = models.DateTimeField("Дата обновления",auto_now=True)
     # Добавляем слаг. unique=True обязателен, чтобы ссылки не дублировались.
     slug = models.SlugField("Слаг", max_length=200, unique=True, null=True, blank=True, help_text="Заполняется автоматически!")
+    views_count = models.PositiveIntegerField("Просмотры", default=0)
+    sales_count = models.PositiveIntegerField("Продажи", default=0)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -303,6 +302,10 @@ class Users(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = "Пользователи"
 
 class UserProfiles(models.Model):
+    GENDER_CHOICES = (
+        ('male', 'Мужской'),
+        ('female', 'Женский'),
+    )
     # primary_key=True делает так, как на схеме: id профиля = id юзера
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True, related_name='profile')
     first_name = models.CharField("Имя", max_length=50, null=True, blank=True)
@@ -312,6 +315,9 @@ class UserProfiles(models.Model):
     # preferences = models.JSONField("Настройки", default=dict, blank=True) 
     # TODO: сделать при переходе на PostgreSQL
     created_at = models.DateTimeField("Дата создания", auto_now_add=True)
+    age = models.PositiveIntegerField("Возраст", null=True, blank=True)
+    gender = models.CharField("Пол", max_length=20, null=True, blank=True, choices=GENDER_CHOICES)
+    
     class Meta:
         verbose_name = "Профиль пользователя"
         verbose_name_plural = "Профили пользователей"
@@ -540,4 +546,32 @@ class Messages(models.Model):
 
     def __str__(self):
         return f"Сообщение от {self.sender.email} к {self.recipient.email}"
+    
+
+
+class ProductAttributeValues(models.Model):
+    id = models.AutoField(primary_key=True)
+    product = models.ForeignKey(
+        Products, 
+        on_delete=models.CASCADE, 
+        related_name='attribute_values',
+        verbose_name="Продукт"
+    )
+    attribute = models.ForeignKey(
+        CategoryAttributes, 
+        on_delete=models.CASCADE,
+        verbose_name="Атрибут категории"
+    )
+    # Значение всегда храним как строку. На уровне фронтенда или логики 
+    # будем преобразовывать в число, если type == 'number'
+    value = models.CharField("Значение", max_length=255) 
+
+    class Meta:
+        verbose_name = "Значение атрибута"
+        verbose_name_plural = "Значения атрибутов"
+        # Один товар может иметь только одно значение для конкретного атрибута (например, только один вес)
+        unique_together = ('product', 'attribute')
+
+    def __str__(self):
+        return f"{self.product.name} - {self.attribute.label}: {self.value}"
     
