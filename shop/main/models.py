@@ -122,6 +122,27 @@ class Products(models.Model):
 
     def __str__(self):
         return self.name
+    
+    @property
+    def main_image_url(self):
+        # Ищем первую попавшуюся картинку напрямую из привязанных к товару
+        first_image = self.product_images_set.first()
+        if first_image and first_image.image:
+            return first_image.image.url
+        return None
+    
+    @property
+    def exact_price(self):
+        # Берем первый (или дефолтный) вариант товара
+        default_variant = self.product_variants_set.first()
+        # Возвращаем его конкретную цену. Нет варианта - цена 0.
+        return default_variant.price if default_variant else 0
+        
+    @property
+    def default_variant_id(self):
+        # Нам нужен ID этого варианта для кнопки "В корзину"
+        default_variant = self.product_variants_set.first()
+        return default_variant.id if default_variant else None
 
     class Meta:
         verbose_name = "Продукт"
