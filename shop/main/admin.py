@@ -1,10 +1,15 @@
 from django.contrib import admin
 from .models import *
+from mptt.admin import DraggableMPTTAdmin
 
 @admin.register(Categories)
-class CategoriesAdmin(admin.ModelAdmin):
-    list_display = ('name', 'parent', 'id', 'slug', 'path')
+class CategoriesAdmin(DraggableMPTTAdmin):
+    # tree_actions добавляет кнопки перемещения, indented_title — само дерево
+    list_display = ('name', 'parent', 'id', 'slug', 'tree_actions', 'indented_title')
     search_fields = ('name', 'slug')
+    list_display_links = ['indented_title']
+    # Указываем, к какому полю применять визуальные отступы
+    mptt_indent_field = "name"
     # Магия автозаполнения слага из названия
     prepopulated_fields = {'slug': ('name',)}
     list_filter = ('parent',)
