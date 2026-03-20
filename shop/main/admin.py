@@ -32,6 +32,11 @@ class ProductImagesInline(admin.TabularInline):
     extra = 1
     fields = ('image', 'is_main', 'sort_order')
 
+class StockInline(admin.TabularInline):
+    model = Stocks
+    extra = 1
+    fields = ('warehouse', 'quantity', 'reserved_quantity')
+
 
 
 # === АДМИНКА ТОВАРА ===
@@ -68,6 +73,7 @@ class CartItemsAdmin(admin.ModelAdmin):
 class ProductVariantsAdmin(admin.ModelAdmin):
     list_display = ('name', 'product_id', 'sku', 'price', 'updated_at', 'id')
     search_fields = ('sku',)
+    inlines = [StockInline]
 
 @admin.register(Product_images)
 class ProductImagesAdmin(admin.ModelAdmin):
@@ -115,7 +121,7 @@ class WarehousesAdmin(admin.ModelAdmin):
 
 @admin.register(Stocks)
 class StocksAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product_variant_id', 'warehouse_id', 'quantity', 'reserved_quantity')
+    list_display = ('id', 'product_variant', 'warehouse', 'quantity', 'reserved_quantity')
     search_fields = ('product_variant__sku', 'warehouse__name')
     list_filter = ('warehouse', 'product_variant__product__category')
 

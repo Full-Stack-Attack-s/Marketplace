@@ -11,7 +11,7 @@
 </section>
 <section class="products-section">
   <div class="products-grid">
-    {% for p in products_variants %}
+    {% for p in products %}
     <div class="product-card">
       <div class="product-image">
         {% if p.main_image_url %}
@@ -22,10 +22,13 @@
       </div>
 
       <div class="product-info">
-        <div class="product-price">{{ p.price|floatformat:0 }} ₽</div>
-        <div class="product-name">{{ p.name }}</div>
-      </div>
-    </div>
+    <div class="product-price">{{ p.exact_price|floatformat:0 }} ₽</div>
+    <div class="product-name">{{ p.name }}</div>
+    
+    <button class="add-to-cart" onclick="addToCart({{ p.default_variant_id }})">
+        <span class="cart-icon">🛒</span> В корзину
+    </button>
+</div>
     {% empty %}
     <p>Товаров пока нет.</p>
     {% endfor %}
