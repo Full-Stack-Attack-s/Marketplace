@@ -178,8 +178,8 @@ class Product_variants(models.Model):
         return None 
     
     def __str__(self):
-        # Выводим артикул
-        return str(self.sku)
+        # self.product.name — это название самого товара (например, "Основы агрономии")
+        return f"{self.product.name} (Арт: {self.sku})"
     
     def save(self, *args, **kwargs):
         if not self.sku:
@@ -528,6 +528,9 @@ class Warehouses(models.Model):
     class Meta:
         verbose_name = "Склад"
         verbose_name_plural = "Склады"
+    
+    def __str__(self):
+        return f"{self.name} (Магазин: {self.store.company_name})"
 
 
 class Stocks(models.Model):
@@ -541,7 +544,9 @@ class Stocks(models.Model):
         verbose_name = "Остаток на складе"
         verbose_name_plural = "Остатки на складах"
         unique_together = ('product_variant', 'warehouse')
-
+    def __str__(self):
+        # Будет выводить красиво: "Склад в Москве | Основы агрономии - 5 шт."
+        return f"{self.warehouse.name} | {self.product_variant.product.name} - {self.quantity} шт."
 
 class Messages(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
