@@ -2,30 +2,33 @@
 {% block title%}MainPage{% endblock title %}
 {% load static %}
 {% block content%}
-    <section class="sale-section">
+<section class="sale-section">
         <div class="carousel">
             <button class="carousel-btn"><</button>
             <div class="sale-banner">Spring sale</div>
             <button class="carousel-btn right">></button>
         </div>
-    </section>
-    <section class="products-section">
-        <div class="products-grid">
-            {% for p in products%}
-            <div class="product-card">
-                <div class="product-image">
-                    <img src="/media/{{p.image}}" alt="{{p.name}}">
-                </div>
-                <div class="product-info">
-                    <div class="product-price">{{p.price}} ₽</div>
-                    <div class="product-seller">{{p.name}}</div>
-                    <button class="add-to-cart" onclick="addToCart({{p.id}})">
-                        <span class="cart-icon">🛒</span>
-                        <span>В корзину</span>
-                    </button>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </section>
+</section>
+<section class="products-section">
+  <div class="products-grid">
+    {% for p in products_variants %}
+    <div class="product-card">
+      <div class="product-image">
+        {% if p.main_image_url %}
+        <img src="{{ p.main_image_url }}" alt="{{ p.name }}" />
+        {% else %}
+        <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото" />
+        {% endif %}
+      </div>
+
+      <div class="product-info">
+        <div class="product-price">{{ p.price|floatformat:0 }} ₽</div>
+        <div class="product-name">{{ p.name }}</div>
+      </div>
+    </div>
+    {% empty %}
+    <p>Товаров пока нет.</p>
+    {% endfor %}
+  </div>
+</section>
 {% endblock content %}
