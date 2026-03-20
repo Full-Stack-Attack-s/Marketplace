@@ -37,7 +37,6 @@ def profile(request):
 def cards(request):
     return render(request, "cards.html")
 def catalog(request):
-
     return render(request, "catalog.html")
 
 def checkout_view(request):
