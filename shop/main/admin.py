@@ -77,7 +77,7 @@ class ProductVariantsAdmin(admin.ModelAdmin):
 
 @admin.register(Product_images)
 class ProductImagesAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product_id', 'is_main', 'sort_order')
+    list_display = ('id', 'product', 'is_main', 'sort_order')
 
 
 @admin.register(Orders)
