@@ -14,8 +14,8 @@
             <a href="/" class="logo">VSYODO</a>
 
             <a href="/catalog" class="icon catalog">
-                        <img src="{% static 'img/icon catalog.png' %}" alt="Каталог">
-                    </a>
+                <img src="{% static 'img/icon catalog.png' %}" alt="Каталог">
+            </a>
 
             <div class="search-box">
                 <input type="text" placeholder="Найти на VSYODO">
@@ -23,8 +23,7 @@
 
             <nav class="navigation">
                 <div class="header-icons">
-                    <!-- Кнопка смены темы -->
-                    <button class="icon theme-toggle" onclick="toggleTheme()">
+                    <button class="icon theme-toggle">
                         <span class="theme-icon">🌙</span>
                     </button>
                     <a href="/profile" class="icon profile">
@@ -45,13 +44,12 @@
             <a href="/" class="logo">VSYODO</a>
 
             <a href="/catalog" class="icon catalog">
-                        <img src="{% static 'img/icon catalog.png' %}" alt="Каталог">
-                    </a>
+                <img src="{% static 'img/icon catalog.png' %}" alt="Каталог">
+            </a>
 
             <nav class="navigation">
                 <div class="header-icons">
-                    <!-- Кнопка смены темы -->
-                    <button class="icon theme-toggle" onclick="toggleTheme()">
+                    <button class="icon theme-toggle">
                         <span class="theme-icon">🌙</span>
                     </button>
                     <a href="/profile" class="icon profile">
@@ -71,26 +69,7 @@
     </header>
 
     <div class="container">{% block content %}{% endblock content %}</div>
-    <script src="/static/js/base.js"></script>
 
-    <!-- Нижняя навигация -->
-<!--    <nav class="bottom-nav">-->
-<!--        <a href="/" class="nav-item active">-->
-<!--            <span class="nav-icon">🏠</span>-->
-<!--            <span>Главная</span>-->
-<!--        </a>-->
-<!--        <a href="/catalog" class="nav-item">-->
-<!--            <span class="nav-icon">📂</span>-->
-<!--            <span>Каталог</span>-->
-<!--        </a>-->
-<!--        <a href="/cart" class="nav-item">-->
-<!--            <span class="nav-icon">🛒</span>-->
-<!--            <span>Корзина</span>-->
-<!--        </a>-->
-<!--        <a href="/profile" class="nav-item">-->
-<!--            <span class="nav-icon">👤</span>-->
-<!--            <span>Профиль</span>-->
-<!--        </a>-->
-<!--    </nav>-->
+    <script src="{% static 'js/base.js' %}"></script>
 </body>
 </html>
