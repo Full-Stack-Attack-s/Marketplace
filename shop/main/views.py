@@ -26,7 +26,7 @@ def index(request):
     ).filter(
         # ЖЕСТКИЙ ФИЛЬТР: выводим на витрину только те товары, где есть хотя бы 1 свободная штука
         available_stock__gt=0 
-    ).order_by('-sales_count')[:10]
+    ).order_by('-sales_count')[:25]
 
     return render(request, 'index.html', {'products': popular_products})
 

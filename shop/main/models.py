@@ -108,17 +108,19 @@ class Products(models.Model):
     sales_count = models.PositiveIntegerField("Продажи", default=0)
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        if is_new:
-            super().save(*args, **kwargs) # Сохраняем, чтобы БД выдала ID
-            
-        # Генерируем слаг с транслитом и ID
-        base_slug = slugify(self.name)
+        # 1. Если слага вообще нет (товар только создается), делаем базовый транслит
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        # 2. ГЛАВНОЕ: Сохраняем товар ВСЕГДА! Будь то создание или смена статуса
+        super().save(*args, **kwargs)
+
+        # 3. Приклеиваем ID к слагу для 100% уникальности
         suffix = f"-{self.id}"
-        
         if not str(self.slug).endswith(suffix):
-            self.slug = f"{base_slug}{suffix}"
-            super().save(update_fields=['slug']) # Перезаписываем только слаг
+            self.slug = f"{self.slug}{suffix}"
+            # Делаем быстрое второе сохранение, обновляя ТОЛЬКО поле slug
+            super().save(update_fields=['slug'])
 
     def __str__(self):
         return self.name
