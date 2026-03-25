@@ -1,3 +1,6 @@
+/* ============================================ */
+/* ГЛОБАЛЬНЫЕ НАСТРОЙКИ */
+/* ============================================ */
 * {
     box-sizing: border-box;
 }
@@ -17,7 +20,9 @@
     padding: 0 10px;
 }
 
+/* ============================================ */
 /* CSS ПЕРЕМЕННЫЕ ДЛЯ ТЕМ */
+/* ============================================ */
 :root {
     /* Светлая тема (по умолчанию) */
     --bg-color: #f6f6f9;
@@ -41,6 +46,8 @@
     --cart-badge: #ff4757;
     --nav-bg: #ffffff;
     --border-color: #e0e0e0;
+    --catalog-bg: linear-gradient(135deg, #66d9a8 0%, #89e4f0 100%);
+    --catalog-shadow: rgba(102, 217, 168, 0.3);
 }
 
 /* Тёмная тема */
@@ -66,9 +73,13 @@
     --cart-badge: #ff4757;
     --nav-bg: #16213e;
     --border-color: #2d3748;
+    --catalog-bg: linear-gradient(135deg, #66d9a8 0%, #89e4f0 100%);
+    --catalog-shadow: rgba(102, 217, 168, 0.5);
 }
 
+/* ============================================ */
 /* ШАПКА ДЛЯ КОМПЬЮТЕРА (скрыта на телефоне) */
+/* ============================================ */
 .header-desktop {
     display: none;
     background: var(--header-gradient);
@@ -97,34 +108,71 @@
     letter-spacing: 1px;
     white-space: nowrap;
     flex-shrink: 0;
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
 }
 
-/* КАТАЛОГ - рядом с логотипом */
+/* Логотип с обводкой в тёмной теме */
+[data-theme="dark"] .header-desktop .logo {
+    border: 2px solid #66d9a8;
+    color: #ffffff;
+}
+
+/* ============================================ */
+/* КНОПКА КАТАЛОГ (DESKTOP) */
+/* ============================================ */
 .header-desktop .catalog {
-    width: 40px;
-    height: 40px;
-    background: var(--icon-bg);
-    border-radius: 50%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
+    gap: 8px;
+    padding: 10px 15px;
+    background: var(--catalog-bg);
     border: none;
-    outline: none;
-    box-shadow: none;
+    border-radius: 12px;
+    color: #000;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    margin-left: 15px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px var(--catalog-shadow);
 }
 
-.header-desktop .catalog img {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
+.header-desktop .catalog::before {
+    content: '☰';
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.header-desktop .catalog::after {
+    content: 'Каталог';
 }
 
 .header-desktop .catalog:hover {
-    transform: scale(1.1);
-    background: var(--bg-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--catalog-shadow);
+    background: linear-gradient(135deg, #55c998 0%, #79d4e0 100%);
+}
+
+.header-desktop .catalog:active {
+    transform: translateY(0);
+}
+
+/* Каталог с обводкой в тёмной теме */
+[data-theme="dark"] .header-desktop .catalog {
+    background: transparent;
+    border: 2px solid #66d9a8;
+    color: #ffffff;
+    box-shadow: none;
+}
+
+[data-theme="dark"] .header-desktop .catalog:hover {
+    background: var(--catalog-bg);
+    color: #000;
 }
 
 /* ПОИСК - по центру */
@@ -238,7 +286,9 @@
     font-weight: bold;
 }
 
+/* ============================================ */
 /* ШАПКА ДЛЯ ТЕЛЕФОНА (скрыта на компьютере) */
+/* ============================================ */
 .header-mobile {
     display: none;
     background: var(--header-gradient);
@@ -255,47 +305,78 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    gap: 10px;
+    gap: 8px;
+    flex-wrap: nowrap;
 }
 
 .header-mobile .logo {
     font-family: 'Arial', cursive;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: bold;
     color: #000000;
     text-decoration: none;
     letter-spacing: 1px;
     white-space: nowrap;
     flex-shrink: 0;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
 }
 
-/* КАТАЛОГ на мобильном */
-.header-mobile .catalog {
-    width: 36px;
-    height: 36px;
-    background: var(--icon-bg);
-    border-radius: 50%;
+/* Логотип с обводкой в тёмной теме на мобильном */
+[data-theme="dark"] .header-mobile .logo {
+    border: 2px solid #66d9a8;
+    color: #ffffff;
+}
+
+/* ============================================ */
+/* КНОПКА КАТАЛОГ (MOBILE) - РЯДОМ С ЛОГОТИПОМ */
+/* ============================================ */
+.header-mobile .catalog-mobile {
     display: flex;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--catalog-bg);
     border: none;
-    outline: none;
+    border-radius: 8px;
+    color: #000;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px var(--catalog-shadow);
+}
+
+.header-mobile .catalog-mobile::before {
+    content: '☰';
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.header-mobile .catalog-mobile::after {
+    content: 'Каталог';
+}
+
+.header-mobile .catalog-mobile:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--catalog-shadow);
+}
+
+/* В тёмной теме на мобильном */
+[data-theme="dark"] .header-mobile .catalog-mobile {
+    background: transparent;
+    border: 2px solid #66d9a8;
+    color: #ffffff;
     box-shadow: none;
-    margin-left: 10px;
 }
 
-.header-mobile .catalog img {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-}
-
-.header-mobile .catalog:hover {
-    transform: scale(1.1);
-    background: var(--bg-secondary);
+[data-theme="dark"] .header-mobile .catalog-mobile:hover {
+    background: var(--catalog-bg);
+    color: #000;
 }
 
 .header-mobile .navigation {
@@ -306,13 +387,13 @@
 .header-mobile .header-icons {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 /* Убираем черные границы у всех иконок на мобильном */
 .header-mobile .icon {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     background: var(--icon-bg);
     border-radius: 50%;
     display: flex;
@@ -329,8 +410,8 @@
 
 /* Кнопка смены темы на мобильном - без границы */
 .header-mobile .theme-toggle {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     background: var(--icon-bg);
     border-radius: 50%;
     display: flex;
@@ -350,12 +431,12 @@
 }
 
 .header-mobile .theme-icon {
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .header-mobile .icon img {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     object-fit: contain;
 }
 
@@ -370,17 +451,17 @@
 
 .header-mobile .cart-count {
     position: absolute;
-    top: -5px;
-    right: -5px;
+    top: -4px;
+    right: -4px;
     background: var(--cart-badge);
     color: white;
     border-radius: 50%;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: bold;
 }
 
@@ -406,7 +487,9 @@
     color: #999;
 }
 
+/* ============================================ */
 /* SALE SECTION - БАННЕР */
+/* ============================================ */
 .sale-section {
     padding: 20px 10px;
     background: var(--bg-color);
@@ -491,7 +574,9 @@
     transform: translateY(0);
 }
 
+/* ============================================ */
 /* PRODUCTS GRID */
+/* ============================================ */
 .products-section {
     padding: 10px;
     background: var(--bg-color);
@@ -557,7 +642,9 @@
     margin-bottom: 10px;
 }
 
+/* ============================================ */
 /* КНОПКА "ДОБАВИТЬ В КОРЗИНУ" */
+/* ============================================ */
 .add-to-cart {
     width: 100%;
     padding: 12px 15px;
@@ -590,7 +677,183 @@
     font-size: 16px;
 }
 
+/* ============================================ */
+/* ФУТЕР */
+/* ============================================ */
+.site-footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: 60px 0 30px;
+    margin-top: 60px;
+    transition: background-color 0.3s ease;
+}
+
+.footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.footer-logo {
+    font-family: 'Arial', cursive;
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+.footer-info p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.footer-social {
+    display: flex;
+    gap: 10px;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--icon-bg);
+    border-radius: 50%;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    background: var(--header-gradient);
+    transform: translateY(-3px);
+}
+
+.footer-lang {
+    display: flex;
+    gap: 10px;
+}
+
+.lang-btn {
+    padding: 5px 15px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-color);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.lang-btn:hover,
+.lang-btn.active {
+    background: var(--header-gradient);
+    border-color: transparent;
+    color: #000;
+}
+
+.footer-column h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-links li {
+    margin: 0;
+}
+
+.footer-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.footer-links a:hover {
+    color: var(--nav-active);
+    transform: translateX(5px);
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Индикатор загрузки */
+.loading-indicator {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--bg-secondary);
+    margin: 20px auto;
+    max-width: 1400px;
+    border-radius: 12px;
+    transition: background-color 0.3s ease;
+}
+
+.loading-indicator.show {
+    display: block;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--nav-active);
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-indicator p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin: 0;
+}
+
+/* ============================================ */
 /* MEDIA QUERIES - АДАПТИВ */
+/* ============================================ */
+
 /* МОБИЛЬНАЯ ВЕРСИЯ (до 768px) */
 @media (max-width: 768px) {
     .header-mobile {
@@ -667,6 +930,16 @@
 
     .add-to-cart .cart-icon {
         font-size: 14px;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .site-footer {
+        padding: 40px 0 20px;
+        margin-top: 40px;
     }
 }
 

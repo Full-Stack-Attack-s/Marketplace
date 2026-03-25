@@ -3,7 +3,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Default title{% endblock title %}</title>
+    <title>{% block title %}VSYODO - Интернет-магазин{% endblock title %}</title>
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -13,9 +13,8 @@
         <div class="header-content-desktop">
             <a href="/" class="logo">VSYODO</a>
 
-            <a href="/catalog" class="icon catalog">
-                <img src="{% static 'img/icon catalog.png' %}" alt="Каталог">
-            </a>
+            <!-- Кнопка Каталог -->
+            <a href="/catalog" class="catalog"></a>
 
             <div class="search-box">
                 <input type="text" placeholder="Найти на VSYODO">
@@ -23,14 +22,15 @@
 
             <nav class="navigation">
                 <div class="header-icons">
+                    <!-- Кнопка смены темы -->
                     <button class="icon theme-toggle">
                         <span class="theme-icon">🌙</span>
                     </button>
                     <a href="/profile" class="icon profile">
-                        <img src="{% static 'img/icon profile.png' %}" alt="Профиль">
+                        <img src="{% static 'img/icon_profile.png' %}" alt="Профиль">
                     </a>
                     <a href="/cart" class="icon cart">
-                        <img src="{% static 'img/icon cart.png' %}" alt="Корзина">
+                        <img src="{% static 'img/icon_cart.png' %}" alt="Корзина">
                         <span class="cart-count">0</span>
                     </a>
                 </div>
@@ -40,36 +40,166 @@
 
     <!-- ШАПКА ДЛЯ ТЕЛЕФОНА -->
     <header class="header header-mobile">
+        <!-- Первый ряд: Логотип + Каталог + Иконки -->
         <div class="header-top-row">
             <a href="/" class="logo">VSYODO</a>
 
-            <a href="/catalog" class="icon catalog">
-                <img src="{% static 'img/icon catalog.png' %}" alt="Каталог">
-            </a>
+            <!-- Кнопка Каталог рядом с логотипом -->
+            <a href="/catalog" class="catalog-mobile"></a>
 
             <nav class="navigation">
                 <div class="header-icons">
+                    <!-- Кнопка смены темы -->
                     <button class="icon theme-toggle">
                         <span class="theme-icon">🌙</span>
                     </button>
                     <a href="/profile" class="icon profile">
-                        <img src="{% static 'img/icon profile.png' %}" alt="Профиль">
+                        <img src="{% static 'img/icon_profile.png' %}" alt="Профиль">
                     </a>
                     <a href="/cart" class="icon cart">
-                        <img src="{% static 'img/icon cart.png' %}" alt="Корзина">
+                        <img src="{% static 'img/icon_cart.png' %}" alt="Корзина">
                         <span class="cart-count">0</span>
                     </a>
                 </div>
             </nav>
         </div>
 
+        <!-- Второй ряд: Поиск -->
         <div class="search-box">
             <input type="text" placeholder="Найти на VSYODO">
         </div>
     </header>
 
-    <div class="container">{% block content %}{% endblock content %}</div>
+    <!-- Основной контент -->
+    <div class="container">
+        {% block content %}
+        <!-- Баннер -->
+        <section class="sale-section">
+            <div class="carousel">
+                <button class="carousel-btn">&lt;</button>
+                <div class="sale-banner">Spring sale</div>
+                <button class="carousel-btn right">&gt;</button>
+            </div>
+        </section>
 
+        <!-- Товары -->
+        <section class="products-section">
+            <div class="products-grid">
+                {% for p in products %}
+                <div class="product-card">
+                    <div class="product-image">
+                        {% if p.main_image_url %}
+                        <img src="{{ p.main_image_url }}" alt="{{ p.name }}" />
+                        {% else %}
+                        <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото" />
+                        {% endif %}
+                    </div>
+
+                    <div class="product-info">
+                        <div class="product-price">{{ p.exact_price|floatformat:0 }} ₽</div>
+                        <div class="product-seller">{{ p.name }}</div>
+
+                        <button class="add-to-cart" onclick="addToCart({{ p.default_variant_id }})">
+                            <span class="cart-icon">🛒</span> В корзину
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <p>Товаров пока нет.</p>
+                {% endfor %}
+            </div>
+        </section>
+        {% endblock content %}
+    </div>
+
+    <!-- Индикатор загрузки -->
+    <div class="loading-indicator" id="loadingIndicator">
+        <div class="spinner"></div>
+        <p>Загрузка товаров...</p>
+    </div>
+
+    <!-- ФУТЕР -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <!-- Колонка 1: О компании -->
+                <div class="footer-column">
+                    <div class="footer-logo">VSYODO</div>
+                    <div class="footer-info">
+                        <p>© 2026 VSYODO</p>
+                        <p>ООО «Всё Здесь»</p>
+                        <p>ИНН 1234567890</p>
+                        <p>ОГРН 1234567890123</p>
+                    </div>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" title="VK">VK</a>
+                        <a href="#" class="social-link" title="Telegram">TG</a>
+                        <a href="#" class="social-link" title="OK">OK</a>
+                    </div>
+                    <div class="footer-lang">
+                        <button class="lang-btn active">RU</button>
+                        <button class="lang-btn">EN</button>
+                    </div>
+                </div>
+
+                <!-- Колонка 2: Инструменты -->
+                <div class="footer-column">
+                    <h4>Инструменты</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Анализ сайта</a></li>
+                        <li><a href="#">SEO-анализ</a></li>
+                        <li><a href="#">Проверка позиций</a></li>
+                        <li><a href="#">Чат бот</a></li>
+                        <li><a href="#">Проверка посещаемости</a></li>
+                        <li><a href="#">Аудит сайта</a></li>
+                        <li><a href="#">Антиплагиат</a></li>
+                    </ul>
+                </div>
+
+                <!-- Колонка 3: Сообщество -->
+                <div class="footer-column">
+                    <h4>Сообщество</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Блог</a></li>
+                        <li><a href="#">Форум</a></li>
+                        <li><a href="#">База знаний</a></li>
+                        <li><a href="#">API документация</a></li>
+                        <li><a href="#">Партнёрам</a></li>
+                    </ul>
+                </div>
+
+                <!-- Колонка 4: Продукты -->
+                <div class="footer-column">
+                    <h4>Продукты</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Тарифы</a></li>
+                        <li><a href="#">Возможности</a></li>
+                        <li><a href="#">Инструменты</a></li>
+                        <li><a href="#">API</a></li>
+                        <li><a href="#">Расширения</a></li>
+                    </ul>
+                </div>
+
+                <!-- Колонка 5: Информация -->
+                <div class="footer-column">
+                    <h4>Информация</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">О компании</a></li>
+                        <li><a href="#">Контакты</a></li>
+                        <li><a href="#">Политика конфиденциальности</a></li>
+                        <li><a href="#">Условия использования</a></li>
+                        <li><a href="#">Помощь</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 VSYODO. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Подключаем JavaScript -->
     <script src="{% static 'js/base.js' %}"></script>
 </body>
 </html>
