@@ -3,3 +3,5 @@ Pillow == 12.1.0
 pytils == 0.4.4
 django-mptt == 0.18.0
 django-allauth == 65.15.0
+requests == 2.33.0
+jwt == 1.4.0
