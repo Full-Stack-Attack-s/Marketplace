@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ags6e1pi2zd6$w6w)+rsceu^68xxr797!_u465+td_p*qr0s@0
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
+SITE_ID = 1
 ALLOWED_HOSTS = ["*"]
 
 
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'main',
 
     'allauth',
@@ -126,8 +127,8 @@ SOCIALACCOUNT_PROVIDERS = {
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
         'APP': {
-            'client_id': '123',
-            'secret': '456',
+            'client_id': '556513386563-2iiue9pdl5gkr3ckp9cpmijpjq8be8b4.apps.googleusercontent.com',
+            'secret': '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',
             'key': ''
         }
     }
@@ -152,3 +153,19 @@ MEDIA_URL= '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 AUTH_USER_MODEL = 'main.Users'
+# Новые правила для allauth
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Делаем подтверждение строго обязательным (без него не пустит на сайт)
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory' 
+
+# Подтверждать почту сразу при переходе по ссылке (без лишней кнопки "Уверены?")
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True 
+
+# Перенаправляем "отправку" писем в консоль терминала (чтобы не настраивать SMTP-сервер)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
