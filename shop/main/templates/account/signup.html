@@ -1,18 +1,45 @@
 {% extends "base.html" %}
-{% load socialaccount %} 
+{% load static account socialaccount %}
+
+{% block title %}Регистрация - OMNI{% endblock %}
+
 {% block content %}
-<div class="singup-container">
-    <h2>Регистрация</h2>
+<div class="auth-section">
+    <div class="auth-container glass-panel">
+        <div class="auth-header">
+            <h1>Создать аккаунт</h1>
+            <p>Присоединяйтесь к OMNI сегодня</p>
+        </div>
 
-    <form method="POST" action="{% url 'account_signup' %}">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Создать аккаунт</button>
-    </form>
-    <hr>
-    
-    <a href="{% provider_login_url 'google' %}">Зарегистрироваться через Google</a>
+        <form method="post" action="{% url 'account_signup' %}" class="auth-form">
+            {% csrf_token %}
 
-    <p>Уже есть аккаунт? <a href="{% url 'account_login' %}">Войти</a></p>
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <small class="help-text" style="display:block; margin-top:5px; opacity:0.8;">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                <span class="error-text">{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="auth-button btn-glow">
+                Зарегистрироваться
+            </button>
+        </form>
+
+        <hr style="margin: 20px 0; border-color: rgba(255,255,255,0.1);">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="{% provider_login_url 'google' %}" class="auth-button btn-glow" style="background: #db4437; text-decoration: none; display: block;">Зарегистрироваться через Google</a>
+        </div>
+
+        <div class="auth-footer">
+            <p>Уже есть аккаунт? <a href="{% url 'account_login' %}">Войти</a></p>
+        </div>
+    </div>
 </div>
 {% endblock %}
