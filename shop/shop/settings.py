@@ -10,18 +10,28 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 
+# Забираем ключ из окружения
+SECRET_KEY = os.getenv('SECRET_KEY')
+
+# То же самое с дебагом (очень полезно для продакшена)
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# 1. Читаем спрятанные ключи
+# 2. Жестко указываем Питону точный путь до файла .env
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ags6e1pi2zd6$w6w)+rsceu^68xxr797!_u465+td_p*qr0s@0'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -127,8 +137,8 @@ SOCIALACCOUNT_PROVIDERS = {
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
         'APP': {
-            'client_id': '556513386563-2iiue9pdl5gkr3ckp9cpmijpjq8be8b4.apps.googleusercontent.com',
-            'secret': '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',
+            'client_id': os.getenv('GOOGLE_CLIENT_ID'),
+            'secret': os.getenv('GOOGLE_SECRET'),
             'key': ''
         }
     }

@@ -4,3 +4,4 @@ __pycache__/
 # shop/media
 .idea
 # shop/main/migrations/00*
+.env
