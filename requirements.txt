@@ -4,4 +4,5 @@ pytils == 0.4.4
 django-mptt == 0.18.0
 django-allauth == 65.15.0
 requests == 2.33.0
-jwt == 1.4.0
+PyJWT == 2.12.1
+python-dotenv == 1.2.2
