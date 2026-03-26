@@ -179,3 +179,6 @@ ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
 # Перенаправляем "отправку" писем в консоль терминала (чтобы не настраивать SMTP-сервер)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Прямой редирект в Google без промежуточных страниц
+SOCIALACCOUNT_LOGIN_ON_GET = True
