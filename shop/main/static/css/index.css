@@ -671,9 +671,10 @@
     -webkit-text-fill-color: transparent;
 }
 .auth-header p { color: var(--text-secondary); font-size: 14px; }
-.auth-form .form-group { margin-bottom: 20px; }
-.auth-form label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; }
-.auth-form input {
+/* Универсальный стиль для всех полей ввода, списков и текста */
+.auth-form input,
+.auth-form select,
+.auth-form textarea {
     width: 100%;
     padding: 12px 16px;
     border-radius: 12px;
@@ -683,20 +684,59 @@
     font-size: 15px;
     transition: all 0.2s;
     outline: none;
+    font-family: inherit;
 }
-.auth-form input:focus { border-color: var(--nav-active); box-shadow: 0 0 0 3px rgba(102, 217, 168, 0.2); }
-.auth-button {
-    width: 100%;
-    padding: 14px;
+
+.auth-form input:focus,
+.auth-form select:focus,
+.auth-form textarea:focus {
+    border-color: var(--nav-active);
+    box-shadow: 0 0 0 3px rgba(102, 217, 168, 0.2);
+}
+
+/* Настройки для большого поля описания */
+.auth-form textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Кастомные выпадающие списки со стрелочкой */
+.auth-form select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='gray' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 15px;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+[data-theme="dark"] .auth-form select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+/* Красивая кнопка загрузки файла (Главное изображение) */
+.auth-form input[type="file"] {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.auth-form input[type="file"]::-webkit-file-upload-button {
+    background: var(--header-gradient);
+    color: #000;
     border: none;
-    border-radius: 12px;
-    background: var(--button-gradient);
-    color: var(--button-text);
-    font-size: 16px;
+    padding: 8px 16px;
+    border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    margin-top: 10px;
-    transition: all 0.3s ease;
+    margin-right: 15px;
+    transition: all 0.2s;
+}
+
+.auth-form input[type="file"]::-webkit-file-upload-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(102, 217, 168, 0.3);
 }
 .btn-glow:hover { box-shadow: 0 0 20px rgba(102, 217, 168, 0.4); transform: translateY(-2px); }
 .auth-footer { margin-top: 25px; text-align: center; font-size: 14px; color: var(--text-secondary); }
@@ -743,4 +783,344 @@
     .body { padding-bottom: 0; }
     .sale-banner { height: 220px; font-size: 56px; max-width: 1200px; }
     .products-grid { grid-template-columns: repeat(5, 1fr); gap: 20px; }
+}
+
+.auth-button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: var(--button-gradient);
+    color: var(--button-text);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-glow:hover {
+    box-shadow: 0 0 20px rgba(102, 217, 168, 0.4);
+    transform: translateY(-2px);
+}
+
+.help-text {
+    display: block;
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 5px;
+}
+
+.error-text {
+    color: #ff4757;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+
+/* ============================================ */
+/* ЛИЧНЫЙ КАБИНЕТ И ПАНЕЛЬ ПРОДАВЦА             */
+/* ============================================ */
+
+/* Сетки и каркас */
+.dashboard-container { margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+.dashboard-sidebar { width: 250px; padding: 25px; border-radius: 16px; flex-shrink: 0; }
+.dashboard-content { flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 300px; }
+.dashboard-panel { padding: 30px; border-radius: 16px; }
+.dashboard-panel h2 { margin-top: 0; margin-bottom: 20px; }
+
+/* Левое меню */
+.dashboard-sidebar h3 { color: var(--nav-active); margin-top: 0; }
+.dashboard-sidebar p.store-name { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+.dashboard-menu { display: flex; flex-direction: column; gap: 10px; }
+.dashboard-menu a { color: var(--text-color); text-decoration: none; transition: color 0.2s; }
+.dashboard-menu a:hover { color: var(--nav-active); }
+.dashboard-menu a.back-link { color: var(--text-secondary); margin-top: 20px; }
+.dashboard-menu hr { border: none; border-bottom: 1px solid rgba(255,255,255,0.1); width: 100%; margin: 10px 0; }
+
+/* Таблица продаж */
+.dashboard-table-wrapper { overflow-x: auto; }
+.dashboard-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+.dashboard-table th { padding: 12px 10px; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); font-weight: normal; }
+.dashboard-table td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.dashboard-table td.total-price { color: var(--nav-active); font-weight: bold; }
+.empty-state { color: var(--text-secondary); }
+
+/* Карточки управления товарами */
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+.dashboard-card { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; }
+.dashboard-card-title { font-weight: bold; margin-bottom: 10px; font-size: 15px; }
+.dashboard-card-status { font-size: 12px; color: var(--text-secondary); margin-bottom: 15px; }
+.dashboard-card-actions { margin-top: auto; display: flex; gap: 10px; }
+
+/* Кнопки действий */
+.action-btn { flex: 1; text-align: center; text-decoration: none; padding: 8px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: transform 0.2s; }
+.action-btn:hover { transform: translateY(-2px); }
+.btn-edit { background: var(--header-gradient); color: #000; }
+.btn-delete { background: #ff4757; color: white; width: 100%; }
+.delete-form { flex: 1; margin: 0; }
+
+/* ============================================ */
+/* ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ                         */
+/* ============================================ */
+.profile-layout { display: flex; gap: 40px; flex-wrap: wrap; }
+.profile-sidebar { flex: 1; min-width: 200px; text-align: center; }
+.profile-content { flex: 2; min-width: 300px; }
+.profile-content h3 { margin-top: 0; margin-bottom: 20px; color: var(--nav-active); }
+.profile-avatar-box { width: 150px; height: 150px; border-radius: 50%; background: var(--input-bg); border: 2px solid var(--nav-active); margin: 0 auto 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.profile-avatar-box img { width: 100%; height: 100%; object-fit: cover; }
+.profile-avatar-placeholder { font-size: 60px; }
+.profile-email { margin-bottom: 5px; }
+.profile-status { color: var(--text-secondary); font-size: 13px; margin-top: 0; margin-bottom: 20px; }
+
+/* Кнопки профиля */
+.profile-actions { display: flex; flex-direction: column; gap: 10px; }
+.profile-btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-color); }
+.profile-btn-danger { background: #ff4757; color: white; border: none; }
+
+
+/* ============================================ */
+/* КАСТОМНАЯ ЗАГРУЗКА АВАТАРКИ                  */
+/* ============================================ */
+
+/* Стилизация самого инпута для файлов */
+.auth-form input[type="file"] {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Стилизация кнопки "Выбрать файл" */
+.auth-form input[type="file"]::-webkit-file-upload-button {
+    background: var(--header-gradient);
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-right: 15px;
+    transition: all 0.2s ease;
+}
+
+/* Эффект наведения */
+.auth-form input[type="file"]::-webkit-file-upload-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(102, 217, 168, 0.3);
+}
+
+/* Информационная карточка профиля */
+.profile-info-card {
+    text-align: left;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+.profile-info-card p { margin: 0 0 10px 0; color: var(--text-color); }
+.profile-info-card p:last-child { margin: 0; }
+.profile-info-card span.label { color: var(--text-secondary); font-size: 12px; display: block; margin-bottom: 2px; }
+
+/* Кнопки профиля */
+.profile-actions { display: flex; flex-direction: column; gap: 10px; }
+.profile-btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-color); }
+.profile-btn-danger { background: #ff4757; color: white; border: none; }
+
+/* 1. Широкий контейнер для двух колонок */
+.auth-wide-container {
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 2. Кастомная кнопка загрузки аватарки */
+.auth-form input[type="file"]::-webkit-file-upload-button {
+    background: var(--header-gradient);
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-right: 15px;
+    transition: all 0.2s ease;
+}
+
+.auth-form input[type="file"]::-webkit-file-upload-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(102, 217, 168, 0.3);
+}
+
+/* 3. Исправление отступов в инфо-карточке */
+.profile-info-card {
+    text-align: left;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+/* Улучшенная сетка профиля */
+.profile-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+/* Стилизация групп форм */
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--auth-subtitle-color);
+    margin-bottom: 8px;
+    margin-left: 5px;
+    font-weight: 500;
+}
+
+/* Контейнер для кнопок в ряд (для мобильных и планшетов) */
+.profile-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* Инфо-карточка (стеклянный эффект) */
+.profile-info-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--auth-glass-border);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+}
+
+.profile-info-card p {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 0;
+    margin: 0;
+}
+
+.profile-info-card p:last-child { border-bottom: none; }
+
+.profile-info-card .label {
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Адаптив */
+@media (max-width: 992px) {
+    .profile-layout {
+        grid-template-columns: 1fr;
+    }
+    .profile-sidebar {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+}
+
+/* ============================================ */
+/* ENTERPRISE КАРТОЧКА ТОВАРА (QUICK EDIT)      */
+/* ============================================ */
+
+.dashboard-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    gap: 10px;
+}
+
+.dashboard-card-title {
+    font-weight: bold;
+    font-size: 15px;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.sales-badge {
+    background: rgba(102, 217, 168, 0.15);
+    color: var(--nav-active);
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+    border: 1px solid rgba(102, 217, 168, 0.3);
+}
+
+.quick-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-grow: 1;
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
+}
+
+.quick-edit-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.quick-edit-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.quick-edit-input {
+    width: 100px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-color);
+    font-size: 13px;
+    outline: none;
+    transition: border 0.2s;
+}
+
+.quick-edit-input:focus {
+    border-color: var(--nav-active);
+}
+
+select.quick-edit-input {
+    cursor: pointer;
+}
+
+.quick-save-btn {
+    margin-top: 5px;
+    padding: 8px;
+    background: transparent;
+    border: 1px solid var(--nav-active);
+    color: var(--text-color);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-save-btn:hover {
+    background: var(--nav-active);
+    color: #000;
 }

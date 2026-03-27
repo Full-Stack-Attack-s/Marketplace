@@ -90,6 +90,7 @@ class Products(models.Model):
 
     # Связь "Многие к одному": у одной категории может быть много товаров
     id = models.AutoField(primary_key=True)
+    seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Продавец", related_name="products", null=True)
     name = models.CharField("Название", max_length=200)
     category = models.ForeignKey(Categories,
         on_delete=models.CASCADE,
@@ -396,15 +397,15 @@ class StoreProfiles(models.Model):
 @receiver(post_save, sender=Users)
 def create_user_profiles(sender, instance, created, **kwargs):
     if created:
-        # Обычный профиль (UserProfile) создаем для ВСЕХ
+        # Обычный профиль (UserProfile) создаем строго ОДИН РАЗ при регистрации
         UserProfiles.objects.create(user=instance)
             
-        # А профиль магазина (StoreProfile) — 
+    # А профиль магазина проверяем при любом сохранении (вдруг роль выдали позже)
     if instance.role == 'seller':
-        StoreProfiles.objects.create(
-                user=instance, 
-                company_name=f"Магазин пользователя {instance.email}"
-            )    
+        StoreProfiles.objects.get_or_create(
+            user=instance, 
+            defaults={'company_name': f"Магазин пользователя {instance.email}"}
+        )
 
 # ---------------------------------- ORDER MANAGEMENT SYSTEM MODELS ----------------------------------
 

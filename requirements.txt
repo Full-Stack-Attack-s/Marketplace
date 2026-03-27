@@ -7,3 +7,4 @@ requests == 2.33.0
 PyJWT == 2.12.1
 python-dotenv == 1.2.2
 cryptography == 46.0.6
+django-jazzmin == 3.0.4

@@ -34,7 +34,6 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 SITE_ID = 1
 ALLOWED_HOSTS = ["*"]
 
@@ -49,6 +48,7 @@ AUTHENTICATION_BACKENDS = [
 # Application definition
 
 INSTALLED_APPS = [
+    # 'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -177,8 +177,19 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 # Подтверждать почту сразу при переходе по ссылке (без лишней кнопки "Уверены?")
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True 
 
-# Перенаправляем "отправку" писем в консоль терминала (чтобы не настраивать SMTP-сервер)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Включаем боевой режим SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+# Настройки сервера Mail.ru
+EMAIL_HOST = 'smtp.mail.ru'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+
+# Забираем доступы из .env
+EMAIL_HOST_USER = os.getenv('EMAIL_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
+
+# Имя отправителя (должно совпадать с EMAIL_USER)
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Прямой редирект в Google без промежуточных страниц
 SOCIALACCOUNT_LOGIN_ON_GET = True
