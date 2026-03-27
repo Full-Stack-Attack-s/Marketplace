@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Панель продавца - OMNI{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container">
+    
+    <div class="glass-panel dashboard-sidebar">
+        <h3>Мой магазин</h3>
+        <p class="store-name">
+            {{ user.store_profile.company_name|default:"Название не указано" }}
+        </p>
+        
+        <div class="dashboard-menu">
+            <a href="{% url 'add_product' %}" class="auth-button btn-glow" style="text-align: center; padding: 10px; font-size: 14px;">
+                + Добавить товар
+            </a>
+            <hr>
+            <a href="#">📦 Мои товары ({{ products.count }})</a>
+            <a href="#">💰 Мои продажи ({{ sales.count }})</a>
+            <a href="{% url 'profile' %}" class="back-link">← Настройки профиля</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        
+        <div class="glass-panel dashboard-panel">
+            <h2>Последние продажи</h2>
+            
+            {% if sales %}
+            <div class="dashboard-table-wrapper">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Товар</th>
+                            <th>Кол-во</th>
+                            <th>Цена за шт.</th>
+                            <th>Итого</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in sales %}
+                        <tr>
+                            <td>{{ sale.product_variant.product.name }}</td>
+                            <td>{{ sale.quantity }} шт.</td>
+                            <td>{{ sale.price_per_unit }} ₽</td>
+                            <td class="total-price">{{ sale.total_price }} ₽</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="empty-state">У вас пока нет продаж.</p>
+            {% endif %}
+        </div>
+
+        <div class="glass-panel dashboard-panel">
+            <h2>Управление товарами</h2>
+            
+            {% if products %}
+                    {% for p in products %}
+                    <div class="dashboard-card">
+                        
+                        <div class="dashboard-card-header">
+                            <h4 class="dashboard-card-title">{{ p.name }}</h4>
+                            <span class="sales-badge">📈 {{ p.sales_count|default:"0" }} продаж</span>
+                        </div>
+                        
+                        <form action="{% url 'quick_update_product' p.id %}" method="POST" class="quick-edit-form">
+                            {% csrf_token %}
+                            
+                            <div class="quick-edit-row">
+                                <label class="quick-edit-label">Цена (₽)</label>
+                                <input type="number" name="price" value="{{ p.product_variants_set.first.price|floatformat:0 }}" class="quick-edit-input">
+                            </div>
+                            
+                            <div class="quick-edit-row">
+                                <label class="quick-edit-label">Статус</label>
+                                <select name="status" class="quick-edit-input">
+                                    <option value="draft" {% if p.status == 'draft' %}selected{% endif %}>Черновик</option>
+                                    <option value="active" {% if p.status == 'active' %}selected{% endif %}>Активен</option>
+                                    <option value="archived" {% if p.status == 'archived' %}selected{% endif %}>В архиве</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="quick-save-btn">✓ Сохранить</button>
+                        </form>
+                        
+                        <div class="dashboard-card-actions">
+                            <a href="{% url 'edit_product' p.id %}" class="action-btn btn-edit" title="Детальное редактирование">✏️ Изменить</a>
+                            
+                            <form action="{% url 'delete_product' p.id %}" method="POST" class="delete-form" onsubmit="return confirm('Точно удалить этот товар?');">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn btn-delete" title="Удалить товар">🗑️</button>
+                            </form>
+                        </div>
+                        
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-state">Вы еще не добавили ни одного товара.</p>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}
