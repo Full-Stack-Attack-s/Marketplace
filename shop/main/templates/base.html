@@ -3,10 +3,13 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}OMNI - Интернет-магазин{% endblock title %}</title>
-    <link rel="stylesheet" href="{% static 'css/index.css' %}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace</title>
+    
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
+
 <body class="body">
     <!-- ШАПКА ДЛЯ КОМПЬЮТЕРА -->
     <header class="header header-desktop">

@@ -3,8 +3,8 @@ from django.db.models import Sum, F, IntegerField
 from django.db.models.functions import Coalesce
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .forms import AddressForm, ProductForm, UserEditForm, UserProfileEditForm
-from .models import Product_variants, Product_images, OrderItems, ProductAttributeValues, Products, models, CategoryAttributes, Addresses, Stocks, Warehouses # Обязательно добавь этот импорт!
+from .forms import AddressForm, ProductForm, UserProfileEditForm
+from .models import Product_variants, Product_images, OrderItems, ProductAttributeValues, Products, UserProfiles, models, CategoryAttributes, Addresses, Stocks, Warehouses, StoreProfiles # Обязательно добавь этот импорт!
 
 
 # def index(request):
@@ -15,26 +15,132 @@ from .models import Product_variants, Product_images, OrderItems, ProductAttribu
     ## Отправляем в шаблон под тем именем, которое ты используешь в цикле
     # return render(request, "index.html", {"products_variants": variants})
 
+
+
+@login_required
+def manage_products(request):
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id')
+        product = get_object_or_404(Products, id=product_id, seller=request.user)
+        
+        if 'delete' in request.POST:
+            product.delete()
+            return redirect('manage_products')
+            
+        # Логика быстрого сохранения
+        new_status = request.POST.get('status')
+        if new_status:
+            product.status = new_status
+            product.save(update_fields=['status'])
+
+        variant = product.product_variants_set.first()
+        if variant:
+            new_price = request.POST.get('price')
+            if new_price:
+                variant.price = new_price
+                variant.save(update_fields=['price'])
+                
+            new_stock = request.POST.get('stock')
+            if new_stock and new_stock.isdigit():
+                stock_record = Stocks.objects.filter(product_variant=variant).first()
+                if stock_record:
+                    stock_record.quantity = int(new_stock)
+                    stock_record.save(update_fields=['quantity'])
+                    
+        return redirect('manage_products')
+
+    products = Products.objects.filter(seller=request.user).prefetch_related('product_variants_set', 'product_images_set').order_by('-created_at')
+    return render(request, 'products_list.html', {'products': products})
+
+# ============================================
+# views.py
+# ============================================
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import CategoryAttributes, StoreProfiles, UserProfiles, Products, Product_variants, Stocks, Product_images
+from .forms import ProductForm, StoreVerificationForm, UserProfileForm
+
 @login_required
 def seller_dashboard(request):
-    # Пускаем только продавцов
-    if request.user.role != 'seller':
-        return redirect('profile')
+    user = request.user
+    store_profile, _ = StoreProfiles.objects.get_or_create(user=user)
+    
+    # 1. Активные товары
+    active_products = Products.objects.filter(seller=user, status='active').count()
+    
+    # 2. Новые заказы (по товарам этого продавца)
+    new_orders = OrderItems.objects.filter(
+        product_variant__product__seller=user, 
+        order__status='pending'
+    ).count()
+    
+    # 3. Общая выручка (только оплаченные/завершенные)
+    sales_total = OrderItems.objects.filter(
+        product_variant__product__seller=user, 
+        order__status__in=['paid', 'completed']
+    ).aggregate(total=Sum('total_price'))['total'] or 0.00
 
-    my_products = Products.objects.filter(seller=request.user).order_by('-created_at')
-    my_sales = OrderItems.objects.filter(seller=request.user).order_by('-order__created_at')
+    # 4. Последние заказы
+    recent_orders = OrderItems.objects.filter(
+        product_variant__product__seller=user
+    ).select_related('order', 'product_variant__product').order_by('-order__created_at')[:5]
 
-    context = {
-        'products': my_products,
-        'sales': my_sales,
-    }
-    return render(request, 'account/seller_dashboard.html', context)
+    return render(request, 'seller_dashboard.html', {
+        'active_products': active_products,
+        'new_orders': new_orders,
+        'sales_total': sales_total,
+        'recent_orders': recent_orders,
+        'store_profile': store_profile,
+    })
+
+@login_required
+def seller_profile(request):
+    user_profile, _ = UserProfiles.objects.get_or_create(user=request.user)
+    store_profile, _ = StoreProfiles.objects.get_or_create(user=request.user)
+    
+    if request.method == 'POST':
+        if 'update_user' in request.POST:
+            user_form = UserProfileForm(request.POST, instance=user_profile)
+            store_form = StoreVerificationForm(instance=store_profile)
+            if user_form.is_valid():
+                user_form.save()
+                return redirect('seller_profile')
+                
+        elif 'verify_store' in request.POST:
+            user_form = UserProfileForm(instance=user_profile)
+            store_form = StoreVerificationForm(request.POST, instance=store_profile)
+            if store_form.is_valid():
+                store = store_form.save(commit=False)
+                store.verification_status = 'pending'
+                store.save()
+                return redirect('seller_profile')
+    else:
+        user_form = UserProfileForm(instance=user_profile)
+        store_form = StoreVerificationForm(instance=store_profile)
+        
+    return render(request, 'seller_profile.html', {
+        'user_form': user_form,
+        'store_form': store_form,
+        'store_profile': store_profile,
+    })
+
+def get_category_attributes(request, category_id):
+    # Получаем все атрибуты, привязанные к конкретной категории
+    attrs = CategoryAttributes.objects.filter(category_id=category_id)
+    data = [
+        {
+            "id": a.id, 
+            "name": a.label, 
+            "is_required": a.is_required 
+        } for a in attrs
+    ]
+    return JsonResponse(data, safe=False)
 
 @login_required
 def add_product(request):
     if request.method == 'POST':
-        # ПЕРЕДАЕМ user=request.user в форму!
-        form = ProductForm(request.POST, request.FILES, user=request.user) 
+        form = ProductForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             product = form.save(commit=False)
             product.seller = request.user
@@ -42,54 +148,67 @@ def add_product(request):
 
             price = form.cleaned_data.get('price', 0)
             stock_qty = form.cleaned_data.get('stock', 0)
-            selected_warehouse = form.cleaned_data.get('warehouse') # ДОСТАЕМ ВЫБРАННЫЙ СКЛАД
+            selected_warehouse = form.cleaned_data.get('warehouse')
 
-            variant = Product_variants.objects.create(product=product, price=price)
+            # --- НАЧАЛО НОВОЙ ЛОГИКИ СБОРА АТРИБУТОВ ---
+            dynamic_attributes = {}
+            for key, value in request.POST.items():
+                if key.startswith('attr_') and value.strip():
+                    attr_name = key.replace('attr_', '')
+                    dynamic_attributes[attr_name] = value
+            # --- КОНЕЦ НОВОЙ ЛОГИКИ ---
 
-            # Сохраняем остатки строго на выбранный склад
-            Stocks.objects.create(
-                product_variant=variant, 
-                warehouse=selected_warehouse, 
-                quantity=stock_qty
+            # СОХРАНЯЕМ АТРИБУТЫ В ВАРИАНТ ТОВАРА
+            variant = Product_variants.objects.create(
+                product=product, 
+                price=price,
+                attributes=dynamic_attributes # <--- ЭТОГО НЕ БЫЛО
             )
-            # ... сохранение картинки ...
-            return redirect('seller_dashboard')
-        else:
-            print("ОШИБКИ ФОРМЫ ДОБАВЛЕНИЯ:", form.errors) # Ловушка для ошибок!
+            
+            if selected_warehouse:
+                Stocks.objects.create(product_variant=variant, warehouse=selected_warehouse, quantity=stock_qty)
+
+            image = form.cleaned_data.get('image')
+            if image:
+                Product_images.objects.create(product=product, image=image, is_main=True)
+
+            return redirect('manage_products')
     else:
-        # ПЕРЕДАЕМ user=request.user и для пустой формы (чтобы склады загрузились)
-        form = ProductForm(user=request.user) 
-        
-    return render(request, 'add_product.html', {'form': form})
+        form = ProductForm(user=request.user)
+    return render(request, 'add_product.html', {'form': form, 'title': 'Добавить товар'})
 
 @login_required
 def edit_product(request, product_id):
-    # 1. Достаем товар, вариант (где цена) и картинку
     product = get_object_or_404(Products, id=product_id, seller=request.user)
     variant = product.product_variants_set.first()
     image = product.product_images_set.first()
 
     if request.method == 'POST':
-        # ВАЖНО: передаем user=request.user, чтобы форма знала, чьи склады проверять
         form = ProductForm(request.POST, request.FILES, instance=product, user=request.user)
-        
         if form.is_valid():
-            # Сохраняем основные данные товара (Название, Описание, Статус и т.д.)
-            form.save() 
+            form.save()
             
-            # Достаем данные кастомных полей из формы
             price = form.cleaned_data.get('price', 0)
             stock_qty = form.cleaned_data.get('stock', 0)
             selected_warehouse = form.cleaned_data.get('warehouse')
 
-            # 2. Обновляем или создаем Вариант товара (там хранится цена)
+            dynamic_attributes = {}
+            for key, value in request.POST.items():
+                if key.startswith('attr_') and value.strip():
+                    attr_name = key.replace('attr_', '')
+                    dynamic_attributes[attr_name] = value
+
             if variant:
                 variant.price = price
+                variant.attributes = dynamic_attributes
                 variant.save()
             else:
-                variant = Product_variants.objects.create(product=product, price=price)
+                variant = Product_variants.objects.create(
+                    product=product, 
+                    price=price,
+                    attributes=dynamic_attributes
+                )
 
-            # 3. Обновляем или создаем Остатки (связка Вариант + Склад)
             if selected_warehouse:
                 Stocks.objects.update_or_create(
                     product_variant=variant,
@@ -97,7 +216,6 @@ def edit_product(request, product_id):
                     defaults={'quantity': stock_qty}
                 )
 
-            # 4. Обновляем картинку, если загрузили новую
             new_image = form.cleaned_data.get('image')
             if new_image:
                 if image:
@@ -105,37 +223,21 @@ def edit_product(request, product_id):
                     image.save()
                 else:
                     Product_images.objects.create(product=product, image=new_image, is_main=True)
-                    
-            return redirect('seller_dashboard')
-            
-        else:
-            # Если форма не сохранилась, Питон выведет причину в терминал
-            print("=== ОШИБКА ВАЛИДАЦИИ ФОРМЫ ===")
-            print(form.errors)
-            
+
+            return redirect('manage_products')
     else:
-        # GET-ЗАПРОС: Подготавливаем данные для заполнения полей при открытии страницы
         initial_data = {}
         if variant:
             initial_data['price'] = variant.price
-            
-            # Ищем остатки для этого варианта
             stock_record = Stocks.objects.filter(product_variant=variant).first()
             if stock_record:
                 initial_data['stock'] = stock_record.quantity
-                initial_data['warehouse'] = stock_record.warehouse # Подставляем старый склад
-                
-        # Создаем форму с подгруженными данными
+                initial_data['warehouse'] = stock_record.warehouse
         form = ProductForm(instance=product, initial=initial_data, user=request.user)
 
-    return render(request, 'add_product.html', {'form': form})
+    return render(request, 'add_product.html', {'form': form, 'title': 'Редактировать товар', 'product': product, 'variant': variant})
 
-@login_required
-def delete_product(request, product_id):
-    if request.method == 'POST':
-        product = get_object_or_404(Products, id=product_id, seller=request.user)
-        product.delete()
-    return redirect('seller_dashboard')
+
 
 @login_required
 def profile(request):

@@ -1,21 +1,44 @@
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-from .models import Addresses, Products, Users, UserProfiles, Warehouses # Подставь точное название своей модели товара
+from .models import Addresses, Products, Users, UserProfiles, Warehouses, StoreProfiles # Подставь точное название своей модели товара
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
 
+class StoreVerificationForm(forms.ModelForm):
+    class Meta:
+        model = StoreProfiles
+        fields = ['company_name', 'inn', 'legal_address']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'auth-form input'
+    # --- ДОБАВЛЯЕМ ПОДСКАЗКИ (PLACEHOLDERS) СЮДА ---
+        self.fields['company_name'].widget.attrs['placeholder'] = 'Например: ООО "Ромашка" или ИП Иванов И.И.'
+        self.fields['inn'].widget.attrs['placeholder'] = 'Формат: 10 или 12 цифр'
+        self.fields['legal_address'].widget.attrs['placeholder'] = 'Например: 123456, г. Москва, ул. Пушкина, д. 1, оф. 2'
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfiles
+        fields = ['first_name', 'last_name', 'phone_number']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'auth-form input'
+
 class ProductForm(forms.ModelForm):
     price = forms.DecimalField(max_digits=19, decimal_places=4, label="Цена (₽)")
     image = forms.ImageField(label="Главное изображение", required=False)
-    stock = forms.IntegerField(min_value=0, label="Остаток (шт.)", initial=1)
+    stock = forms.IntegerField(min_value=0, label="Остаток (шт.)", initial=0)
     
-    # НОВОЕ ПОЛЕ: Выбор склада
     warehouse = forms.ModelChoiceField(
-        queryset=Warehouses.objects.none(), # Изначально пустое, заполним ниже
+        queryset=Warehouses.objects.none(),
         label="Склад отгрузки",
         empty_label="Выберите склад",
-        required=True # Обязательно к заполнению
+        required=True
     )
 
     class Meta:
@@ -23,21 +46,18 @@ class ProductForm(forms.ModelForm):
         fields = ['name', 'category', 'brand', 'description', 'status']
 
     def __init__(self, *args, **kwargs):
-        # 1. Извлекаем юзера (продавца) из аргументов, которые передаст views.py
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         
-        # 2. Фильтруем склады: показываем только активные склады ЭТОГО продавца
         if user and hasattr(user, 'store_profile'):
             self.fields['warehouse'].queryset = Warehouses.objects.filter(
                 store=user.store_profile, 
                 is_active=True
             )
+            
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'auth-form input'
 
-class UserEditForm(forms.ModelForm):
-    class Meta:
-        model = Users
-        fields = ['phone_number']
 
 class UserProfileEditForm(forms.ModelForm):
     class Meta:

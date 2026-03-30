@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-sidebar">
+        <h3>Управление</h3>
+        <p class="store-name">Пользователь: {{ request.user.email }}</p>
+        <div class="dashboard-menu">
+            <a href="{% url 'seller_dashboard' %}">📊 Дашборд</a>
+            <a href="{% url 'manage_products' %}">📦 Мои товары</a>
+            <a href="{% url 'seller_profile' %}">👤 Профиль</a>
+            <hr>
+            <a href="/" class="back-link">← Вернуться на сайт</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <div class="dashboard-panel glass-panel">
+            <h2>Комплексная панель продавца</h2>
+            
+            {% if store_profile.verification_status != 'approved' %}
+                <div class="sales-badge" style="background: rgba(255, 193, 7, 0.15); color: #ffc107; border-color: rgba(255, 193, 7, 0.3); padding: 10px; margin-bottom: 20px; font-size: 13px;">
+                    ⚠️ Ваш магазин не подтвержден. <a href="{% url 'seller_profile' %}" style="color: #ffc107; text-decoration: underline;">Заполните профиль компании</a>, чтобы получить статус проверенного продавца.
+                </div>
+            {% endif %}
+
+            <div class="dashboard-grid" style="margin-bottom: 30px;">
+                <div class="dashboard-card">
+                    <p class="dashboard-card-title">Баланс продаж</p>
+                    <p class="dashboard-card-status" style="font-size: 24px; color: var(--nav-active);">₽{{ sales_total|floatformat:2 }}</p>
+                </div>
+                <div class="dashboard-card">
+                    <p class="dashboard-card-title">Активные товары</p>
+                    <p class="dashboard-card-status" style="font-size: 24px; color: var(--text-color);">{{ active_products }}</p>
+                </div>
+                <div class="dashboard-card">
+                    <p class="dashboard-card-title">Новые заказы</p>
+                    <p class="dashboard-card-status" style="font-size: 24px; color: var(--text-color);">{{ new_orders }}</p>
+                </div>
+            </div>
+
+            <h3>Последние заказы</h3>
+            <div class="dashboard-table-wrapper">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Заказ</th>
+                            <th>Товар</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in recent_orders %}
+                        <tr>
+                            <td>#{{ item.order.id }}</td>
+                            <td>{{ item.product_variant.product.name|truncatechars:30 }}</td>
+                            <td class="total-price">₽{{ item.total_price|floatformat:2 }}</td>
+                            <td><span class="sales-badge">{{ item.order.get_status_display }}</span></td>
+                            <td>{{ item.order.created_at|date:"d.m.Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="empty-state">Нет недавних заказов.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

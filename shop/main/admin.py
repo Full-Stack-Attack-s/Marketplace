@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import *
 from mptt.admin import DraggableMPTTAdmin
-
+from .models import CategoryAttributes
 @admin.register(Categories)
 class CategoriesAdmin(DraggableMPTTAdmin):
     # tree_actions добавляет кнопки перемещения, indented_title — само дерево
@@ -50,8 +50,9 @@ class ProductsAdmin(admin.ModelAdmin):
 
 @admin.register(CategoryAttributes)
 class CategoryAttributesAdmin(admin.ModelAdmin):
-    list_display = ('id', 'category_id', 'key', 'label', 'type', 'is_required')
-    list_filter = ('category_id', 'type')
+    list_display = ['category', 'key', 'is_required']
+    list_filter = ['category', 'is_required']
+    search_fields = ['name']
 
 # === INLINES (Встроенные блоки для Корзины) ===
 class CartItemsInline(admin.TabularInline):
@@ -90,19 +91,19 @@ class OrderItemsAdmin(admin.ModelAdmin):
 
 @admin.register(Users)
 class UsersAdmin(admin.ModelAdmin):
-    list_display = ('id', 'email', 'is_staff', 'is_active', 'role', 'phone_number')
+    list_display = ('id', 'email', 'is_staff', 'is_active', 'role')
     search_fields = ('email', 'first_name', 'last_name')
 
 @admin.register(UserProfiles)
 class UserProfilesAdmin(admin.ModelAdmin):
-    list_display = ('user_id', 'first_name', 'last_name', )
-    search_fields = ('user_id__email', 'phone_number')
+    list_display = ('user_id', 'first_name', 'last_name', 'phone_number')
+    search_fields = ('user_id__email',)
 
 @admin.register(StoreProfiles)
 class StoreProfilesAdmin(admin.ModelAdmin):
-    list_display = ('user', 'company_name', 'is_verified', 'created_at')
+    list_display = ('user', 'company_name', 'verification_status', 'created_at')
     search_fields = ('company_name', 'user__email')
-    list_filter = ('is_verified', 'created_at')
+    list_filter = ('verification_status', 'created_at')
 
 @admin.register(Addresses)
 class AddressesAdmins(admin.ModelAdmin):

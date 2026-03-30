@@ -1,92 +1,115 @@
-{% extends "base.html" %}
-{% block title %}Добавление товара{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="auth-section">
-    <div class="auth-container glass-panel" style="max-width: 600px;">
-        <div class="auth-header">
-            <h1>Новый товар</h1>
-            <p>Заполните характеристики</p>
+<div class="dashboard-container">
+    <div class="dashboard-sidebar">
+        <h3>Управление</h3>
+        <p class="store-name">Магазин: {{ request.user.email }}</p>
+        <div class="dashboard-menu">
+            <a href="{% url 'seller_dashboard' %}">📊 Дашборд</a>
+            <a href="{% url 'manage_products' %}">📦 Мои товары</a>
+            <a href="{% url 'seller_profile' %}">👤 Профиль</a>
+            <hr>
+            <a href="/" class="back-link">← Вернуться на сайт</a>
         </div>
+    </div>
 
-        <form method="POST" enctype="multipart/form-data" class="auth-form" id="product-form">
-            {% csrf_token %}
-            
-            {% for field in form %}
-            <div class="form-group">
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}
-            </div>
-            {% endfor %}
-
-            <div id="dynamic-attributes" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+    <div class="dashboard-content">
+        <div class="dashboard-panel glass-panel auth-wide-container">
+            <h2>{{ title }}</h2>
+            <form method="POST" enctype="multipart/form-data" class="auth-form">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
                 </div>
+                {% endfor %}
 
-            <button type="submit" class="auth-button btn-glow" style="margin-top: 20px;">Опубликовать</button>
-        </form>
+                <div id="dynamic-attributes-container" class="profile-actions-grid">
+                    </div>
+
+                <div class="dashboard-card-actions">
+                    <button type="submit" class="action-btn btn-edit">Сохранить товар</button>
+                    <a href="{% url 'manage_products' %}" class="action-btn profile-btn-outline">Отмена</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const categorySelect = document.querySelector('#id_category');
-    const attrContainer = document.querySelector('#dynamic-attributes');
+    // Ищем select по имени, так как ID может меняться
+    const categorySelect = document.querySelector('select[name="category"]');
+    const attrContainer = document.querySelector('#dynamic-attributes-container');
 
-    console.log("Скрипт запущен. Поле категории найдено:", !!categorySelect);
+    console.log("Скрипт запущен! Select:", categorySelect, "Контейнер:", attrContainer);
 
-    if (categorySelect) {
-        categorySelect.addEventListener('change', function() {
-            const categoryId = this.value;
-            console.log("Категория изменена на ID:", categoryId);
-
-            if (!categoryId) {
-                attrContainer.innerHTML = '';
-                return;
-            }
-
-            // Проверяем, по какому URL идет запрос
-            const url = `/get-attributes/${categoryId}/`;
-            console.log("Отправляю запрос на:", url);
-
-            fetch(url)
-                .then(response => {
-                    console.log("Статус ответа сервера:", response.status);
-                    if (!response.ok) throw new Error('Ошибка сервера: ' + response.status);
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("Полученные данные от сервера:", data);
-                    
-                    if (data.length === 0) {
-                        attrContainer.innerHTML = '<p style="color: #888; font-size: 13px;">Для этой категории в админке не заданы характеристики.</p>';
-                        return;
-                    }
-
-                    attrContainer.innerHTML = '<h3 style="color: var(--nav-active); margin-bottom: 15px;">Характеристики</h3>';
-                    data.forEach(attr => {
-                        // Определяем тип поля ввода (число или текст) из attr.type
-                        const inputType = attr.type === 'number' ? 'number' : 'text';
-                        
-                        // ИСПОЛЬЗУЕМ attr.label ВМЕСТО attr.name
-                        attrContainer.insertAdjacentHTML('beforeend', `
-                            <div class="form-group" style="margin-bottom: 15px;">
-                                <label style="display:block; margin-bottom: 5px;">${attr.label}</label>
-                                <input type="${inputType}" 
-                                       name="attr_${attr.id}" 
-                                       class="auth-input" 
-                                       placeholder="Введите ${attr.label.toLowerCase()}">
-                            </div>
-                        `);
-                    });
-                })
-                .catch(error => {
-                    console.error("Критическая ошибка fetch:", error);
-                    attrContainer.innerHTML = '<p style="color: #ff4757;">Ошибка загрузки характеристик. Проверь консоль (F12).</p>';
-                });
-        });
+    if (!categorySelect || !attrContainer) {
+        console.error("КРИТИЧЕСКАЯ ОШИБКА: Поле категории или контейнер атрибутов не найдены в HTML.");
+        return;
     }
 
-    
+    function fetchAttributes() {
+        const categoryId = categorySelect.value;
+        console.log("Выбрана категория с ID:", categoryId);
+        
+        if (!categoryId) {
+            attrContainer.innerHTML = '';
+            return;
+        }
+
+        const url = `/api/category-attributes/${categoryId}/`;
+        console.log("Отправляем запрос на:", url);
+
+        fetch(url)
+            .then(response => {
+                console.log("Статус ответа сервера:", response.status);
+                if (!response.ok) throw new Error('Ошибка сервера: ' + response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log("Получены данные из БД:", data);
+                if (data.length === 0) {
+                    attrContainer.innerHTML = '<p style="color: #888; font-size: 13px;">Для этой категории нет характеристик.</p>';
+                    return;
+                }
+
+                attrContainer.innerHTML = '<h3 style="color: var(--nav-active); margin-bottom: 15px; margin-top: 20px;">Характеристики</h3>';
+                data.forEach(attr => {
+                    const requiredHtml = attr.is_required ? '<span style="color: #ff4757;">*</span>' : '';
+                    const requiredAttr = attr.is_required ? 'required' : '';
+                    
+                    attrContainer.insertAdjacentHTML('beforeend', `
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label style="display:block; margin-bottom: 5px;">${attr.name} ${requiredHtml}</label>
+                            <input type="text" 
+                                   name="attr_${attr.name}" 
+                                   class="auth-input" 
+                                   style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--input-text);"
+                                   ${requiredAttr}
+                                   placeholder="Введите значение...">
+                        </div>
+                    `);
+                });
+            })
+            .catch(error => {
+                console.error("Ошибка Fetch API:", error);
+                attrContainer.innerHTML = '<p style="color: #ff4757;">Сбой запроса. Проверь консоль браузера.</p>';
+            });
+    }
+
+    categorySelect.addEventListener('change', fetchAttributes);
+    // Принудительно вызываем один раз на случай, если категория уже выбрана (например, после обновления страницы)
+    fetchAttributes(); 
 });
 </script>
 {% endblock %}
