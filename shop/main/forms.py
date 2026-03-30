@@ -8,14 +8,13 @@ class RegisterForm(UserCreationForm):
 class ProductForm(forms.ModelForm):
     price = forms.DecimalField(max_digits=19, decimal_places=4, label="Цена (₽)")
     image = forms.ImageField(label="Главное изображение", required=False)
-    stock = forms.IntegerField(min_value=0, label="Остаток (шт.)", initial=1)
+    stock = forms.IntegerField(min_value=0, label="Остаток (шт.)", initial=0)
     
-    # НОВОЕ ПОЛЕ: Выбор склада
     warehouse = forms.ModelChoiceField(
-        queryset=Warehouses.objects.none(), # Изначально пустое, заполним ниже
+        queryset=Warehouses.objects.none(),
         label="Склад отгрузки",
         empty_label="Выберите склад",
-        required=True # Обязательно к заполнению
+        required=True
     )
 
     class Meta:
@@ -23,16 +22,17 @@ class ProductForm(forms.ModelForm):
         fields = ['name', 'category', 'brand', 'description', 'status']
 
     def __init__(self, *args, **kwargs):
-        # 1. Извлекаем юзера (продавца) из аргументов, которые передаст views.py
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         
-        # 2. Фильтруем склады: показываем только активные склады ЭТОГО продавца
-        if user and hasattr(user, 'store_profile'):
+        if user and hasattr(user, 'storeprofile'):
             self.fields['warehouse'].queryset = Warehouses.objects.filter(
-                store=user.store_profile, 
+                store=user.storeprofile, 
                 is_active=True
             )
+            
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'auth-form-input'
 
 class UserEditForm(forms.ModelForm):
     class Meta:

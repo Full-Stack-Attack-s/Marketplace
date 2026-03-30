@@ -1,6 +1,10 @@
-{% extends "base.html"%}
-{% block title%}MainPage{% endblock title %}
+{% extends 'base.html' %}
+{% block title%}Главная страница - OMNI{% endblock title %}
 {% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/catalog.css' %}">
+{% endblock %}
+
 {% block content%}
 <section class="sale-section">
         <div class="carousel">

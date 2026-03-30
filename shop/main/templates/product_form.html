@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-sidebar">
+        <h3>Управление</h3>
+        <p class="store-name">Магазин: {{ request.user.email }}</p>
+        <div class="dashboard-menu">
+            <a href="{% url 'seller_dashboard' %}">📊 Дашборд</a>
+            <a href="{% url 'manage_products' %}">📦 Мои товары</a>
+            <a href="{% url 'seller_profile' %}">👤 Профиль</a>
+            <hr>
+            <a href="/" class="back-link">← Вернуться на сайт</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <div class="dashboard-panel glass-panel auth-wide-container">
+            <h2>{{ title }}</h2>
+            <form method="POST" enctype="multipart/form-data" class="auth-form" style="margin-top: 20px;">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <span class="help-text">{{ field.help_text }}</span>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <span class="error-text">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+
+                <div class="dashboard-card-actions" style="margin-top: 30px; justify-content: flex-start;">
+                    <button type="submit" class="action-btn btn-edit" style="max-width: 200px;">Сохранить товар</button>
+                    <a href="{% url 'manage_products' %}" class="action-btn profile-btn-outline" style="max-width: 200px; display: flex; align-items: center; justify-content: center;">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-sidebar">
+        <h3>Управление</h3>
+        <p class="store-name">Магазин: {{ request.user.email }}</p>
+        <div class="dashboard-menu">
+            <a href="{% url 'seller_dashboard' %}">📊 Дашборд</a>
+            <a href="{% url 'manage_products' %}">📦 Мои товары</a>
+            <a href="{% url 'seller_profile' %}">👤 Профиль</a>
+            <hr>
+            <a href="/" class="back-link">← Вернуться на сайт</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <div class="dashboard-panel glass-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Мои товары</h2>
+                <a href="{% url 'add_product' %}" class="action-btn btn-edit" style="padding: 10px 20px;">+ Создать товар</a>
+            </div>
+
+            <div class="dashboard-grid">
+                {% for product in products %}
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <h4 class="dashboard-card-title">{{ product.name|truncatechars:30 }}</h4>
+                    </div>
+                    
+                    <form action="{% url 'manage_products' %}" method="POST" class="quick-edit-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        
+                        <div class="quick-edit-row">
+                            <span class="quick-edit-label">Цена (₽)</span>
+                            <input type="number" step="0.01" name="price" class="quick-edit-input" value="{{ product.product_variants_set.first.price|stringformat:'f'|slice:':-4' }}">
+                        </div>
+                        
+                        <div class="quick-edit-row" style="margin-top: 10px;">
+                            <span class="quick-edit-label">Статус</span>
+                            <select name="status" class="quick-edit-input">
+                                <option value="active" {% if product.status == 'active' %}selected{% endif %}>Активен</option>
+                                <option value="draft" {% if product.status == 'draft' %}selected{% endif %}>Черновик</option>
+                            </select>
+                        </div>
+                        
+                        <div class="quick-edit-row" style="margin-top: 10px;">
+                            <span class="quick-edit-label">Остаток</span>
+                            <input type="number" name="stock" class="quick-edit-input" value="{{ product.product_variants_set.first.stocks_set.first.quantity|default:'0' }}">
+                        </div>
+
+                        <button type="submit" class="quick-save-btn">Быстрое сохранение</button>
+                    </form>
+
+                    <div class="dashboard-card-actions">
+                        <a href="{% url 'edit_product' product.id %}" class="action-btn btn-edit">Изменить</a>
+                        <form action="{% url 'manage_products' %}" method="POST" class="delete-form" onsubmit="return confirm('Точно удалить?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <button type="submit" name="delete" class="action-btn btn-delete">Удалить</button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="empty-state">У вас пока нет добавленных товаров.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
