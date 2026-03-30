@@ -12,7 +12,7 @@
         <p class="store-name">Пользователь: {{ request.user.email }}</p>
         <div class="dashboard-menu">
             <a href="{% url 'seller_dashboard' %}">📊 Дашборд</a>
-            <a href="#">📦 Мои товары</a>
+            <a href="{% url 'manage_products' %}">📦 Мои товары</a>
             <a href="{% url 'seller_profile' %}">👤 Профиль</a>
             <hr>
             <a href="/" class="back-link">← Вернуться на сайт</a>
@@ -20,67 +20,57 @@
     </div>
 
     <div class="dashboard-content">
-        <div class="profile-layout">
+        <div class="dashboard-panel glass-panel">
+            <h2>Комплексная панель продавца</h2>
             
-            <div class="dashboard-panel glass-panel">
-                <h3 style="margin-bottom: 20px;">Личные данные</h3>
-                <div class="profile-avatar-box">
-                    <span class="profile-avatar-placeholder">👤</span>
+            {% if store_profile.verification_status != 'approved' %}
+                <div class="sales-badge" style="background: rgba(255, 193, 7, 0.15); color: #ffc107; border-color: rgba(255, 193, 7, 0.3); padding: 10px; margin-bottom: 20px; font-size: 13px;">
+                    ⚠️ Ваш магазин не подтвержден. <a href="{% url 'seller_profile' %}" style="color: #ffc107; text-decoration: underline;">Заполните профиль компании</a>, чтобы получить статус проверенного продавца.
                 </div>
-                <form method="POST" class="auth-form">
-                    {% csrf_token %}
-                    {% for field in user_form %}
-                    <div class="form-group">
-                        <label>{{ field.label }}</label>
-                        {{ field }}
-                    </div>
-                    {% endfor %}
-                    <div class="dashboard-card-actions" style="margin-top: 20px;">
-                        <button type="submit" name="update_user" class="action-btn btn-edit">Сохранить профиль</button>
-                    </div>
-                </form>
+            {% endif %}
+
+            <div class="dashboard-grid" style="margin-bottom: 30px;">
+                <div class="dashboard-card">
+                    <p class="dashboard-card-title">Баланс продаж</p>
+                    <p class="dashboard-card-status" style="font-size: 24px; color: var(--nav-active);">₽{{ sales_total|floatformat:2 }}</p>
+                </div>
+                <div class="dashboard-card">
+                    <p class="dashboard-card-title">Активные товары</p>
+                    <p class="dashboard-card-status" style="font-size: 24px; color: var(--text-color);">{{ active_products }}</p>
+                </div>
+                <div class="dashboard-card">
+                    <p class="dashboard-card-title">Новые заказы</p>
+                    <p class="dashboard-card-status" style="font-size: 24px; color: var(--text-color);">{{ new_orders }}</p>
+                </div>
             </div>
 
-            <div class="dashboard-panel glass-panel">
-                <h3 style="margin-bottom: 20px;">Статус магазина</h3>
-                
-                {% if store_profile.verification_status == 'pending' %}
-                    <div class="sales-badge" style="background: rgba(255, 193, 7, 0.15); color: #ffc107; border-color: rgba(255, 193, 7, 0.3); padding: 15px; text-align: center; font-size: 14px;">
-                        Ваша заявка находится на проверке у администрации.
-                    </div>
-                {% elif store_profile.verification_status == 'approved' %}
-                    <div class="sales-badge" style="padding: 15px; text-align: center; font-size: 14px; margin-bottom: 20px;">
-                        Магазин успешно верифицирован ✔️
-                    </div>
-                    <div class="profile-info-card">
-                        <p><span class="label">Компания</span> {{ store_profile.company_name }}</p>
-                        <p><span class="label">ИНН</span> {{ store_profile.inn }}</p>
-                        <p><span class="label">Юр. адрес</span> {{ store_profile.legal_address }}</p>
-                    </div>
-                {% else %}
-                    {% if store_profile.verification_status == 'rejected' %}
-                        <div class="sales-badge" style="background: rgba(255, 71, 87, 0.15); color: #ff4757; border-color: rgba(255, 71, 87, 0.3); padding: 15px; text-align: center; font-size: 14px; margin-bottom: 20px;">
-                            Заявка отклонена. Пожалуйста, исправьте данные и отправьте снова.
-                        </div>
-                    {% else %}
-                        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px;">Для получения статуса проверенного продавца заполните данные о компании.</p>
-                    {% endif %}
-                    
-                    <form method="POST" class="auth-form">
-                        {% csrf_token %}
-                        {% for field in store_form %}
-                        <div class="form-group">
-                            <label>{{ field.label }}</label>
-                            {{ field }}
-                        </div>
+            <h3>Последние заказы</h3>
+            <div class="dashboard-table-wrapper">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Заказ</th>
+                            <th>Товар</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in recent_orders %}
+                        <tr>
+                            <td>#{{ item.order.id }}</td>
+                            <td>{{ item.product_variant.product.name|truncatechars:30 }}</td>
+                            <td class="total-price">₽{{ item.total_price|floatformat:2 }}</td>
+                            <td><span class="sales-badge">{{ item.order.get_status_display }}</span></td>
+                            <td>{{ item.order.created_at|date:"d.m.Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="empty-state">Нет недавних заказов.</td></tr>
                         {% endfor %}
-                        <div class="dashboard-card-actions" style="margin-top: 20px;">
-                            <button type="submit" name="verify_store" class="action-btn btn-edit">Отправить на проверку</button>
-                        </div>
-                    </form>
-                {% endif %}
+                    </tbody>
+                </table>
             </div>
-
         </div>
     </div>
 </div>

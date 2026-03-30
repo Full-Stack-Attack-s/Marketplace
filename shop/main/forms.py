@@ -14,6 +14,10 @@ class StoreVerificationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'auth-form input'
+    # --- ДОБАВЛЯЕМ ПОДСКАЗКИ (PLACEHOLDERS) СЮДА ---
+        self.fields['company_name'].widget.attrs['placeholder'] = 'Например: ООО "Ромашка" или ИП Иванов И.И.'
+        self.fields['inn'].widget.attrs['placeholder'] = 'Формат: 10 или 12 цифр'
+        self.fields['legal_address'].widget.attrs['placeholder'] = 'Например: 123456, г. Москва, ул. Пушкина, д. 1, оф. 2'
 
 class UserProfileForm(forms.ModelForm):
     class Meta:

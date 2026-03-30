@@ -52,7 +52,7 @@
                         
                         <div class="quick-edit-row" style="margin-top: 10px;">
                             <span class="quick-edit-label">Остаток</span>
-                            <input type="number" name="stock" class="quick-edit-input" value="{{ product.product_variants_set.first.stocks_set.first.quantity|default:'0' }}">
+                            <input type="number" name="stock" class="quick-edit-input" value="{{ product.product_variants_set.first.stock.first.quantity|default:'0' }}">
                         </div>
 
                         <button type="submit" class="quick-save-btn">Быстрое сохранение</button>

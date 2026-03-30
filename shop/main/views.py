@@ -65,10 +65,32 @@ from .forms import ProductForm, StoreVerificationForm, UserProfileForm
 def seller_dashboard(request):
     user = request.user
     store_profile, _ = StoreProfiles.objects.get_or_create(user=user)
+    
+    # 1. Активные товары
     active_products = Products.objects.filter(seller=user, status='active').count()
     
+    # 2. Новые заказы (по товарам этого продавца)
+    new_orders = OrderItems.objects.filter(
+        product_variant__product__seller=user, 
+        order__status='pending'
+    ).count()
+    
+    # 3. Общая выручка (только оплаченные/завершенные)
+    sales_total = OrderItems.objects.filter(
+        product_variant__product__seller=user, 
+        order__status__in=['paid', 'completed']
+    ).aggregate(total=Sum('total_price'))['total'] or 0.00
+
+    # 4. Последние заказы
+    recent_orders = OrderItems.objects.filter(
+        product_variant__product__seller=user
+    ).select_related('order', 'product_variant__product').order_by('-order__created_at')[:5]
+
     return render(request, 'seller_dashboard.html', {
         'active_products': active_products,
+        'new_orders': new_orders,
+        'sales_total': sales_total,
+        'recent_orders': recent_orders,
         'store_profile': store_profile,
     })
 
@@ -109,7 +131,7 @@ def get_category_attributes(request, category_id):
     data = [
         {
             "id": a.id, 
-            "name": a.name, 
+            "name": a.label, 
             "is_required": a.is_required 
         } for a in attrs
     ]

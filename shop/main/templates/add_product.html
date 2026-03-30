@@ -44,38 +44,42 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const categorySelect = document.querySelector('#id_category');
-    const attrContainer = document.querySelector('#dynamic-attributes-container'); // Убедись, что ID контейнера совпадает! (в форме должен быть <div id="dynamic-attributes-container">)
+    // Ищем select по имени, так как ID может меняться
+    const categorySelect = document.querySelector('select[name="category"]');
+    const attrContainer = document.querySelector('#dynamic-attributes-container');
 
-    // Если контейнера нет, скрипт упадет. Защита от ошибки:
-    if (!attrContainer) {
-        console.error("Контейнер #dynamic-attributes-container не найден в HTML!");
+    console.log("Скрипт запущен! Select:", categorySelect, "Контейнер:", attrContainer);
+
+    if (!categorySelect || !attrContainer) {
+        console.error("КРИТИЧЕСКАЯ ОШИБКА: Поле категории или контейнер атрибутов не найдены в HTML.");
         return;
     }
 
     function fetchAttributes() {
         const categoryId = categorySelect.value;
+        console.log("Выбрана категория с ID:", categoryId);
+        
         if (!categoryId) {
             attrContainer.innerHTML = '';
             return;
         }
 
-        // ИСПРАВЛЕННЫЙ URL (совпадает с твоим urls.py)
         const url = `/api/category-attributes/${categoryId}/`;
+        console.log("Отправляем запрос на:", url);
 
         fetch(url)
             .then(response => {
+                console.log("Статус ответа сервера:", response.status);
                 if (!response.ok) throw new Error('Ошибка сервера: ' + response.status);
                 return response.json();
             })
             .then(data => {
+                console.log("Получены данные из БД:", data);
                 if (data.length === 0) {
-                    attrContainer.innerHTML = '<p style="color: #888; font-size: 13px;">Для этой категории нет дополнительных характеристик.</p>';
+                    attrContainer.innerHTML = '<p style="color: #888; font-size: 13px;">Для этой категории нет характеристик.</p>';
                     return;
                 }
 
@@ -98,16 +102,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             })
             .catch(error => {
-                console.error("Ошибка Fetch:", error);
-                attrContainer.innerHTML = '<p style="color: #ff4757;">Ошибка загрузки. Нажми F12 и проверь вкладку Console.</p>';
+                console.error("Ошибка Fetch API:", error);
+                attrContainer.innerHTML = '<p style="color: #ff4757;">Сбой запроса. Проверь консоль браузера.</p>';
             });
     }
 
-    if (categorySelect) {
-        categorySelect.addEventListener('change', fetchAttributes);
-        // Вызываем сразу при загрузке, чтобы подтянуть атрибуты для уже выбранной категории
-        fetchAttributes(); 
-    }
+    categorySelect.addEventListener('change', fetchAttributes);
+    // Принудительно вызываем один раз на случай, если категория уже выбрана (например, после обновления страницы)
+    fetchAttributes(); 
 });
 </script>
 {% endblock %}
