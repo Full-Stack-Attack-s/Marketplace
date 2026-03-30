@@ -147,6 +147,9 @@
         border: 2px solid transparent;
         transition: all 0.3s ease;
     }
+    .header-desktop .logo:hover {
+    transform: scale(1.1);
+    }
 
     [data-theme="dark"] .header-desktop .logo {
         border: 2px solid #66d9a8;
@@ -288,6 +291,10 @@
         padding: 4px 8px;
         border-radius: 6px;
         border: 2px solid transparent;
+    }
+
+    .header-mobile .logo:hover {
+        transform: scale(1.1);
     }
 
     [data-theme="dark"] .header-mobile .logo {
