@@ -2,6 +2,7 @@
 {% load static %}
 <html lang="ru">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <title>Marketplace</title>
     
@@ -29,9 +30,17 @@
                     <button class="icon theme-toggle">
                         <span class="theme-icon">🌙</span>
                     </button>
-                    <a href="/accounts/" class="icon profile">
-                        <img src="{% static 'img/icon_profile.png' %}" alt="Профиль">
-                    </a>
+                    {% if request.user.is_authenticated %}
+    {% if request.user.role == 'seller' %}
+        <a href="{% url 'seller_dashboard' %}" class="icon profile">
+    {% else %}
+        <a href="{% url 'profile' %}" class="icon profile">
+    {% endif %}
+{% else %}
+    <a href="{% url 'account_login' %}" class="icon profile">
+{% endif %}
+    <img src="{% static 'img/icon_profile.png' %}" alt="Профиль">
+</a>
                     <a href="/cart" class="icon cart">
                         <img src="{% static 'img/icon_cart.png' %}" alt="Корзина">
                         <span class="cart-count">0</span>
@@ -56,9 +65,17 @@
                     <button class="icon theme-toggle">
                         <span class="theme-icon">🌙</span>
                     </button>
-                    <a href="/accounts/" class="icon profile">
-                        <img src="{% static 'img/icon_profile.png' %}" alt="Профиль">
-                    </a>
+                   {% if request.user.is_authenticated %}
+    {% if request.user.role == 'seller' %}
+        <a href="{% url 'seller_dashboard' %}" class="icon profile">
+    {% else %}
+        <a href="{% url 'profile' %}" class="icon profile">
+    {% endif %}
+{% else %}
+    <a href="{% url 'account_login' %}" class="icon profile">
+{% endif %}
+    <img src="{% static 'img/icon_profile.png' %}" alt="Профиль">
+</a>
                     <a href="/cart" class="icon cart">
                         <img src="{% static 'img/icon_cart.png' %}" alt="Корзина">
                         <span class="cart-count">0</span>
