@@ -3,8 +3,8 @@ from django.db.models import Sum, F, IntegerField
 from django.db.models.functions import Coalesce
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .forms import AddressForm, ProductForm, UserEditForm, UserProfileEditForm
-from .models import Product_variants, Product_images, OrderItems, ProductAttributeValues, Products, UserProfiles, models, CategoryAttributes, Addresses, Stocks, Warehouses # Обязательно добавь этот импорт!
+from .forms import AddressForm, ProductForm, UserProfileEditForm
+from .models import Product_variants, Product_images, OrderItems, ProductAttributeValues, Products, UserProfiles, models, CategoryAttributes, Addresses, Stocks, Warehouses, StoreProfiles # Обязательно добавь этот импорт!
 
 
 # def index(request):
@@ -15,27 +15,7 @@ from .models import Product_variants, Product_images, OrderItems, ProductAttribu
     ## Отправляем в шаблон под тем именем, которое ты используешь в цикле
     # return render(request, "index.html", {"products_variants": variants})
 
-@login_required
-def seller_dashboard(request):
-    user = request.user
-    active_products = Products.objects.filter(seller=user, status='active').count()
-    new_orders = OrderItems.objects.filter(product_variant__product__seller=user, order__status='pending').count()
-    
-    sales_total = OrderItems.objects.filter(
-        product_variant__product__seller=user, 
-        order__status__in=['paid', 'completed']
-    ).aggregate(total=Sum('total_price'))['total'] or 0.00
 
-    recent_orders = OrderItems.objects.filter(
-        product_variant__product__seller=user
-    ).select_related('order', 'product_variant__product').order_by('-order__created_at')[:5]
-
-    return render(request, 'seller_dashboard.html', {
-        'active_products': active_products,
-        'new_orders': new_orders,
-        'sales_total': sales_total,
-        'recent_orders': recent_orders,
-    })
 
 @login_required
 def manage_products(request):
@@ -72,6 +52,69 @@ def manage_products(request):
     products = Products.objects.filter(seller=request.user).prefetch_related('product_variants_set', 'product_images_set').order_by('-created_at')
     return render(request, 'products_list.html', {'products': products})
 
+# ============================================
+# views.py
+# ============================================
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import CategoryAttributes, StoreProfiles, UserProfiles, Products, Product_variants, Stocks, Product_images
+from .forms import ProductForm, StoreVerificationForm, UserProfileForm
+
+@login_required
+def seller_dashboard(request):
+    user = request.user
+    store_profile, _ = StoreProfiles.objects.get_or_create(user=user)
+    active_products = Products.objects.filter(seller=user, status='active').count()
+    
+    return render(request, 'seller_dashboard.html', {
+        'active_products': active_products,
+        'store_profile': store_profile,
+    })
+
+@login_required
+def seller_profile(request):
+    user_profile, _ = UserProfiles.objects.get_or_create(user=request.user)
+    store_profile, _ = StoreProfiles.objects.get_or_create(user=request.user)
+    
+    if request.method == 'POST':
+        if 'update_user' in request.POST:
+            user_form = UserProfileForm(request.POST, instance=user_profile)
+            store_form = StoreVerificationForm(instance=store_profile)
+            if user_form.is_valid():
+                user_form.save()
+                return redirect('seller_profile')
+                
+        elif 'verify_store' in request.POST:
+            user_form = UserProfileForm(instance=user_profile)
+            store_form = StoreVerificationForm(request.POST, instance=store_profile)
+            if store_form.is_valid():
+                store = store_form.save(commit=False)
+                store.verification_status = 'pending'
+                store.save()
+                return redirect('seller_profile')
+    else:
+        user_form = UserProfileForm(instance=user_profile)
+        store_form = StoreVerificationForm(instance=store_profile)
+        
+    return render(request, 'seller_profile.html', {
+        'user_form': user_form,
+        'store_form': store_form,
+        'store_profile': store_profile,
+    })
+
+def get_category_attributes(request, category_id):
+    # Получаем все атрибуты, привязанные к конкретной категории
+    attrs = CategoryAttributes.objects.filter(category_id=category_id)
+    data = [
+        {
+            "id": a.id, 
+            "name": a.name, 
+            "is_required": a.is_required 
+        } for a in attrs
+    ]
+    return JsonResponse(data, safe=False)
+
 @login_required
 def add_product(request):
     if request.method == 'POST':
@@ -85,7 +128,21 @@ def add_product(request):
             stock_qty = form.cleaned_data.get('stock', 0)
             selected_warehouse = form.cleaned_data.get('warehouse')
 
-            variant = Product_variants.objects.create(product=product, price=price)
+            # --- НАЧАЛО НОВОЙ ЛОГИКИ СБОРА АТРИБУТОВ ---
+            dynamic_attributes = {}
+            for key, value in request.POST.items():
+                if key.startswith('attr_') and value.strip():
+                    attr_name = key.replace('attr_', '')
+                    dynamic_attributes[attr_name] = value
+            # --- КОНЕЦ НОВОЙ ЛОГИКИ ---
+
+            # СОХРАНЯЕМ АТРИБУТЫ В ВАРИАНТ ТОВАРА
+            variant = Product_variants.objects.create(
+                product=product, 
+                price=price,
+                attributes=dynamic_attributes # <--- ЭТОГО НЕ БЫЛО
+            )
+            
             if selected_warehouse:
                 Stocks.objects.create(product_variant=variant, warehouse=selected_warehouse, quantity=stock_qty)
 
@@ -96,7 +153,7 @@ def add_product(request):
             return redirect('manage_products')
     else:
         form = ProductForm(user=request.user)
-    return render(request, 'product_form.html', {'form': form, 'title': 'Добавить товар'})
+    return render(request, 'add_product.html', {'form': form, 'title': 'Добавить товар'})
 
 @login_required
 def edit_product(request, product_id):
@@ -108,15 +165,27 @@ def edit_product(request, product_id):
         form = ProductForm(request.POST, request.FILES, instance=product, user=request.user)
         if form.is_valid():
             form.save()
+            
             price = form.cleaned_data.get('price', 0)
             stock_qty = form.cleaned_data.get('stock', 0)
             selected_warehouse = form.cleaned_data.get('warehouse')
 
+            dynamic_attributes = {}
+            for key, value in request.POST.items():
+                if key.startswith('attr_') and value.strip():
+                    attr_name = key.replace('attr_', '')
+                    dynamic_attributes[attr_name] = value
+
             if variant:
                 variant.price = price
+                variant.attributes = dynamic_attributes
                 variant.save()
             else:
-                variant = Product_variants.objects.create(product=product, price=price)
+                variant = Product_variants.objects.create(
+                    product=product, 
+                    price=price,
+                    attributes=dynamic_attributes
+                )
 
             if selected_warehouse:
                 Stocks.objects.update_or_create(
@@ -144,12 +213,9 @@ def edit_product(request, product_id):
                 initial_data['warehouse'] = stock_record.warehouse
         form = ProductForm(instance=product, initial=initial_data, user=request.user)
 
-    return render(request, 'product_form.html', {'form': form, 'title': 'Редактировать товар', 'product': product})
+    return render(request, 'add_product.html', {'form': form, 'title': 'Редактировать товар', 'product': product, 'variant': variant})
 
-@login_required
-def seller_profile(request):
-    profile, created = UserProfiles.objects.get_or_create(user=request.user)
-    return render(request, 'seller_dashboard.html', {'profile': profile, 'is_profile': True})
+
 
 @login_required
 def profile(request):

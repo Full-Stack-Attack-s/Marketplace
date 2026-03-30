@@ -3,7 +3,6 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<link rel="stylesheet" href="{% static 'css/auth.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -13,7 +12,7 @@
         <p class="store-name">Магазин: {{ request.user.email }}</p>
         <div class="dashboard-menu">
             <a href="{% url 'seller_dashboard' %}">📊 Дашборд</a>
-            <a href="{% url 'manage_products' %}">📦 Мои товары</a>
+            <a href="#">📦 Мои товары</a>
             <a href="{% url 'seller_profile' %}">👤 Профиль</a>
             <hr>
             <a href="/" class="back-link">← Вернуться на сайт</a>
@@ -21,7 +20,7 @@
     </div>
 
     <div class="dashboard-content">
-        <div class="dashboard-panel glass-panel auth-wide-container">
+        <div class="dashboard-panel glass-panel">
             <h2>{{ title }}</h2>
             <form method="POST" enctype="multipart/form-data" class="auth-form" style="margin-top: 20px;">
                 {% csrf_token %}
@@ -30,21 +29,60 @@
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
-                    {% if field.help_text %}
-                        <span class="help-text">{{ field.help_text }}</span>
-                    {% endif %}
-                    {% for error in field.errors %}
-                        <span class="error-text">{{ error }}</span>
-                    {% endfor %}
                 </div>
                 {% endfor %}
 
+                <div id="dynamic-attributes-container" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                    </div>
+
                 <div class="dashboard-card-actions" style="margin-top: 30px; justify-content: flex-start;">
                     <button type="submit" class="action-btn btn-edit" style="max-width: 200px;">Сохранить товар</button>
-                    <a href="{% url 'manage_products' %}" class="action-btn profile-btn-outline" style="max-width: 200px; display: flex; align-items: center; justify-content: center;">Отмена</a>
+                    <a href="#" class="action-btn profile-btn-outline" style="max-width: 200px; display: flex; align-items: center; justify-content: center;">Отмена</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const categorySelect = document.getElementById("id_category");
+        const attributesContainer = document.getElementById("dynamic-attributes-container");
+
+        if (categorySelect) {
+            categorySelect.addEventListener("change", function() {
+                const categoryId = this.value;
+                attributesContainer.innerHTML = ''; // Очищаем контейнер
+
+                if (categoryId) {
+                    fetch(`/api/category-attributes/${categoryId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.length > 0) {
+                                let html = '<h4 style="margin-bottom: 15px;">Специфичные характеристики</h4>';
+                                data.forEach(attr => {
+                                    const requiredObj = attr.is_required ? 'required' : '';
+                                    const reqLabel = attr.is_required ? '*' : '';
+                                    
+                                    html += `
+                                        <div class="form-group">
+                                            <label>${attr.name} <span style="color: #ff4757;">${reqLabel}</span></label>
+                                            <input type="text" name="attr_${attr.name}" ${requiredObj} 
+                                                class="auth-form input" 
+                                                style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--input-text); margin-top: 5px;" 
+                                                placeholder="Введите значение...">
+                                        </div>
+                                    `;
+                                });
+                                attributesContainer.innerHTML = html;
+                            }
+                        })
+                        .catch(error => console.error('Ошибка загрузки атрибутов:', error));
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
 {% endblock %}

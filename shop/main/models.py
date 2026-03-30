@@ -314,7 +314,6 @@ class Users(AbstractBaseUser, PermissionsMixin):
     role = models.CharField("Роль", max_length=20, choices=ROLE_CHOICES, default='buyer')
     is_active = models.BooleanField("Активен", default=True)
     is_staff = models.BooleanField("Доступ в админку", default=False)
-    phone_number = models.CharField("Телефон", max_length=20, null=True, blank=True)
 
     objects = CustomUserManagers()
 
@@ -336,6 +335,7 @@ class UserProfiles(models.Model):
     last_name = models.CharField("Фамилия", max_length=50, null=True, blank=True)
     birth_date = models.DateField("Дата рождения", null=True, blank=True)
     avatar = models.ImageField("Аватар", upload_to='avatars/', null=True, blank=True)
+    phone_number = models.CharField("Телефон", max_length=20, null=True, blank=True)
     # preferences = models.JSONField("Настройки", default=dict, blank=True) 
     # TODO: сделать при переходе на PostgreSQL
     created_at = models.DateTimeField("Дата создания", auto_now_add=True)
@@ -366,6 +366,12 @@ class Addresses(models.Model):
         verbose_name_plural = "Адреса"
 class StoreProfiles(models.Model):
     # PK и FK одновременно: жесткая привязка к пользователю 1:1
+    STATUS_CHOICES = (
+        ('unverified', 'Не подтвержден'),
+        ('pending', 'На проверке'),
+        ('approved', 'Подтвержден'),
+        ('rejected', 'Отклонен'),
+    )
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
@@ -373,8 +379,10 @@ class StoreProfiles(models.Model):
         related_name='store_profile',
         verbose_name="Пользователь (Продавец)"
     )
-    
-    company_name = models.CharField("Название компании", max_length=255) # NN (Not Null)
+    company_name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Название компании")
+    inn = models.CharField(max_length=12, blank=True, null=True, verbose_name="ИНН")
+    legal_address = models.TextField(blank=True, null=True, verbose_name="Юридический адрес")
+    verification_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='unverified', verbose_name="Статус верификации")
     description = models.TextField("Описание", null=True, blank=True)
     logo = models.ImageField("Логотип", upload_to='store_logos/', null=True, blank=True)
     
@@ -382,8 +390,6 @@ class StoreProfiles(models.Model):
     # rating = models.DecimalField("Рейтинг", max_digits=3, decimal_places=2, default=0.00) 
     # Отзывы и рейтинг не делаем, но если захотим база будет
     
-    address = models.TextField("Юридический адрес", null=True, blank=True)
-    is_verified = models.BooleanField("Верифицирован", default=False)
     created_at = models.DateTimeField("Дата создания", auto_now_add=True)
 
     class Meta:

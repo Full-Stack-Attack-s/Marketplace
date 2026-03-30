@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-sidebar">
+        <h3>Управление</h3>
+        <p class="store-name">Пользователь: {{ request.user.email }}</p>
+        <div class="dashboard-menu">
+            <a href="{% url 'seller_dashboard' %}">📊 Дашборд</a>
+            <a href="{% url 'manage_products' %}">📦 Мои товары</a>
+            <a href="{% url 'seller_profile' %}">👤 Профиль</a>
+            <hr>
+            <a href="/" class="back-link">← Вернуться на сайт</a>
+        </div>
+    </div>
+
+    <div class="dashboard-content profile-layout">
+        <div class="dashboard-panel glass-panel">
+            <h3>Личные данные</h3>
+            <div class="profile-avatar-box">
+                <span class="profile-avatar-placeholder">👤</span>
+            </div>
+            <form method="POST" class="auth-form">
+                {% csrf_token %}
+                {% for field in user_form %}
+                <div class="form-group">
+                    <label>{{ field.label }}</label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+                <div class="profile-actions-grid">
+                    <button type="submit" name="update_user" class="action-btn btn-edit">Сохранить профиль</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="dashboard-panel glass-panel">
+            <h3>Статус магазина</h3>
+            
+            {% if store_profile.verification_status == 'pending' %}
+                <div class="sales-badge pending-badge">
+                    Ваша заявка находится на проверке у администрации.
+                </div>
+            {% elif store_profile.verification_status == 'approved' %}
+                <div class="sales-badge approved-badge">
+                    Магазин успешно верифицирован ✔️
+                </div>
+                <div class="profile-info-card">
+                    <p><span class="label">Компания</span> {{ store_profile.company_name }}</p>
+                    <p><span class="label">ИНН</span> {{ store_profile.inn }}</p>
+                    <p><span class="label">Юр. адрес</span> {{ store_profile.legal_address }}</p>
+                </div>
+            {% else %}
+                {% if store_profile.verification_status == 'rejected' %}
+                    <div class="sales-badge rejected-badge">
+                        Заявка отклонена. Пожалуйста, исправьте данные и отправьте снова.
+                    </div>
+                {% endif %}
+                
+                <form method="POST" class="auth-form">
+                    {% csrf_token %}
+                    {% for field in store_form %}
+                    <div class="form-group">
+                        <label>{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                    {% endfor %}
+                    <div class="profile-actions-grid">
+                        <button type="submit" name="verify_store" class="action-btn btn-edit">Отправить на проверку</button>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

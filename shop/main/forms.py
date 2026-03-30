@@ -1,9 +1,29 @@
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-from .models import Addresses, Products, Users, UserProfiles, Warehouses # Подставь точное название своей модели товара
+from .models import Addresses, Products, Users, UserProfiles, Warehouses, StoreProfiles # Подставь точное название своей модели товара
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
+
+class StoreVerificationForm(forms.ModelForm):
+    class Meta:
+        model = StoreProfiles
+        fields = ['company_name', 'inn', 'legal_address']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'auth-form input'
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfiles
+        fields = ['first_name', 'last_name', 'phone_number']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'auth-form input'
 
 class ProductForm(forms.ModelForm):
     price = forms.DecimalField(max_digits=19, decimal_places=4, label="Цена (₽)")
@@ -25,19 +45,15 @@ class ProductForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         
-        if user and hasattr(user, 'storeprofile'):
+        if user and hasattr(user, 'store_profile'):
             self.fields['warehouse'].queryset = Warehouses.objects.filter(
-                store=user.storeprofile, 
+                store=user.store_profile, 
                 is_active=True
             )
             
-        for field_name, field in self.fields.items():
-            field.widget.attrs['class'] = 'auth-form-input'
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'auth-form input'
 
-class UserEditForm(forms.ModelForm):
-    class Meta:
-        model = Users
-        fields = ['phone_number']
 
 class UserProfileEditForm(forms.ModelForm):
     class Meta:
