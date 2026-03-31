@@ -14,81 +14,89 @@
 <body class="body">
     <!-- ШАПКА ДЛЯ КОМПЬЮТЕРА -->
     <header class="header header-desktop">
-        <div class="header-content-desktop">
-            <a href="/" class="logo">OMNI</a>
+    <div class="header-content-desktop">
+        <a href="/" class="logo">OMNI</a>
 
-            <!-- Кнопка Каталог -->
-            <a href="/catalog" class="catalog"></a>
+        <!-- Кнопка Каталог -->
+        <a href="/catalog" class="catalog"></a>
 
-            <div class="search-box">
-                <input type="text" placeholder="Найти на OMNI">
-            </div>
-
-            <nav class="navigation">
-                <div class="header-icons">
-                    <!-- Кнопка смены темы -->
-                    <button class="icon theme-toggle">
-                        <span class="theme-icon">🌙</span>
-                    </button>
-                    {% if request.user.is_authenticated %}
-    {% if request.user.role == 'seller' %}
-        <a href="{% url 'seller_dashboard' %}" class="icon profile">
-    {% else %}
-        <a href="{% url 'profile' %}" class="icon profile">
-    {% endif %}
-{% else %}
-    <a href="{% url 'account_login' %}" class="icon profile">
-{% endif %}
-    <img src="{% static 'img/icon_profile.png' %}" alt="Профиль">
-</a>
-                    <a href="/cart" class="icon cart">
-                        <img src="{% static 'img/icon_cart.png' %}" alt="Корзина">
-                        <span class="cart-count">0</span>
-                    </a>
-                </div>
-            </nav>
-        </div>
-    </header>
-
-    <!-- ШАПКА ДЛЯ ТЕЛЕФОНА -->
-    <header class="header header-mobile">
-        <!-- Первый ряд: Логотип + Каталог + Иконки -->
-        <div class="header-top-row">
-            <a href="/" class="logo">OMNI</a>
-
-            <!-- Кнопка Каталог рядом с логотипом -->
-            <a href="/catalog" class="catalog-mobile"></a>
-
-            <nav class="navigation">
-                <div class="header-icons">
-                    <!-- Кнопка смены темы -->
-                    <button class="icon theme-toggle">
-                        <span class="theme-icon">🌙</span>
-                    </button>
-                   {% if request.user.is_authenticated %}
-    {% if request.user.role == 'seller' %}
-        <a href="{% url 'seller_dashboard' %}" class="icon profile">
-    {% else %}
-        <a href="{% url 'profile' %}" class="icon profile">
-    {% endif %}
-{% else %}
-    <a href="{% url 'account_login' %}" class="icon profile">
-{% endif %}
-    <img src="{% static 'img/icon_profile.png' %}" alt="Профиль">
-</a>
-                    <a href="/cart" class="icon cart">
-                        <img src="{% static 'img/icon_cart.png' %}" alt="Корзина">
-                        <span class="cart-count">0</span>
-                    </a>
-                </div>
-            </nav>
-        </div>
-
-        <!-- Второй ряд: Поиск -->
         <div class="search-box">
             <input type="text" placeholder="Найти на OMNI">
         </div>
-    </header>
+
+        <nav class="navigation">
+            <div class="header-icons">
+                <!-- Кнопка смены темы -->
+                <button class="icon theme-toggle">
+                    <span class="theme-icon">🌙</span>
+                </button>
+
+                {% if request.user.is_authenticated %}
+                    {% if request.user.role == 'seller' %}
+                        {% url 'seller_dashboard' as profile_url %}
+                    {% else %}
+                        {% url 'profile' as profile_url %}
+                    {% endif %}
+                {% else %}
+                    {% url 'account_login' as profile_url %}
+                {% endif %}
+
+                <a href="{{ profile_url }}" class="icon profile">
+                    <img src="{% static 'img/icon_profile.png' %}" alt="Профиль">
+                </a>
+
+                <a href="/cart" class="icon cart">
+                    <img src="{% static 'img/icon_cart.png' %}" alt="Корзина">
+                    <span class="cart-count">0</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<!-- ШАПКА ДЛЯ ТЕЛЕФОНА -->
+<header class="header header-mobile">
+    <!-- Первый ряд: Логотип + Каталог + Иконки -->
+    <div class="header-top-row">
+        <a href="/" class="logo">OMNI</a>
+
+        <!-- Кнопка Каталог рядом с логотипом -->
+        <a href="/catalog" class="catalog-mobile"></a>
+
+        <nav class="navigation">
+            <div class="header-icons">
+                <!-- Кнопка смены темы -->
+                <button class="icon theme-toggle">
+                    <span class="theme-icon">🌙</span>
+                </button>
+
+                {% if request.user.is_authenticated %}
+                    {% if request.user.role == 'seller' %}
+                        {% url 'seller_dashboard' as profile_url %}
+                    {% else %}
+                        {% url 'profile' as profile_url %}
+                    {% endif %}
+                {% else %}
+                    {% url 'account_login' as profile_url %}
+                {% endif %}
+
+                <a href="{{ profile_url }}" class="icon profile">
+                    <img src="{% static 'img/icon_profile.png' %}" alt="Профиль">
+                </a>
+
+                <a href="/cart" class="icon cart">
+                    <img src="{% static 'img/icon_cart.png' %}" alt="Корзина">
+                    <span class="cart-count">0</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Второй ряд: Поиск -->
+    <div class="search-box">
+        <input type="text" placeholder="Найти на OMNI">
+    </div>
+</header>
 
     <!-- Основной контент -->
     <div class="container">
