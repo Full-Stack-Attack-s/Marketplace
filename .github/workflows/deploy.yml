@@ -1,0 +1,39 @@
+name: Deploy OMNI to VPS
+
+on:
+  push:
+    branches:
+      - main # Скрипт сработает только при пуше в ветку main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connect to server and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            # 1. Переходим в папку с проектом
+            cd /var/www/mp
+            
+            # 2. Забираем свежий код из GitHub
+            git pull origin main
+            
+            # 3. Включаем виртуальное окружение
+            source venv/bin/activate
+            
+            # 4. Обновляем библиотеки (если появились новые)
+            pip install -r requirements.txt
+            
+            # 5. Переходим к manage.py
+            cd shop
+            
+            # 6. Обновляем базу данных и статику (без запроса yes/no)
+            python manage.py migrate
+            python manage.py collectstatic --noinput
+            
+            # 7. Перезагружаем Python-сервер, чтобы применить новый код
+            systemctl restart 
