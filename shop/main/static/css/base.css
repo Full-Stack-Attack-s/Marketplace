@@ -465,12 +465,12 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-indicator p { color: var(--text-secondary); font-size: 14px; margin: 0; }
 
-    @media (max-width: 768px) {
-        .header-mobile { display: block; }
-        .header-desktop { display: none; }
-        .footer-grid { grid-template-columns: 1fr; gap: 30px; }
-        .site-footer { padding: 40px 0 20px; margin-top: 40px; }
-    }
+   /* СТАЛО (ПРАВИЛЬНО) */
+    @media (min-width: 769px) {
+        .header-desktop { display: flex; } /* Лучше использовать flex, так как внутри flex-контейнер */
+        .header-mobile { display: none; }
+        .body { padding-bottom: 0; }
+}
 
     @media (min-width: 1025px) {
         .header-desktop { display: block; }
