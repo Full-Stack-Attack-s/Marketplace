@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 2. Жестко указываем Питону точный путь до файла .env
 load_dotenv(BASE_DIR / '.env')
 ACCOUNT_RATE_LIMITS = {}
-
+ACCOUNT_LOGIN_ATTEMPTS_LIMIT = None
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -209,20 +209,3 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Прямой редирект в Google без промежуточных страниц
 SOCIALACCOUNT_LOGIN_ON_GET = True
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django.security.csrf': {
-            'handlers': ['console'],
-            'level': 'WARNING',
-            'propagate': True,
-        },
-    },
-}
