@@ -18,17 +18,13 @@ from dotenv import load_dotenv
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # То же самое с дебагом (очень полезно для продакшена)
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = True
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 1. Читаем спрятанные ключи
-# 2. Жестко указываем Питону точный путь до файла .env
-load_dotenv(BASE_DIR / '.env')
-ACCOUNT_RATE_LIMITS = {}
-ACCOUNT_LOGIN_ATTEMPTS_LIMIT = None
 
+load_dotenv(BASE_DIR / '.env')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -37,11 +33,12 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 SITE_ID = 1
-ALLOWED_HOSTS = [ 'bdsm-a.ru', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['bdsm-a.ru', 'www.bdsm-a.ru', '159.194.215.89', 'localhost', '127.0.0.1']
 
 
 CSRF_TRUSTED_ORIGINS = [
     'https://bdsm-a.ru',
+    'https://www.bdsm-a.ru',
 ]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -49,9 +46,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # Заставляем Django брать правильный домен из прокси Nginx
 USE_X_FORWARDED_HOST = True
 
-# Жестко требуем передавать куки только по защищенному каналу
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+
 
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
@@ -86,6 +81,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'shop.middleware.FixIPMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -209,3 +205,16 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Прямой редирект в Google без промежуточных страниц
 SOCIALACCOUNT_LOGIN_ON_GET = True
+
+# Если у вас HTTPS через Nginx:
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# Важно для работы за прокси:
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+
+ACCOUNT_RATE_LIMITS = {}
+ACCOUNT_LOGIN_ATTEMPTS_LIMIT = None
+ACCOUNT_RATE_LIMITS = {}
+ACCOUNT_LOGIN_ATTEMPTS_LIMIT = None
