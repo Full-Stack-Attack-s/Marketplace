@@ -47,6 +47,13 @@ CSRF_TRUSTED_ORIGINS = [
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# Заставляем Django брать правильный домен из прокси Nginx
+USE_X_FORWARDED_HOST = True
+
+# Жестко требуем передавать куки только по защищенному каналу
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
