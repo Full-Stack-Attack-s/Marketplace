@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    
+    <section class="profile-header">
+        <div class="profile-avatar-wrapper">
+            <img src="{% static 'img/icon_profile.png' %}" alt="Аватар профиля" class="profile-avatar">
+        </div>
+        <div class="profile-info">
+            <h1 class="profile-email">
+                {% if user.is_authenticated %}{{ user.email }}{% else %}Гость{% endif %}
+            </h1>
+            <span class="profile-badge">Покупатель</span>
+        </div>
+    </section>
+
+    <section class="profile-navigation">
+        <div class="profile-grid">
+            <a href="#" class="profile-card">
+                <div class="card-icon">📦</div>
+                <h3>Мои заказы</h3>
+                <p>История и отслеживание</p>
+            </a>
+            
+            <a href="#" class="profile-card">
+                <div class="card-icon">❤️</div>
+                <h3>Избранное</h3>
+                <p>Сохраненные товары</p>
+            </a>
+            
+            <a href="#" class="profile-card">
+                <div class="card-icon">📍</div>
+                <h3>Адреса доставки</h3>
+                <p>Управление адресами</p>
+            </a>
+            
+            <a href="#" class="profile-card">
+                <div class="card-icon">⚙️</div>
+                <h3>Настройки</h3>
+                <p>Личные данные и пароль</p>
+            </a>
+        </div>
+    </section>
+
+    <section class="profile-danger-zone">
+        <a href="{% url 'account_logout' %}" class="btn-logout">Выйти из аккаунта</a>
+    </section>
+
+</div>
+{% endblock content %}

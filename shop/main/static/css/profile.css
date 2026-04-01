@@ -1,0 +1,187 @@
+/* ============================================ */
+/* PROFILE.CSS */
+/* ============================================ */
+
+.profile-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* --- Секция инфо --- */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px var(--shadow-medium);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.profile-avatar-wrapper {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--bg-color); /* Имитация рамки или фона */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 2px solid var(--nav-active);
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profile-email {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-color);
+    word-break: break-all;
+}
+
+.profile-badge {
+    display: inline-block;
+    align-self: flex-start;
+    background: var(--button-gradient);
+    color: var(--button-text, #000000); /* Перестраховка для цвета текста */
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* --- Сетка карточек --- */
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.profile-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 25px 20px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    box-shadow: 0 4px 10px var(--shadow-light);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.profile-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px var(--shadow-medium);
+    border-color: var(--nav-active);
+}
+
+.card-icon {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.profile-card h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.profile-card p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* --- Опасная зона --- */
+.profile-danger-zone {
+    margin-top: 10px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-logout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--cart-badge, #ff4757); /* Цвет из переменной или фоллбэк */
+    border: 2px solid var(--cart-badge, #ff4757);
+    padding: 12px 28px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+    background: var(--cart-badge, #ff4757);
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(255, 71, 87, 0.3);
+}
+
+/* ============================================ */
+/* АДАПТИВНОСТЬ                                 */
+/* ============================================ */
+
+/* Планшеты (до 1024px) */
+@media (max-width: 1024px) {
+    .profile-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Телефоны (до 768px) */
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 25px 20px;
+    }
+
+    .profile-badge {
+        align-self: center; /* Центрируем бейдж */
+    }
+
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-card {
+        align-items: center;
+        text-align: center;
+    }
+
+    .profile-danger-zone {
+        justify-content: center;
+    }
+
+    .btn-logout {
+        width: 100%;
+    }
+}
