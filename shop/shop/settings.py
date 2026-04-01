@@ -37,8 +37,6 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 SITE_ID = 1
 ALLOWED_HOSTS = ['www.bdsm-a.ru', 'bdsm-a.ru', 'localhost', '127.0.0.1']
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
 
 CSRF_TRUSTED_ORIGINS = [
     'https://bdsm-a.ru',
