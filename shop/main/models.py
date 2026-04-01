@@ -71,7 +71,7 @@ class Brands(models.Model):
             super().save(update_fields=['slug']) # Перезаписываем только слаг
 
     def __str__(self):
-        return self.name
+        return str(self.name) if self.name else "Без названия"
     
     class Meta:
         verbose_name = "Бренд"
@@ -124,7 +124,7 @@ class Products(models.Model):
             super().save(update_fields=['slug'])
 
     def __str__(self):
-        return self.name
+        return str(self.name) if self.name else "Без названия"
     
     @property
     def main_image_url(self):
@@ -397,7 +397,7 @@ class StoreProfiles(models.Model):
         verbose_name_plural = "Профили магазинов"
 
     def __str__(self):
-        return self.company_name
+        return str(self.company_name) if self.company_name else "Без названия"
     
 # Сигнал для автоматического создания профилей при регистрации нового пользователя
 @receiver(post_save, sender=Users)
