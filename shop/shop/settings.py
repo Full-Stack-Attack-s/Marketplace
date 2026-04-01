@@ -40,6 +40,7 @@ ALLOWED_HOSTS = ['www.bdsm-a.ru', 'bdsm-a.ru', 'localhost', '127.0.0.1']
 # Говорим Django доверять запросам с твоих HTTPS-доменов
 CSRF_TRUSTED_ORIGINS = [
     'https://bdsm-a.ru',
+    'https://www.bdsm-a.ru',
 ]
 
 # Учим Django понимать, что Nginx уже обеспечил HTTPS-соединение
