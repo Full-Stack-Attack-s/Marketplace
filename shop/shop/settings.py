@@ -18,7 +18,8 @@ from dotenv import load_dotenv
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # То же самое с дебагом (очень полезно для продакшена)
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+# DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = True
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
