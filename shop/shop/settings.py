@@ -37,12 +37,11 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 SITE_ID = 1
-ALLOWED_HOSTS = ['www.bdsm-a.ru', 'bdsm-a.ru', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [ 'bdsm-a.ru', 'localhost', '127.0.0.1']
 
 
 CSRF_TRUSTED_ORIGINS = [
     'https://bdsm-a.ru',
-    'https://www.bdsm-a.ru',
 ]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -210,3 +209,20 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Прямой редирект в Google без промежуточных страниц
 SOCIALACCOUNT_LOGIN_ON_GET = True
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.security.csrf': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': True,
+        },
+    },
+}
