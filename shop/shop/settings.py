@@ -18,14 +18,15 @@ from dotenv import load_dotenv
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # То же самое с дебагом (очень полезно для продакшена)
-# DEBUG = os.getenv('DEBUG', 'False') == 'True'
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 1. Читаем спрятанные ключи
 # 2. Жестко указываем Питону точный путь до файла .env
 load_dotenv(BASE_DIR / '.env')
+ACCOUNT_RATE_LIMITS = {}
 
 
 # Quick-start development settings - unsuitable for production
