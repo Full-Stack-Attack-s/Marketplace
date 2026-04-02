@@ -150,23 +150,40 @@ def add_product(request):
             stock_qty = form.cleaned_data.get('stock', 0)
             selected_warehouse = form.cleaned_data.get('warehouse')
 
-            # --- НАЧАЛО НОВОЙ ЛОГИКИ СБОРА АТРИБУТОВ ---
-            dynamic_attributes = {}
-            for key, value in request.POST.items():
-                if key.startswith('attr_') and value.strip():
-                    attr_name = key.replace('attr_', '')
-                    dynamic_attributes[attr_name] = value
-            # --- КОНЕЦ НОВОЙ ЛОГИКИ ---
-
-            # СОХРАНЯЕМ АТРИБУТЫ В ВАРИАНТ ТОВАРА
+            # 1. СОЗДАЕМ ВАРИАНТ (БЕЗ аргумента attributes)
             variant = Product_variants.objects.create(
                 product=product, 
-                price=price,
-                attributes=dynamic_attributes # <--- ЭТОГО НЕ БЫЛО
+                price=price
             )
             
+            # 2. СОХРАНЯЕМ ДИНАМИЧЕСКИЕ АТРИБУТЫ (в ProductAttributeValues)
+            for key, value in request.POST.items():
+                if key.startswith('attr_') and value.strip():
+                    attr_label = key.replace('attr_', '')
+                    
+                    try:
+                        # Ищем определение атрибута по названию и категории товара
+                        attribute_def = CategoryAttributes.objects.get(
+                            label=attr_label, 
+                            category=product.category
+                        )
+                        
+                        # Сохраняем значение, привязывая его к ПРОДУКТУ (как в твоей модели)
+                        ProductAttributeValues.objects.update_or_create(
+                            product=product,
+                            attribute=attribute_def,
+                            defaults={'value': value}
+                        )
+                    except CategoryAttributes.DoesNotExist:
+                        continue
+
+            # 3. ОСТАТКИ И КАРТИНКИ
             if selected_warehouse:
-                Stocks.objects.create(product_variant=variant, warehouse=selected_warehouse, quantity=stock_qty)
+                Stocks.objects.create(
+                    product_variant=variant, 
+                    warehouse=selected_warehouse, 
+                    quantity=stock_qty
+                )
 
             image = form.cleaned_data.get('image')
             if image:
