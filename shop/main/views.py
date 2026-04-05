@@ -350,6 +350,9 @@ def profile(request):
     return render(request, "profile.html")
 def cards(request):
     return render(request, "cards.html")
+def product_detail(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
+    return render(request, 'cards.html', {'product': product})
 def catalog(request):
     return render(request, "catalog.html")
 

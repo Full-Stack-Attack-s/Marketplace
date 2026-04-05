@@ -10,6 +10,7 @@ urlpatterns = [
     path("cards/", views.cards, name="cards"),
     path("catalog/", views.catalog, name="catalog"),
     path('accounts/', include('allauth.urls')),
+    path("product/<int:product_id>/", views.product_detail, name="product_detail"),
     path('get-attributes/<int:category_id>/', views.get_attributes, name='get_attributes'),
     path('quick-update/<int:product_id>/', views.quick_update_product, name='quick_update_product'),
     path('seller/products/', views.manage_products, name='manage_products'),
