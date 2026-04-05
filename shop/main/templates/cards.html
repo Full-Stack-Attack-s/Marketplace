@@ -426,18 +426,18 @@
 <!-- СКРИПТ ДЛЯ ГАЛЕРЕИ -->
 <script>
     // Переключение главного фото при клике на миниатюру
-    const thumbnails = document.querySelectorAll('.thumbnail');
-    const mainImage = document.getElementById('mainImageSrc');
+const thumbnails = document.querySelectorAll('.thumbnail');
+const mainImage = document.getElementById('mainImageSrc');
 
-    thumbnails.forEach(thumb => {
+thumbnails.forEach(thumb => {
     thumb.addEventListener('click', function() {
         // Убираем active у всех миниатюр
         thumbnails.forEach(t => t.classList.remove('active'));
         // Добавляем active текущей
         this.classList.add('active');
-        // Меняем главное фото (с безопасной проверкой)
+        // Меняем главное фото с проверкой на опасные символы
         const newImageSrc = this.getAttribute('data-image');
-        if (newImageSrc) {
+        if (newImageSrc && !newImageSrc.includes('<') && !newImageSrc.includes('>')) {
             mainImage.src = newImageSrc;
         }
     });
