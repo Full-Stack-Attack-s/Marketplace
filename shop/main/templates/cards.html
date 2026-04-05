@@ -425,12 +425,11 @@
 
 <!-- СКРИПТ ДЛЯ ГАЛЕРЕИ -->
 <script>
+// Переключение главного фото при клике на миниатюру
 document.addEventListener('DOMContentLoaded', function() {
-    // Переключение главного фото при клике на миниатюру
     const thumbnails = document.querySelectorAll('.thumbnail');
     const mainImage = document.getElementById('mainImageSrc');
 
-    // Проверяем, что элементы существуют
     if (!thumbnails.length || !mainImage) return;
 
     thumbnails.forEach(thumb => {
@@ -441,8 +440,20 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
             // Меняем главное фото
             const newImageSrc = this.getAttribute('data-image');
-            if (newImageSrc && !newImageSrc.includes('<') && !newImageSrc.includes('>')) {
-                mainImage.setAttribute('src', newImageSrc);
+            if (newImageSrc) {
+                // Безопасный способ: создаём новый URL объект
+                try {
+                    const url = new URL(newImageSrc, window.location.origin);
+                    // Проверяем, что это изображение (разрешаем только jpg, png, webp, gif)
+                    if (url.pathname.match(/\.(jpg|jpeg|png|webp|gif)$/i)) {
+                        mainImage.src = url.href;
+                    }
+                } catch(e) {
+                    // Если невалидный URL, пробуем как относительный
+                    if (newImageSrc.match(/^\/[a-zA-Z0-9\/\-_.]+\.(jpg|jpeg|png|webp|gif)$/i)) {
+                        mainImage.src = newImageSrc;
+                    }
+                }
             }
         });
     });
