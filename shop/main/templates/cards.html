@@ -425,21 +425,26 @@
 
 <!-- СКРИПТ ДЛЯ ГАЛЕРЕИ -->
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     // Переключение главного фото при клике на миниатюру
-const thumbnails = document.querySelectorAll('.thumbnail');
-const mainImage = document.getElementById('mainImageSrc');
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    const mainImage = document.getElementById('mainImageSrc');
 
-thumbnails.forEach(thumb => {
-    thumb.addEventListener('click', function() {
-        // Убираем active у всех миниатюр
-        thumbnails.forEach(t => t.classList.remove('active'));
-        // Добавляем active текущей
-        this.classList.add('active');
-        // Меняем главное фото с проверкой на опасные символы
-        const newImageSrc = this.getAttribute('data-image');
-        if (newImageSrc && !newImageSrc.includes('<') && !newImageSrc.includes('>')) {
-            mainImage.src = newImageSrc;
-        }
+    // Проверяем, что элементы существуют
+    if (!thumbnails.length || !mainImage) return;
+
+    thumbnails.forEach(thumb => {
+        thumb.addEventListener('click', function() {
+            // Убираем active у всех миниатюр
+            thumbnails.forEach(t => t.classList.remove('active'));
+            // Добавляем active текущей
+            this.classList.add('active');
+            // Меняем главное фото
+            const newImageSrc = this.getAttribute('data-image');
+            if (newImageSrc && !newImageSrc.includes('<') && !newImageSrc.includes('>')) {
+                mainImage.setAttribute('src', newImageSrc);
+            }
+        });
     });
 });
 
