@@ -430,16 +430,18 @@
     const mainImage = document.getElementById('mainImageSrc');
 
     thumbnails.forEach(thumb => {
-        thumb.addEventListener('click', function() {
-            // Убираем active у всех миниатюр
-            thumbnails.forEach(t => t.classList.remove('active'));
-            // Добавляем active текущей
-            this.classList.add('active');
-            // Меняем главное фото
-            const newImageSrc = this.getAttribute('data-image');
+    thumb.addEventListener('click', function() {
+        // Убираем active у всех миниатюр
+        thumbnails.forEach(t => t.classList.remove('active'));
+        // Добавляем active текущей
+        this.classList.add('active');
+        // Меняем главное фото (с безопасной проверкой)
+        const newImageSrc = this.getAttribute('data-image');
+        if (newImageSrc) {
             mainImage.src = newImageSrc;
-        });
+        }
     });
+});
 
     // Функция для избранного (заглушка)
     function addToFavorites(productId) {
