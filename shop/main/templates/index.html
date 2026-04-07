@@ -19,7 +19,7 @@
         <div class="product-card">
             <div class="product-image">
                 {% if p.main_image_url %}
-                <img src="{{ p.main_image_url }}" alt="{{ p.name }}" />
+                    <a href="{% url 'product_detail' p.id %}"> <img src="{{ p.main_image_url }}" alt="{{ p.name }}" /> </a>>
                 {% else %}
                 <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото" />
                 {% endif %}
