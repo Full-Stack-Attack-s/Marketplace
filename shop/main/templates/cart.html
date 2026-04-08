@@ -2,5 +2,37 @@
 {% block title%}MainPage{% endblock title %}
 {% load static %}
 {% block content%}
+<div class="cart-page" style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+    <h1>Корзина</h1>
+
+    {% if items %}
+        <div class="cart-items">
+            {% for item in items %}
+                <div class="item" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #ddd; padding: 20px 0;">
+                    <img src="{{ item.product_variant.product.main_image_url }}" style="width: 80px; border-radius: 8px;">
+                    <div style="flex: 1; margin-left: 20px;">
+                        <h3 style="margin: 0;">{{ item.product_variant.product.name }}</h3>
+                        <p style="color: #666;">Количество: {{ item.quantity }} шт.</p>
+                    </div>
+                    <div style="font-weight: bold;">
+                        {{ item.product_variant.price }} ₽
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div style="text-align: right; margin-top: 30px;">
+            <h2>Итого: {{ total_price }} ₽</h2>
+            <button style="background: #000; color: #fff; padding: 15px 40px; border: none; cursor: pointer; border-radius: 5px;">
+                Оформить заказ
+            </button>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 100px 0;">
+            <p>Ваша корзина пуста 😭😭😭😭😭😭😭</p>
+            <a href="{% url 'index' %}" style="color: #000; font-weight: bold;">Вернуться за покупками</a>
+        </div>
+    {% endif %}
+</div>
 
 {% endblock content %}

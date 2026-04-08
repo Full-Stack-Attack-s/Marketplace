@@ -3,8 +3,12 @@ from django.db.models import Sum, F, IntegerField
 from django.db.models.functions import Coalesce
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+
 from .forms import AddressForm, ProductForm, UserProfileEditForm
-from .models import Product_variants, Product_images, OrderItems, ProductAttributeValues, Products, UserProfiles, models, CategoryAttributes, Addresses, Stocks, Warehouses, StoreProfiles # Обязательно добавь этот импорт!
+from .models import Product_variants, Product_images, OrderItems, ProductAttributeValues, Products, UserProfiles, \
+    models, CategoryAttributes, Addresses, Stocks, Warehouses, StoreProfiles, Carts, \
+    CartItems  # Обязательно добавь этот импорт!
 
 
 # def index(request):
@@ -344,8 +348,67 @@ def index(request):
 
     return render(request, 'index.html', {'products': popular_products})
 
+
+
+
+
+
+
+#///////////////////////////////////////////////////////////////////
+# def cart(request):
+#     return render(request, "cart.html")
+#  для поиска или создания корзины
+def get_or_create_cart(request):
+    if not request.session.session_key:
+        request.session.create()
+
+    # корзина по ключу сессии
+    cart, created = Carts.objects.get_or_create(
+        session_key=request.session.session_key,
+        defaults={'user': request.user if request.user.is_authenticated else None}
+    )
+    return cart
+
+
+# страница корзины
 def cart(request):
-    return render(request, "cart.html")
+    cart = get_or_create_cart(request)
+    items = cart.items.all()  # related_name='items' из твоих моделей
+
+    # общую сумму
+    total_price = sum(item.product_variant.price * item.quantity for item in items)
+
+    return render(request, "cart.html", {
+        "items": items,
+        "total_price": total_price,
+    })
+
+
+#  "В корзину" (для JS)
+@require_POST
+def add_to_cart(request, variant_id):
+    cart = get_or_create_cart(request)
+    variant = get_object_or_404(Product_variants, id=variant_id)
+
+    # есть ли уже такой товар в корзине
+    item, created = CartItems.objects.get_or_create(
+        cart=cart,
+        product_variant=variant
+    )
+
+    if not created:
+        item.quantity += 1
+        item.save()
+
+    #  чтобы JS понял что всё ок
+    return JsonResponse({
+        'status': 'ok',
+        'cart_count': cart.items.count()
+    })
+
+
+#///////////////
+
 def profile(request):
     return render(request, "profile.html")
 def cards(request):

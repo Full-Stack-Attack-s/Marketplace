@@ -29,8 +29,11 @@
                 <div class="product-price">{{ p.exact_price|floatformat:0 }} ₽</div>
                 <div class="product-name">{{ p.name }}</div>
 
-                <button class="add-to-cart" onclick="addToCart({{ p.default_variant_id }})">
-                    <span class="cart-icon">🛒</span> В корзину</button>
+                <button class="add-to-cart" onclick="addToCart('{{ p.variants.all.0.id }}')">
+                   <span class="cart-icon"></span> В корзину
+                </button>
+
+
             </div>
         </div>
         {% empty %}
@@ -39,3 +42,4 @@
     </div>
 </section>
 {% endblock content %}
+{% csrf_token %}
