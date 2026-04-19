@@ -405,4 +405,239 @@ body {
         display: flex;
         flex-direction: column;
     }
+
 }
+
+
+    .product-brand {
+        font-size: 14px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .product-name {
+        font-size: 28px;
+        font-weight: 600;
+        color: #222;
+        line-height: 1.3;
+        margin: 0;
+    }
+
+    /* Рейтинг */
+    .product-rating {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .stars {
+        display: flex;
+        gap: 4px;
+    }
+
+    .star {
+        color: #ffc700;
+        font-size: 18px;
+    }
+
+    .star.empty {
+        color: #ddd;
+    }
+
+    .reviews-count {
+        color: #666;
+        font-size: 14px;
+    }
+
+    /* Цена */
+    .product-price-section {
+        background: #f8f8f8;
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .current-price {
+        font-size: 42px;
+        font-weight: 700;
+        color: #66d9a8;
+    }
+
+    .current-price small {
+        font-size: 18px;
+        font-weight: 400;
+    }
+
+    .old-price {
+        font-size: 18px;
+        color: #999;
+        text-decoration: line-through;
+        margin-left: 12px;
+    }
+
+    .installment {
+        font-size: 14px;
+        color: #666;
+        margin-top: 8px;
+    }
+
+    /* Характеристики */
+    .product-params {
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+        padding: 16px 0;
+    }
+
+    .param-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 14px;
+    }
+
+    .param-name {
+        color: #666;
+    }
+
+    .param-value {
+        color: #222;
+        font-weight: 500;
+        text-align: right;
+    }
+
+    /* Доставка */
+    .delivery-info {
+        background: #f0f7ff;
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .delivery-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .delivery-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .delivery-icon {
+        font-size: 20px;
+    }
+
+    .delivery-text {
+        font-size: 14px;
+        color: #222;
+    }
+
+    .delivery-text strong {
+        display: block;
+        font-size: 16px;
+    }
+
+    /* Кнопки */
+    .product-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 8px;
+    }
+
+    .btn-cart {
+        flex: 2;
+        background: #66d9a8;
+        color: white;
+        border: none;
+        padding: 16px 24px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-cart:hover {
+        background: #66d9a8;
+        transform: translateY(-1px);
+    }
+
+    /* shop/main/static/css/cards.css */
+
+    .btn-favorite
+    {
+        /* Железобетонно белый фон для кнопки */
+        background-color: #ffffff !important;
+        color: #333333 !important; /* Цвет текста (черный/серый) */
+
+        border: 1px solid #e0e0e0 !important;
+        border-radius: 8px !important;
+        padding: 10px 20px !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+
+        /* Мягкая тень, чтобы кнопка выделялась */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .btn-favorite:hover
+    {
+        background-color: #f8f9fa !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Если товар уже в избранном, можно подсветить границу или иконку */
+    .btn-favorite.active {
+        border-color: #ff4d4d !important;
+    }
+
+    /* Описание */
+    .product-description
+    {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid #eee;
+    }
+
+    .product-description h3 {
+        font-size: 20px;
+        margin-bottom: 16px;
+    }
+
+    .product-description p {
+        color: #555;
+        line-height: 1.6;
+    }
+
+    /* Мобильная версия */
+    @media (max-width: 768px) {
+        .product-container {
+            grid-template-columns: 1fr;
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .product-name {
+            font-size: 22px;
+        }
+
+        .current-price {
+            font-size: 32px;
+        }
+
+        .product-actions {
+            flex-direction: column;
+        }
+
+        .thumbnail {
+            width: 60px;
+            height: 60px;
+        }
+    }

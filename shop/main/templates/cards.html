@@ -122,24 +122,20 @@
                 </div>
             </div>
 
-            <button class="btn-primary" onclick="addToCart({{ product.default_variant_id }})">
-                Добавить в корзину
-            </button>
 
-            <button class="btn-secondary" onclick="addToFavorites({{ product.id }})">
-                ❤️ В избранное
-            </button>
+            <!-- КНОПКИ -->
+            <div class="product-actions">
+                <button class="btn-cart" onclick="addToCart({{ product.default_variant_id }})">
+                    🛒 Добавить в корзину
+                </button>
+                    <button class="btn-favorite" data-id="{{ product.id }}" onclick="addToFavorites(event, {{ product.id }}, this)">
+                        {% if product.id in user_favorites %}
+                            ❤️ В избранном
+                        {% else %}
+                            🤍 В избранное
+                        {% endif %}
+                    </button>
 
-            <div class="delivery-area">
-                <div class="delivery-line">
-                    <span>🚚</span>
-                    <span>Завтра, склад WB</span>
-                </div>
-                <div class="seller-line">
-                    <span></span>
-                    <span class="seller-name">BDSM-A</span>
-                    <span class="seller-rating">★ 4,9 </span>
-                </div>
             </div>
         </div>
 

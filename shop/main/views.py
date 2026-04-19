@@ -8,7 +8,7 @@ from django.views.decorators.http import require_POST
 from .forms import AddressForm, ProductForm, UserProfileEditForm,  StoreVerificationForm, UserProfileForm
 from .models import Product_variants, Product_images, OrderItems, ProductAttributeValues, Products, UserProfiles, \
     models, CategoryAttributes, Addresses, Stocks, Warehouses, StoreProfiles, Carts, \
-    CartItems  # Обязательно добавь этот импорт!
+    CartItems , Favorites # Обязательно добавь этот импорт!
 
 
 # def index(request):
@@ -334,7 +334,7 @@ def get_attributes(request, category_id):
 def index(request):
     #Cчитаем реальные остатки прямо внутри SQL-запроса
     popular_products = Products.objects.filter(status='active').annotate(
-        # Суммируем количество со всех складов для всех вариантов товара. 
+        # Суммируем количество со всех складов для всех вариантов товара.
         # Coalesce нужен, чтобы заменить NULL на 0, если складов еще нет.
         total_quantity=Coalesce(Sum('product_variants__stock__quantity'), 0, output_field=IntegerField()),
         total_reserved=Coalesce(Sum('product_variants__stock__reserved_quantity'), 0, output_field=IntegerField())
@@ -343,10 +343,19 @@ def index(request):
         available_stock=F('total_quantity') - F('total_reserved')
     ).filter(
         # ЖЕСТКИЙ ФИЛЬТР: выводим на витрину только те товары, где есть хотя бы 1 свободная штука
-        available_stock__gt=0 
+        available_stock__gt=0
     ).order_by('-sales_count')[:30] # Ограничим до 30 самых популярных товаров
+    user_favorites = []
+    if request.user.is_authenticated:
+        # Собираем ID всех лайкнутых товаров текущего юзера
+        from .models import Favorites  # Не забудь импорт!
+        user_favorites = Favorites.objects.filter(user=request.user).values_list('product_id', flat=True)
 
-    return render(request, 'index.html', {'products': popular_products})
+    return render(request, 'index.html', {
+        'products': popular_products,
+        'user_favorites': list(user_favorites)})
+
+
 
 
 
@@ -439,4 +448,31 @@ def checkout_view(request):
     # ... дальше логика добавления конкретных товаров в этот заказ ...
 
     return render(request, "catalog.html")
+
+@require_POST
+@login_required
+def toggle_favorite(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
+    favorite, created = Favorites.objects.get_or_create(user=request.user, product=product)
+
+    if not created:
+        favorite.delete()
+        is_favorite = False
+    else:
+        is_favorite = True
+
+    return JsonResponse({'status': 'ok', 'is_favorite': is_favorite})
+
+
+def product_detail(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
+    user_favorites = []
+    if request.user.is_authenticated:
+        # Получаем плоский список ID товаров, которые лайкнул юзер
+        user_favorites = Favorites.objects.filter(user=request.user).values_list('product_id', flat=True)
+
+    return render(request, 'cards.html', {
+        'product': product,
+        'user_favorites': list(user_favorites)
+    })
 

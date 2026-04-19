@@ -609,4 +609,17 @@ class ProductAttributeValues(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.attribute.label}: {self.value}"
-    
+
+class Favorites(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorites')
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product') # Защита от дублей
+        verbose_name = "Избранное"
+        verbose_name_plural = "Избранное"
+
+    def __str__(self):
+        return f"{self.user.email} - {self.product.name}"
