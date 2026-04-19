@@ -6,16 +6,33 @@
 {% endblock %}
 
 {% block extra_css %}
-
 <link rel="stylesheet" href="{% static 'css/cards.css' %}">
-
 {% endblock %}
 
 {% block content %}
 <section class="product-detail">
-    <div class="product-container">
-        <!-- ЛЕВАЯ ЧАСТЬ: ГАЛЕРЕЯ -->
-        <div class="product-gallery">
+    <div class="product-page">
+
+        <!-- 1. ВЕРТИКАЛЬНАЯ ГАЛЕРЕЯ МИНИАТЮР -->
+        <div class="gallery-sidebar">
+            <div class="thumb active" data-image="{% if product.main_image_url %}{{ product.main_image_url }}{% else %}{% static 'img/no-image.jpg' %}{% endif %}">
+                {% if product.main_image_url %}
+                    <img src="{{ product.main_image_url }}" alt="Фото 1">
+                {% else %}
+                    <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото">
+                {% endif %}
+            </div>
+            {% if product.images %}
+                {% for img in product.images.all %}
+                    <div class="thumb" data-image="{{ img.image.url }}">
+                        <img src="{{ img.image.url }}" alt="Фото {{ forloop.counter|add:1 }}">
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- 2. ОСНОВНОЕ ИЗОБРАЖЕНИЕ -->
+        <div class="main-image-wrap">
             <div class="main-image" id="mainImage">
                 {% if product.main_image_url %}
                     <img src="{{ product.main_image_url }}" alt="{{ product.name }}" id="mainImageSrc">
@@ -23,86 +40,88 @@
                     <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото" id="mainImageSrc">
                 {% endif %}
             </div>
+        </div>
 
-            <div class="thumbnail-list" id="thumbnailList">
-                <!-- Основное фото как миниатюра -->
-                <div class="thumbnail active" data-image="{% if product.main_image_url %}{{ product.main_image_url }}{% else %}{% static 'img/no-image.jpg' %}{% endif %}">
-                    <img src="{% if product.main_image_url %}{{ product.main_image_url }}{% else %}{% static 'img/no-image.jpg' %}{% endif %}" alt="Фото 1">
+        <!-- 3. ИНФОРМАЦИЯ О ТОВАРЕ -->
+        <div class="product-info">
+            <div class="brand-name">BDSM-A</div>
+            <h1 class="product-name">{{ product.name }}</h1>
+
+            <div class="rating-bar">
+                <span class="star-icon">★ 5</span>
+                <span>2 168 оценок</span>
+                <a href="#" class="questions-link"> 30 вопросов</a>
+            </div>
+
+            <!-- Выбор цвета -->
+            <div class="color-section">
+                <div class="color-label">Цвет: <span>белый</span></div>
+                <div class="color-option active">
+                    {% if product.main_image_url %}
+                        <img src="{{ product.main_image_url }}" alt="Белый">
+                    {% else %}
+                        <img src="{% static 'img/no-image.jpg' %}" alt="Цвет">
+                    {% endif %}
                 </div>
+            </div>
 
-                <!-- Дополнительные фото, если есть -->
-                {% if product.images %}
-                    {% for img in product.images.all %}
-                        <div class="thumbnail" data-image="{{ img.image.url }}">
-                            <img src="{{ img.image.url }}" alt="Фото {{ forloop.counter|add:1 }}">
-                        </div>
-                    {% endfor %}
+            <!-- Характеристики -->
+            <div class="specs-table">
+                <div class="spec-row">
+                    <span class="spec-label">Артикул</span>
+                    <span class="spec-dots"></span>
+                    <span class="spec-value">BDSM-{{ product.id|stringformat:"06d" }}</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Состояние</span>
+                    <span class="spec-dots"></span>
+                    <span class="spec-value">Новый</span>
+                </div>
+                {% if product.brand %}
+                <div class="spec-row">
+                    <span class="spec-label">Бренд</span>
+                    <span class="spec-dots"></span>
+                    <span class="spec-value">{{product.brand}}</span>
+                </div>
                 {% endif %}
             </div>
         </div>
+<!--            <div class="return-link">-->
+<!--                <span>↩</span>-->
+<!--                <span>Возврат через заявку</span>-->
+<!--                <span class="info-icon">ⓘ</span>-->
+<!--            </div>-->
 
-        <!-- ПРАВАЯ ЧАСТЬ: ИНФОРМАЦИЯ -->
-        <div class="product-info">
-            <div>
-                <div class="product-brand">BDSM-A</div>
-                <h1 class="product-name">{{ product.name }}</h1>
-            </div>
+            <!-- Категории -->
+<!--            <div class="categories">-->
+<!--                <a href="#" class="cat-link">-->
+<!--                    <span>🏷</span>-->
+<!--                    <span>Роботы-Стеклоочистители</span>-->
+<!--                </a>-->
+<!--                <a href="#" class="cat-link">-->
+<!--                    <span>→</span>-->
+<!--                    <span>В каталог бренда</span>-->
+<!--                </a>-->
+<!--                <a href="#" class="cat-link">-->
+<!--                    <span>📦</span>-->
+<!--                    <span>Все товары категории</span>-->
+<!--                </a>-->
+<!--            </div>-->
 
-            <!-- ЦЕНА -->
-            <div class="product-price-section">
-                <div>
-                    <span class="current-price">{{ product.exact_price|floatformat:0 }} <small>₽</small></span>
+        <!-- 4. ПАНЕЛЬ ПОКУПКИ (прилипающая) -->
+        <div class="purchase-panel">
+            <div class="price-area">
+                <div class="price-row">
+                    <span class="price-current">{{ product.exact_price|floatformat:0 }} ₽</span>
                     {% if product.old_price %}
-                        <span class="old-price">{{ product.old_price|floatformat:0 }} ₽</span>
+                        <span class="price-old">{{ product.old_price|floatformat:0 }} ₽</span>
                     {% endif %}
                 </div>
-                <div class="installment">
-                    📦 Рассрочка 0% — от {{ product.exact_price|floatformat:0|divisibleby:4|yesno:"0," }}{{ product.exact_price|floatformat:0|slice:":-1" }} ₽/мес
+                <div class="review-bonus">
+                    💬 <span>400 Б за отзыв</span>
                 </div>
             </div>
 
-            <!-- ХАРАКТЕРИСТИКИ -->
-            <div class="product-params">
-                <div class="param-row">
-                    <span class="param-name">Состояние</span>
-                    <span class="param-value">Новый</span>
-                </div>
-                <div class="param-row">
-                    <span class="param-name">Артикул</span>
-                    <span class="param-value">BDSM-{{ product.id|stringformat:"06d" }}</span>
-                </div>
-                {% if product.brand %}
-                <div class="param-row">
-                    <span class="param-name">Бренд</span>
-                    <span class="param-value">{{ product.brand }}</span>
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- ДОСТАВКА -->
-            <div class="delivery-info">
-                <div class="delivery-item">
-                    <span class="delivery-icon">🚚</span>
-                    <div class="delivery-text">
-                        <strong>Бесплатная доставка</strong>
-                        от 3000 ₽
-                    </div>
-                </div>
-                <div class="delivery-item">
-                    <span class="delivery-icon">📦</span>
-                    <div class="delivery-text">
-                        <strong>Пункты выдачи</strong>
-                        завтра — бесплатно
-                    </div>
-                </div>
-                <div class="delivery-item">
-                    <span class="delivery-icon">💳</span>
-                    <div class="delivery-text">
-                        <strong>Оплата</strong>
-                        картой, наличными, счёт
-                    </div>
-                </div>
-            </div>
 
             <!-- КНОПКИ -->
             <div class="product-actions">
@@ -116,16 +135,20 @@
                             🤍 В избранное
                         {% endif %}
                     </button>
+
             </div>
         </div>
+
     </div>
 
-    <!-- ОПИСАНИЕ ТОВАРА -->
+    <!-- ОПИСАНИЕ -->
     <div class="product-description">
         <h3>Описание товара</h3>
-        <p>{{ product.description|default:"Описание пока отсутствует. Свяжитесь с продавцом для получения подробной информации."|linebreaks }}</p>
+        <p>{{ product.description|default:"Описание пока отсутствует."|linebreaks }}</p>
     </div>
 </section>
+
+
 
 <script src="{% static 'js/cards.js' %}"></script>
 {% endblock %}

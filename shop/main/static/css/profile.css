@@ -93,7 +93,6 @@
 .profile-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 20px var(--shadow-medium);
-    border-color: var(--nav-active);
 }
 
 .card-icon {
