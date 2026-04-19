@@ -59,7 +59,7 @@
     }
 
     .thumbnail.active {
-        border-color: #cb11ab;
+        border-color: #66d9a8;
     }
 
     .thumbnail img {
@@ -126,7 +126,7 @@
     .current-price {
         font-size: 42px;
         font-weight: 700;
-        color: #cb11ab;
+        color: #66d9a8;
     }
 
     .current-price small {
@@ -212,7 +212,7 @@
 
     .btn-cart {
         flex: 2;
-        background: #cb11ab;
+        background: #66d9a8;
         color: white;
         border: none;
         padding: 16px 24px;
@@ -224,7 +224,7 @@
     }
 
     .btn-cart:hover {
-        background: #9e0d85;
+        background: #66d9a8;
         transform: translateY(-1px);
     }
 
@@ -240,8 +240,8 @@
     }
 
     .btn-favorite:hover {
-        border-color: #cb11ab;
-        color: #cb11ab;
+        border-color: #66d9a8;
+        color: #66d9a8;
     }
 
     /* Описание */
