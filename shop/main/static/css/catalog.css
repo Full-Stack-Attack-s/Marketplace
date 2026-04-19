@@ -153,3 +153,44 @@
     .sale-banner { height: 220px; font-size: 56px; max-width: 1200px; }
     .products-grid { grid-template-columns: repeat(5, 1fr); gap: 20px; }
 }
+/* === БАЗОВЫЕ СТИЛИ КНОПКИ ИЗБРАННОГО (СВЕТЛАЯ ТЕМА) === */
+.catalog-fav-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+
+    /* Светлый полупрозрачный фон */
+    background: rgba(255, 255, 255, 0.8);
+
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 18px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    /* Плавное изменение цвета при переключении темы */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Легкое увеличение при наведении */
+.catalog-fav-btn:hover {
+    transform: scale(1.1);
+}
+
+/* === СТИЛИ КНОПКИ ДЛЯ ТЕМНОЙ ТЕМЫ === */
+/* Я перечислил самые популярные классы темной темы.
+   Один из них точно сработает. */
+body.dark-theme .catalog-fav-btn,
+body.dark .catalog-fav-btn,
+body.dark-mode .catalog-fav-btn,
+[data-theme="dark"] .catalog-fav-btn {
+    /* Темный полупрозрачный фон (подогнал под цвет твоих темных карточек) */
+    background: rgba(30, 34, 45, 0.8);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}

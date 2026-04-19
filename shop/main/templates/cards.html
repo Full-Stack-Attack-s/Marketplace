@@ -109,9 +109,13 @@
                 <button class="btn-cart" onclick="addToCart({{ product.default_variant_id }})">
                     🛒 Добавить в корзину
                 </button>
-                <button class="btn-favorite" onclick="addToFavorites({{ product.id }})">
-                    ❤️ В избранное
-                </button>
+                    <button class="btn-favorite" data-id="{{ product.id }}" onclick="addToFavorites(event, {{ product.id }}, this)">
+                        {% if product.id in user_favorites %}
+                            ❤️ В избранном
+                        {% else %}
+                            🤍 В избранное
+                        {% endif %}
+                    </button>
             </div>
         </div>
     </div>

@@ -228,24 +228,45 @@
         transform: translateY(-1px);
     }
 
-    .btn-favorite {
-        flex: 1;
-        background: white;
-        border: 1px solid #ddd;
-        padding: 16px 24px;
-        border-radius: 12px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: all 0.2s;
+    /* shop/main/static/css/cards.css */
+
+    .btn-favorite
+    {
+        /* Железобетонно белый фон для кнопки */
+        background-color: #ffffff !important;
+        color: #333333 !important; /* Цвет текста (черный/серый) */
+
+        border: 1px solid #e0e0e0 !important;
+        border-radius: 8px !important;
+        padding: 10px 20px !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+
+        /* Мягкая тень, чтобы кнопка выделялась */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        transition: all 0.2s ease !important;
     }
 
-    .btn-favorite:hover {
-        border-color: #66d9a8;
-        color: #66d9a8;
+    .btn-favorite:hover
+    {
+        background-color: #f8f9fa !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Если товар уже в избранном, можно подсветить границу или иконку */
+    .btn-favorite.active {
+        border-color: #ff4d4d !important;
     }
 
     /* Описание */
-    .product-description {
+    .product-description
+    {
         margin-top: 40px;
         padding-top: 30px;
         border-top: 1px solid #eee;
