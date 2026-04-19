@@ -32,10 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-    // Функция для избранного (заглушка)
-    function addToFavorites(productId) {
-        alert('Товар добавлен в избранное! (функция в разработке)');
-    }
+
 
     // Функция для корзины (если у вас уже есть addToCart, не переопределяйте)
     window.addToCart = window.addToCart || function(variantId) {
@@ -61,17 +58,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+
+
+window.addToFavorites = function(productId, btnElement) {
+    fetch(`/favorite/toggle/${productId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            // Используем вашу функцию getCookie, которая уже есть в файле
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.status === 403 || response.redirected) {
+            window.location.href = '/accounts/login/'; // Перенаправляем неавторизованных
+            return null;
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data && data.status === 'ok') {
+            // Если мы передали саму кнопку при клике, меняем её внешний вид
+            if (btnElement) {
+                if (data.is_favorite) {
+                    btnElement.innerHTML = '❤️ В избранном';
+                    btnElement.classList.add('active');
+                } else {
+                    btnElement.innerHTML = '🤍 В избранное';
+                    btnElement.classList.remove('active');
                 }
             }
         }
-        return cookieValue;
-    }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('❌ Ошибка добавления в избранное');
+    });
+};

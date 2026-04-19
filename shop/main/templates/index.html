@@ -16,12 +16,19 @@
 <section class="products-section">
     <div class="products-grid">
         {% for p in products %}
-        <div class="product-card">
+        <div class="product-card" style="position: relative;">
+            <button class="catalog-fav-btn" data-id="{{ p.id }}" onclick="addToFavorites(event, {{ p.id }}, this)">
+                {% if p.id in user_favorites %}
+                    ❤️
+                {% else %}
+                    🤍
+                {% endif %}
+            </button>
             <div class="product-image">
                 {% if p.main_image_url %}
-                    <a href="{% url 'product_detail' p.id %}"> <img src="{{ p.main_image_url }}" alt="{{ p.name }}" /> </a>>
+                    <a href="{% url 'product_detail' p.id %}"> <img src="{{ p.main_image_url }}" alt="{{ p.name }}" /> </a>
                 {% else %}
-                <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото" />
+                    <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото" />
                 {% endif %}
             </div>
 
@@ -32,12 +39,11 @@
                 <button class="add-to-cart" onclick="addToCart('{{ p.default_variant_id }}')">
                     <span class="cart-icon"></span> В корзину
                 </button>
-
-
             </div>
+
         </div>
         {% empty %}
-        <p>Товаров пока нет.</p>
+            <p>Товаров пока нет.</p>
         {% endfor %}
     </div>
 </section>

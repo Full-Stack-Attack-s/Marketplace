@@ -1,0 +1,33 @@
+/* shop/main/static/css/cards.css */
+
+.btn-favorite {
+    /* Железобетонно белый фон в начале */
+    background-color: #ffffff !important;
+    color: #333333 !important;
+
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important; /* Делаем углы чуть мягче */
+    padding: 10px 20px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+
+    /* Тень, как у кнопок в каталоге */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-favorite:hover {
+    background-color: #f8f9fa !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Состояние, когда товар уже в избранном */
+.btn-favorite.active {
+    border-color: #ff4d4d !important;
+}

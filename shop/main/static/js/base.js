@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // БЕСКОНЕЧНАЯ ПРОКРУТКА
 // ============================================
 
-let isLoading = false;
+let isLoading = false;п
 let currentPage = 1;
 const itemsPerPage = 10; // Количество товаров на страницу
 
@@ -186,3 +186,114 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', toggleTheme);
     });
 });
+
+window.addToFavorites = function(productId, btnElement) {
+    // ВАЖНО: блокируем стандартное поведение.
+    // Обычно карточка в каталоге - это ссылка. Если мы кликнем по сердечку,
+    // нас не должно перекинуть на страницу товара.
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    fetch(`/favorite/toggle/${productId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'), // Функция getCookie должна быть доступна!
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.status === 403 || response.redirected) {
+            window.location.href = '/accounts/login/';
+            return null;
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data && data.status === 'ok') {
+            if (btnElement) {
+                // Для маленьких карточек в каталоге меняем только саму эмодзи/иконку
+                if (data.is_favorite) {
+                    btnElement.innerHTML = '❤️';
+                    btnElement.classList.add('active');
+                } else {
+                    btnElement.innerHTML = '🤍';
+                    btnElement.classList.remove('active');
+                }
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+};
+
+/**
+ * Получение CSRF-токена из куки (необходимо для POST-запросов в Django)
+ */
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}t
+
+/**
+ * Универсальная функция для добавления/удаления товара из избранного
+ * @param {Event} event - объект события клика
+ * @param {number} productId - ID товара
+ * @param {HTMLElement} btnElement - элемент кнопки, на которую нажали
+ */
+window.addToFavorites = function(event, productId, btnElement) {
+    // Останавливаем всплытие события, чтобы клик по сердечку
+    // не срабатывал как клик по ссылке на карточку товара
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    fetch(`/favorite/toggle/${productId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        // Если сервер просит авторизацию (например, 403 или редирект на логин)
+        if (response.status === 403 || response.redirected) {
+            window.location.href = '/accounts/login/';
+            return null;
+        }
+        return response.json();
+    })
+    // Внутри функции addToFavorites в base.js
+    .then(data => {
+        if (data && data.status === 'ok') {
+            const buttons = document.querySelectorAll(`[data-id="${productId}"]`);
+            buttons.forEach(btn => {
+                const isMainCard = btn.classList.contains('btn-favorite'); // Большая кнопка
+                if (data.is_favorite) {
+                    btn.innerHTML = isMainCard ? '❤️ В избранном' : '❤️';
+                    btn.classList.add('active');
+                } else {
+                    // Если кнопка в карточке товара - пишем текст, если в каталоге - только иконку
+                    btn.innerHTML = isMainCard ? '🖤 В избранное' : '🖤';
+                    btn.classList.remove('active');
+                }
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка при работе с избранным:', error);
+    });
+};

@@ -20,6 +20,7 @@ urlpatterns = [
     path('seller/products/add/', views.add_product, name='add_product'),
     path('api/category-attributes/<int:category_id>/', views.get_category_attributes, name='get_category_attributes'),
     path('cart/add/<int:variant_id>/', views.add_to_cart, name='add_to_cart'),
+    path('favorite/toggle/<int:product_id>/', views.toggle_favorite, name='toggle_favorite'),
 
 ]
 
