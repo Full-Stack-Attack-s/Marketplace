@@ -7,14 +7,14 @@
 {% endblock %}
 
 
-{% block title %}Регистрация - OMNI{% endblock %}
+{% block title %}Регистрация - BDSM-A{% endblock %}
 
 {% block content %}
 <div class="auth-section">
     <div class="auth-container glass-panel">
         <div class="auth-header">
             <h1>Создать аккаунт</h1>
-            <p>Присоединяйтесь к OMNI сегодня</p>
+            <p>Присоединяйтесь к BDSM-A сегодня</p>
         </div>
 
         <form method="post" action="{% url 'account_signup' %}" class="auth-form">
@@ -40,7 +40,7 @@
 
         <hr style="margin: 20px 0; border-color: rgba(255,255,255,0.1);">
         <div style="text-align: center; margin-bottom: 20px;">
-            <a href="{% provider_login_url 'google' %}" class="auth-button btn-glow" style="background: #db4437; text-decoration: none; display: block;">Зарегистрироваться через Google</a>
+            <a href="{% provider_login_url 'google' %}" class="auth-button btn-glow" style="background: var(--button-gradient);; text-decoration: none; display: block;">Зарегистрироваться через Google</a>
         </div>
 
         <div class="auth-footer">
