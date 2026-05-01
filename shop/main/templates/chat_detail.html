@@ -44,107 +44,11 @@
     </form>
 </div>
 
-<script>
-    const chatMessages = document.getElementById('chatMessages');
-    const chatForm = document.getElementById('chatForm');
-    const msgContent = document.getElementById('msgContent');
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const currentUserId = {{ request.user.id }};
-    const otherUserId = {{ other_user.id }};
-    
-    function scrollToBottom() {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-    
-    scrollToBottom();
-    
-    chatForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const content = msgContent.value.trim();
-        if (!content) return;
-        
-        const formData = new FormData();
-        formData.append('content', content);
-        
-        fetch("{% url 'chat_detail' other_user.id %}", {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': csrfToken
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'ok') {
-                appendMessage(data);
-                msgContent.value = '';
-                scrollToBottom();
-            }
-        });
-    });
-    
-    function appendMessage(msg) {
-        if (document.querySelector(`.message[data-id="${msg.id}"]`)) return;
-        
-        const div = document.createElement('div');
-        div.className = `message ${msg.sender_id == currentUserId ? 'msg-mine' : 'msg-theirs'}`;
-        div.dataset.id = msg.id;
-        
-        div.innerHTML = `
-            <div>${msg.content}</div>
-            <div class="msg-time">${msg.created_at}</div>
-        `;
-        
-        chatMessages.appendChild(div);
-        scrollToBottom();
-    }
-    
-    function fetchNewMessages() {
-        const messages = document.querySelectorAll('.message');
-        let lastMsgId = 0;
-        if (messages.length > 0) {
-            lastMsgId = messages[messages.length - 1].dataset.id;
-        }
-        
-        fetch(`{% url 'chat_get_new_messages' other_user.id %}?last_message_id=${lastMsgId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.messages && data.messages.length > 0) {
-                let needsScroll = (chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 50);
-                
-                data.messages.forEach(msg => appendMessage(msg));
-                
-                if (needsScroll) {
-                    scrollToBottom();
-                }
-            }
-        });
-    }
-    
-    setInterval(fetchNewMessages, 3000);
-    
-    function toggleFriend(userId, btn) {
-        fetch(`/friends/toggle/${userId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'added') {
-                btn.textContent = '✓ В друзьях';
-                btn.style.background = '#007bff';
-                btn.style.color = 'white';
-            } else if (data.status === 'removed') {
-                btn.textContent = 'Добавить в друзья';
-                btn.style.background = 'none';
-                btn.style.color = '#007bff';
-            } else {
-                alert(data.message || 'Ошибка');
-            }
-        });
-    }
-</script>
+<div id="chat-config" 
+     data-current-user-id="{{ request.user.id }}" 
+     data-other-user-id="{{ other_user.id }}"
+     data-chat-url="{% url 'chat_detail' other_user.id %}"
+     data-new-messages-url="{% url 'chat_get_new_messages' other_user.id %}">
+</div>
+<script src="{% static 'js/chat.js' %}"></script>
 {% endblock %}

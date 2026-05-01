@@ -42,27 +42,5 @@
     {% endif %}
 </div>
 
-<script>
-function removeFriend(friendId) {
-    if (!confirm('Вы уверены, что хотите удалить этого пользователя из друзей?')) return;
-    
-    fetch(`/friends/toggle/${friendId}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'removed') {
-            document.getElementById(`friend-${friendId}`).remove();
-            
-            // Если друзей не осталось, можно перезагрузить страницу для показа empty-state
-            if (document.querySelectorAll('.friend-card').length === 0) {
-                location.reload();
-            }
-        }
-    });
-}
-</script>
+<script src="{% static 'js/friends.js' %}"></script>
 {% endblock %}
