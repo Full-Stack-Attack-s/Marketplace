@@ -11,30 +11,16 @@
 {% block content %}
 <div class="search-page">
 
-    <!-- ── Поисковая строка ────────────────── -->
-    <form method="GET" action="{% url 'search' %}" class="search-hero" id="searchForm">
-        <h1 class="search-hero-title">🔍 Поиск товаров</h1>
-        <div class="search-input-wrap">
-            <input type="text"
-                   name="q"
-                   id="searchQuery"
-                   value="{{ query }}"
-                   placeholder="Введите название, бренд или категорию..."
-                   autocomplete="off"
-                   class="search-main-input">
-            <button type="submit" class="search-submit-btn">Найти</button>
-        </div>
-
-        {% if query %}
-        <div class="search-result-count">
-            {% if total_count %}
-                Найдено: <strong>{{ total_count }}</strong> товаров по запросу «{{ query }}»
-            {% else %}
-                По запросу «{{ query }}» ничего не найдено
-            {% endif %}
-        </div>
+    <!-- Результаты поиска -->
+    {% if query %}
+    <div class="search-result-count" style="margin-bottom: 20px; font-size: 1.1rem; color: var(--text-color);">
+        {% if total_count %}
+            Найдено: <strong>{{ total_count }}</strong> товаров по запросу «{{ query }}»
+        {% else %}
+            По запросу «{{ query }}» ничего не найдено
         {% endif %}
-    </form>
+    </div>
+    {% endif %}
 
     <!-- ── Основная сетка: фильтры + результаты ── -->
     <div class="search-layout">

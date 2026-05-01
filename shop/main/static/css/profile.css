@@ -587,3 +587,21 @@
     color: var(--text-color);
     letter-spacing: -0.2px;
 }
+
+/* ── Настройки (Settings) ───────────────────── */
+.settings-container {
+    max-width: 800px;
+    margin: 40px auto;
+}
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin-bottom: 24px;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+.back-link:hover { color: var(--nav-active); }
+

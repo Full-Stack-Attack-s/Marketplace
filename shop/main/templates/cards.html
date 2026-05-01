@@ -203,7 +203,7 @@
                         </div>
                     </div>
                 </div>
-                {% if user.is_authenticated and product.seller != request.user %}
+                {% if request.user.is_authenticated and product.seller.id != request.user.id %}
                 <a href="{% url 'chat_detail' product.seller.id %}" style="display: block; text-align: center; margin-top: 10px; padding: 10px; background: #e0f0ff; color: #007bff; border-radius: 8px; text-decoration: none; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#cce5ff'" onmouseout="this.style.background='#e0f0ff'">
                     💬 Написать продавцу
                 </a>

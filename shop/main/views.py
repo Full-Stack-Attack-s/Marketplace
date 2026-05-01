@@ -766,9 +766,14 @@ def checkout(request):
         cart.items.all().delete()
         return render(request, 'checkout_success.html', {'order': order})
         
+    default_address = None
+    if request.user.is_authenticated:
+        default_address = request.user.addresses.filter(is_default=True).first() or request.user.addresses.first()
+        
     return render(request, 'checkout.html', {
         'items': items,
-        'total_price': total_price
+        'total_price': total_price,
+        'default_address': default_address
     })
 
 # ============================================
@@ -865,3 +870,31 @@ def chat_get_new_messages(request, user_id):
         })
         
     return JsonResponse({'messages': data})
+
+@login_required
+def toggle_friend(request, friend_id):
+    from .models import Users, Friends
+    from django.http import JsonResponse
+    if request.method == 'POST':
+        try:
+            friend = Users.objects.get(id=friend_id)
+            if friend.role == 'seller':
+                return JsonResponse({'status': 'error', 'message': 'Нельзя добавить продавца в друзья'}, status=400)
+            if friend == request.user:
+                return JsonResponse({'status': 'error', 'message': 'Нельзя добавить себя в друзья'}, status=400)
+                
+            friendship, created = Friends.objects.get_or_create(user=request.user, friend=friend)
+            if not created:
+                friendship.delete()
+                return JsonResponse({'status': 'removed'})
+            return JsonResponse({'status': 'added'})
+        except Users.DoesNotExist:
+            return JsonResponse({'status': 'error'}, status=404)
+    return JsonResponse({'status': 'error'}, status=400)
+
+@login_required
+def friends_list(request):
+    from .models import Friends
+    from django.shortcuts import render
+    friends = Friends.objects.filter(user=request.user).select_related('friend')
+    return render(request, 'friends_list.html', {'friends': friends})

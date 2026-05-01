@@ -77,6 +77,22 @@
                     </div>
 
                     <div class="info-item">
+                        <div class="info-icon-box">📋</div>
+                        <div class="info-text">
+                            <span class="info-label">Отчество</span>
+                            <span class="info-value">{{ user_profile.patronymic|default:"—" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-icon-box">🎂</div>
+                        <div class="info-text">
+                            <span class="info-label">Дата рождения</span>
+                            <span class="info-value">{{ user_profile.birth_date|date:"d.m.Y"|default:"—" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
                         <div class="info-icon-box">📞</div>
                         <div class="info-text">
                             <span class="info-label">Телефон</span>
@@ -128,6 +144,13 @@
                     <div class="pq-text">
                         <div class="pq-title">Мои сообщения</div>
                         <div class="pq-sub">Чаты с продавцами</div>
+                    </div>
+                </a>
+                <a href="{% url 'friends_list' %}" class="profile-quick-card">
+                    <div class="pq-icon" style="background: rgba(40,167,69,0.1); color: #28a745;">👥</div>
+                    <div class="pq-text">
+                        <div class="pq-title">Мои друзья</div>
+                        <div class="pq-sub">Контакты</div>
                     </div>
                 </a>
             </div>

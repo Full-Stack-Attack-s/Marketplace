@@ -31,6 +31,8 @@ urlpatterns = [
     path('chats/', views.chat_list, name='chat_list'),
     path('chats/<int:user_id>/', views.chat_detail, name='chat_detail'),
     path('chats/<int:user_id>/new_messages/', views.chat_get_new_messages, name='chat_get_new_messages'),
+    path('friends/', views.friends_list, name='friends_list'),
+    path('friends/toggle/<int:friend_id>/', views.toggle_friend, name='toggle_friend'),
 ]
 
     #path('category/<path:category_path>/', views.category_detail)

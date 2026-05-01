@@ -5,23 +5,6 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/profile.css' %}">
-<style>
-    .settings-container {
-        max-width: 800px;
-        margin: 40px auto;
-    }
-    .back-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--text-secondary);
-        text-decoration: none;
-        margin-bottom: 24px;
-        font-weight: 600;
-        transition: color 0.2s;
-    }
-    .back-link:hover { color: var(--nav-active); }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -36,10 +19,40 @@
             {% csrf_token %}
             <input type="hidden" name="update_user" value="1">
             
-            <div class="profile-field">
-                <label>Аватар</label>
-                {{ profile_form.avatar }}
+            <div class="profile-field" style="text-align: center; margin-bottom: 25px;">
+                <label for="{{ profile_form.avatar.id_for_label }}" style="cursor: pointer; display: inline-block;">
+                    <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--bg-secondary); border: 2px dashed var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 10px; color: var(--text-secondary); overflow: hidden; position: relative;">
+                        {% if user_profile.avatar %}
+                            <img src="{{ user_profile.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            📷
+                        {% endif %}
+                    </div>
+                    <span style="color: var(--nav-active); font-weight: bold; font-size: 14px;">Выбрать новое фото</span>
+                </label>
+                <div style="display: none;">
+                    {{ profile_form.avatar }}
+                </div>
             </div>
+
+            <script>
+                document.getElementById('{{ profile_form.avatar.id_for_label }}').addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        const label = this.closest('.profile-field').querySelector('label');
+                        const previewContainer = label.querySelector('div');
+                        
+                        reader.onload = (e) => {
+                            previewContainer.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                            // Отправляем форму после короткой задержки, чтобы пользователь увидел превью
+                            setTimeout(() => {
+                                this.closest('form').submit();
+                            }, 500);
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            </script>
 
             <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
                 <div class="profile-field">
@@ -49,6 +62,14 @@
                 <div class="profile-field">
                     <label>Имя</label>
                     {{ profile_form.first_name }}
+                </div>
+                <div class="profile-field">
+                    <label>Отчество</label>
+                    {{ profile_form.patronymic }}
+                </div>
+                <div class="profile-field">
+                    <label>Дата рождения</label>
+                    {{ profile_form.birth_date }}
                 </div>
             </div>
 

@@ -103,19 +103,18 @@
                     <div class="stat-label">Новых заказов</div>
                 </div>
 
-                <!-- Статус магазина -->
                 <div class="stat-card">
                     <div class="stat-card-header">
                         <div class="stat-icon purple">🏅</div>
                         {% if store_profile.verification_status == 'approved' %}
-                            <span class="stat-trend up">✓ ОК</span>
+                            <span class="stat-trend up">Верифицирован</span>
                         {% elif store_profile.verification_status == 'pending' %}
-                            <span class="stat-trend neutral">⏳ ждёт</span>
+                            <span class="stat-trend neutral">⏳ Проверка</span>
                         {% else %}
-                            <span class="stat-trend down">✗ нет</span>
+                            <span class="stat-trend down">✗ Нет</span>
                         {% endif %}
                     </div>
-                    <div class="stat-value status-text">
+                    <div class="stat-value status-text" style="font-size: 18px; margin-top: 5px;">
                         {% if store_profile.verification_status == 'approved' %}
                             Подтверждён
                         {% elif store_profile.verification_status == 'pending' %}
