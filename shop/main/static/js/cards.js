@@ -15,8 +15,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const newSrc = this.getAttribute('data-image');
             if (newSrc && mainImage) {
-                // Простая проверка безопасности: предотвращаем javascript: URL
-                if (newSrc.trim().toLowerCase().startsWith('javascript:')) {
+                // Безопасная проверка схемы URL (CodeQL fix)
+                const forbiddenSchemes = /^(javascript|data|vbscript):/i;
+                if (forbiddenSchemes.test(newSrc.trim())) {
                     console.error('Invalid image source');
                     return;
                 }
