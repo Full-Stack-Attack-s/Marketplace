@@ -577,6 +577,7 @@
     .product-page {
         grid-template-columns: 64px 1fr 300px;
     }
+
     .purchase-panel {
         grid-column: 1 / -1;
         display: grid;
@@ -590,6 +591,15 @@
         border-bottom: 1px solid var(--border-color);
         padding-right: 0;
         padding-bottom: 16px;
+    }
+
+    .main-image-wrap {
+        min-height: 450px;
+    }
+
+    /* На планшете кнопки можно поставить рядом */
+    .product-actions {
+        flex-direction: row;
     }
 }
 
