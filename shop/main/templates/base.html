@@ -241,5 +241,15 @@
 
     <!-- Подключаем JavaScript -->
     <script src="{% static 'js/base.js' %}"></script>
+    <script>
+        // Отображение системных сообщений Django через Toast
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if messages %}
+                {% for message in messages %}
+                    showToast("{{ message|escapejs }}", "{{ message.tags }}");
+                {% endfor %}
+            {% endif %}
+        });
+    </script>
 </body>
 </html>

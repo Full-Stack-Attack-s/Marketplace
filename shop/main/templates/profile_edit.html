@@ -5,6 +5,58 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<!-- Cropper.js -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.css">
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.js"></script>
+<style>
+    /* Стили для модалки кроппера */
+    .cropper-modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); z-index: 10000;
+        display: none; align-items: center; justify-content: center;
+        backdrop-filter: blur(5px);
+    }
+    .cropper-modal-content {
+        background: var(--card-bg); width: 90%; max-width: 600px;
+        padding: 24px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    .cropper-container-box {
+        width: 100%; height: 400px; background: #000;
+        border-radius: 12px; overflow: hidden; margin-bottom: 20px;
+    }
+    .cropper-actions { display: flex; gap: 12px; justify-content: flex-end; }
+    .crop-btn {
+        padding: 10px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none;
+    }
+    .crop-btn-save { background: var(--nav-active); color: #000; }
+    .crop-btn-cancel { background: var(--bg-secondary); color: var(--text-color); }
+
+    /* Flatpickr Dark Theme Customization */
+    .flatpickr-calendar {
+        background: var(--card-bg) !important;
+        border: 1px solid var(--border-color) !important;
+        box-shadow: 0 10px 30px var(--shadow-medium) !important;
+        border-radius: 16px !important;
+    }
+    .flatpickr-day, .flatpickr-weekday, .flatpickr-current-month {
+        color: var(--text-color) !important;
+    }
+    .flatpickr-day.selected {
+        background: var(--nav-active) !important;
+        border-color: var(--nav-active) !important;
+        color: #000 !important;
+    }
+    .flatpickr-day:hover {
+        background: var(--bg-secondary) !important;
+    }
+    .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month {
+        fill: var(--text-color) !important;
+    }
+</style>
+<!-- Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/ru.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -98,4 +150,30 @@
         </form>
     </div>
 </div>
+
+<!-- Модальное окно для обрезки -->
+<div id="cropperModal" class="cropper-modal-overlay">
+    <div class="cropper-modal-content">
+        <h3 style="margin-bottom: 15px;">Выберите ракурс фото</h3>
+        <div class="cropper-container-box">
+            <img id="cropperImage" style="max-width: 100%;">
+        </div>
+        <div class="cropper-actions">
+            <button type="button" class="crop-btn crop-btn-cancel" onclick="closeCropper()">Отмена</button>
+            <button type="button" class="crop-btn crop-btn-save" onclick="saveCroppedAvatar()">💾 Применить</button>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/profile.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        flatpickr("#id_birth_date", {
+            locale: "ru",
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            disableMobile: "true"
+        });
+    });
+</script>
 {% endblock %}

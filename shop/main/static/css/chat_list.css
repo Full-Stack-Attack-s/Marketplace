@@ -1,14 +1,15 @@
 .chat-container {
     max-width: 800px;
     margin: 20px auto;
-    background: var(--bg-card, #fff);
+    background: var(--card-bg);
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px var(--shadow-light);
     overflow: hidden;
+    border: 1px solid var(--border-color);
 }
 .chat-header {
     padding: 20px;
-    border-bottom: 1px solid var(--border-color, #eee);
+    border-bottom: 1px solid var(--border-color);
     font-size: 1.2rem;
     font-weight: bold;
     color: var(--text-color);
@@ -22,25 +23,25 @@
     display: flex;
     align-items: center;
     padding: 15px 20px;
-    border-bottom: 1px solid var(--border-color, #eee);
+    border-bottom: 1px solid var(--border-color);
     text-decoration: none;
     color: var(--text-color);
     transition: background 0.2s;
 }
 .dialog-item:hover {
-    background: var(--bg-hover, #f9f9f9);
+    background: var(--bg-secondary);
 }
 .dialog-avatar {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: var(--bg-secondary, #ddd);
+    background: var(--header-gradient);
     display: flex;
     align-items: center;
     justify-content: center;
     margin-right: 15px;
     font-weight: bold;
-    color: var(--text-color, #555);
+    color: #000;
     text-transform: uppercase;
 }
 .dialog-info {

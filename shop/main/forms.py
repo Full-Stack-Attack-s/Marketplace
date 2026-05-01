@@ -64,8 +64,7 @@ class UserProfileEditForm(forms.ModelForm):
         model = UserProfiles
         fields = ['first_name', 'last_name', 'patronymic', 'phone_number', 'birth_date', 'gender', 'avatar']
         widgets = {
-            # Делаем так, чтобы браузер показывал удобный календарик
-            'birth_date': forms.DateInput(attrs={'type': 'date'}), 
+            'birth_date': forms.DateInput(attrs={'type': 'text', 'id': 'id_birth_date', 'autocomplete': 'off'}), 
         }
 
 class AddressForm(forms.ModelForm):

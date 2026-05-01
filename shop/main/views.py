@@ -361,7 +361,9 @@ def profile_edit(request):
             profile_form = UserProfileEditForm(request.POST, request.FILES, instance=user_profile)
             if profile_form.is_valid():
                 profile_form.save()
-                return redirect('profile')
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({'status': 'ok', 'avatar_url': user_profile.avatar.url if user_profile.avatar else ''})
+                return redirect('profile_edit')
         elif 'update_address' in request.POST:
             country = request.POST.get('country', '').strip()
             city = request.POST.get('city', '').strip()
@@ -382,9 +384,9 @@ def profile_edit(request):
                         city=city, 
                         street=street, 
                         zip_code=zip_code, 
-                        is_default=True
                     )
-            return redirect('profile')
+                messages.success(request, '📍 Адрес доставки успешно обновлен!')
+            return redirect('profile_edit')
     
     profile_form = UserProfileEditForm(instance=user_profile)
     return render(request, 'profile_edit.html', {

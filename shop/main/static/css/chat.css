@@ -1,24 +1,26 @@
 .chat-window {
     max-width: 800px;
     margin: 20px auto;
-    background: var(--bg-card, #fff);
+    background: var(--card-bg);
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px var(--shadow-light);
     display: flex;
     flex-direction: column;
     height: 70vh;
+    border: 1px solid var(--border-color);
 }
 .chat-header {
     padding: 15px 20px;
-    border-bottom: 1px solid var(--border-color, #eee);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     font-weight: bold;
+    color: var(--text-color);
 }
 .back-btn {
     margin-right: 15px;
     text-decoration: none;
-    color: #333;
+    color: var(--text-color);
     font-size: 1.2rem;
 }
 .chat-messages {
@@ -28,7 +30,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    background: #f5f5f5;
+    background: var(--bg-color);
 }
 .message {
     max-width: 70%;
@@ -44,11 +46,12 @@
     border-bottom-right-radius: 5px;
 }
 .msg-theirs {
-    background: white;
-    color: #333;
+    background: var(--bg-secondary);
+    color: var(--text-color);
     align-self: flex-start;
     border-bottom-left-radius: 5px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 2px var(--shadow-light);
+    border: 1px solid var(--border-color);
 }
 .msg-time {
     font-size: 0.7rem;
@@ -58,17 +61,19 @@
 }
 .chat-input-area {
     padding: 15px;
-    background: white;
-    border-top: 1px solid var(--border-color, #eee);
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
     display: flex;
     gap: 10px;
 }
 .chat-input {
     flex-grow: 1;
     padding: 12px 15px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 25px;
     outline: none;
+    background: var(--input-bg);
+    color: var(--input-text);
 }
 .chat-send-btn {
     background: #007bff;
