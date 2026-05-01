@@ -1,16 +1,22 @@
 from django.http import HttpResponse, JsonResponse
-from django.db.models import Sum, F, IntegerField
+from django.db.models import Sum, F, IntegerField, Q
 from django.db.models.functions import Coalesce
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-import json
-from .forms import AddressForm, ProductForm, UserProfileEditForm,  StoreVerificationForm, UserProfileForm, UserEditForm
-from .models import Product_variants, Product_images, OrderItems, ProductAttributeValues, Products, UserProfiles, \
-    models, CategoryAttributes, Addresses, Stocks, Warehouses, StoreProfiles, Carts, \
-    CartItems , Favorites, Categories, Messages, Users
-from django.db.models import Q
 from django.core.paginator import Paginator
+import json
+
+from .forms import (
+    AddressForm, ProductForm, UserProfileEditForm, 
+    StoreVerificationForm, UserProfileForm, UserEditForm
+)
+from .models import (
+    Product_variants, Product_images, OrderItems, ProductAttributeValues, 
+    Products, UserProfiles, models, CategoryAttributes, Addresses, 
+    Stocks, Warehouses, StoreProfiles, Carts, CartItems, 
+    Favorites, Categories, Messages, Users, Orders
+)
 
 
 # def index(request):
@@ -59,13 +65,8 @@ def manage_products(request):
     return render(request, 'products_list.html', {'products': products})
 
 # ============================================
-# views.py
+# Seller Dashboard & Profile
 # ============================================
-from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import CategoryAttributes, StoreProfiles, UserProfiles, Products, Product_variants, Stocks, Product_images
-from .forms import ProductForm, StoreVerificationForm, UserProfileForm
 
 @login_required
 def seller_dashboard(request):
@@ -75,8 +76,6 @@ def seller_dashboard(request):
     if request.method == 'POST' and 'update_order_status' in request.POST:
         order_id = request.POST.get('order_id')
         new_status = request.POST.get('status')
-        from .models import Orders
-        from django.shortcuts import get_object_or_404
         order = get_object_or_404(Orders, id=order_id)
         # Проверка: заказ должен содержать товары этого продавца
         if OrderItems.objects.filter(order=order, product_variant__product__seller=user).exists():
@@ -332,7 +331,6 @@ def edit_product(request, product_id):
 
 @login_required
 def profile(request):
-    from .models import Orders, Favorites, Addresses
     user_profile, _ = UserProfiles.objects.get_or_create(user=request.user)
     
     # Адрес доставки
@@ -354,8 +352,6 @@ def profile(request):
 
 @login_required
 def profile_edit(request):
-    from .models import UserProfiles, Addresses
-    from .forms import UserProfileEditForm, AddressForm
     
     user_profile, _ = UserProfiles.objects.get_or_create(user=request.user)
     address = request.user.addresses.filter(is_default=True).first() or request.user.addresses.first()
@@ -450,7 +446,6 @@ def index(request):
     user_favorites = []
     if request.user.is_authenticated:
         # Собираем ID всех лайкнутых товаров текущего юзера
-        from .models import Favorites  # Не забудь импорт!
         user_favorites = Favorites.objects.filter(user=request.user).values_list('product_id', flat=True)
 
     return render(request, 'index.html', {
@@ -730,8 +725,6 @@ def search(request):
     })
 
 def checkout(request):
-    from .models import Carts, Orders, OrderItems
-    from django.shortcuts import render, redirect
     
     # 1. Получаем корзину
     if request.user.is_authenticated:
@@ -873,8 +866,6 @@ def chat_get_new_messages(request, user_id):
 
 @login_required
 def toggle_friend(request, friend_id):
-    from .models import Users, Friends
-    from django.http import JsonResponse
     if request.method == 'POST':
         try:
             friend = Users.objects.get(id=friend_id)
@@ -894,7 +885,5 @@ def toggle_friend(request, friend_id):
 
 @login_required
 def friends_list(request):
-    from .models import Friends
-    from django.shortcuts import render
     friends = Friends.objects.filter(user=request.user).select_related('friend')
     return render(request, 'friends_list.html', {'friends': friends})
