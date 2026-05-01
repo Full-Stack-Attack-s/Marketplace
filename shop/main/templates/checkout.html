@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .checkout-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 30px;
+    }
+
+    .checkout-panel {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 20px var(--shadow-light);
+    }
+
+    .checkout-title {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 25px;
+        color: var(--text-color);
+    }
+
+    .checkout-section {
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .checkout-input {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-secondary);
+        color: var(--text-color);
+        font-size: 14px;
+        outline: none;
+    }
+
+    .checkout-input:focus {
+        border-color: var(--nav-active);
+    }
+
+    .order-summary {
+        position: sticky;
+        top: 100px;
+        height: fit-content;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-size: 15px;
+        color: var(--text-secondary);
+    }
+
+    .summary-total {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text-color);
+    }
+
+    .place-order-btn {
+        width: 100%;
+        margin-top: 25px;
+        padding: 16px;
+        background: var(--button-gradient);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .place-order-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 217, 168, 0.4);
+    }
+
+    .checkout-items {
+        list-style: none;
+        padding: 0;
+    }
+
+    .checkout-item {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .checkout-item:last-child {
+        border-bottom: none;
+    }
+
+    .checkout-item img {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+
+    .item-info h4 {
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .item-info p {
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+        .checkout-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+    <div class="checkout-main">
+        <div class="checkout-panel checkout-section">
+            <h2 class="checkout-title">Оформление заказа</h2>
+            
+            <div class="section-title">📍 Адрес доставки</div>
+            <form id="checkout-form" method="POST">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-group">
+                        <input type="text" name="first_name" placeholder="Имя" class="checkout-input" required value="{{ request.user.first_name }}">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="last_name" placeholder="Фамилия" class="checkout-input" required value="{{ request.user.last_name }}">
+                    </div>
+                    <div class="form-group full">
+                        <input type="text" name="address" placeholder="Город, улица, дом, квартира" class="checkout-input" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="phone" placeholder="Телефон" class="checkout-input" required value="{{ request.user.phone_number }}">
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Email" class="checkout-input" required value="{{ request.user.email }}">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="checkout-panel">
+            <div class="section-title">📦 Состав заказа</div>
+            <ul class="checkout-items">
+                {% for item in items %}
+                <li class="checkout-item">
+                    {% if item.product_variant.product.product_images_set.first %}
+                        <img src="{{ item.product_variant.product.product_images_set.first.image.url }}" alt="{{ item.product_variant.product.name }}">
+                    {% else %}
+                        <div style="width:60px; height:60px; background:#eee; border-radius:8px;"></div>
+                    {% endif %}
+                    <div class="item-info">
+                        <h4>{{ item.product_variant.product.name }}</h4>
+                        <p>{{ item.quantity }} шт. × ₽{{ item.product_variant.price|floatformat:0 }}</p>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="order-summary">
+        <div class="checkout-panel">
+            <h3 style="margin-bottom: 20px;">Итого</h3>
+            <div class="summary-row">
+                <span>Товары ({{ items.count }})</span>
+                <span>₽{{ total_price|floatformat:0 }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Доставка</span>
+                <span style="color: var(--nav-active);">Бесплатно</span>
+            </div>
+            <div class="summary-total">
+                <span>К оплате</span>
+                <span>₽{{ total_price|floatformat:0 }}</span>
+            </div>
+            
+            <button type="submit" form="checkout-form" class="place-order-btn">Оплатить и оформить</button>
+            <p style="font-size: 11px; color: var(--text-secondary); margin-top: 15px; text-align: center;">
+                Нажимая кнопку, вы соглашаетесь с условиями оферты и политикой конфиденциальности.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

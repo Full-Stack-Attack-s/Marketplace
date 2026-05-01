@@ -333,6 +333,7 @@ class UserProfiles(models.Model):
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True, related_name='profile')
     first_name = models.CharField("Имя", max_length=50, null=True, blank=True)
     last_name = models.CharField("Фамилия", max_length=50, null=True, blank=True)
+    patronymic = models.CharField("Отчество", max_length=50, null=True, blank=True)
     birth_date = models.DateField("Дата рождения", null=True, blank=True)
     avatar = models.ImageField("Аватар", upload_to='avatars/', null=True, blank=True)
     phone_number = models.CharField("Телефон", max_length=20, null=True, blank=True)

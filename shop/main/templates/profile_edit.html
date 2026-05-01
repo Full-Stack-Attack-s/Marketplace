@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Настройки профиля — {{ user.email }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<style>
+    .settings-container {
+        max-width: 800px;
+        margin: 40px auto;
+    }
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        margin-bottom: 24px;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--nav-active); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <a href="{% url 'profile' %}" class="back-link">← Вернуться в профиль</a>
+    
+    <h1 class="profile-fullname" style="margin-bottom: 32px;">Настройки аккаунта</h1>
+
+    <div class="profile-side-card" style="margin-bottom: 24px;">
+        <div class="profile-side-title">Личные данные</div>
+        <form method="POST" enctype="multipart/form-data" class="profile-edit-form">
+            {% csrf_token %}
+            <input type="hidden" name="update_user" value="1">
+            
+            <div class="profile-field">
+                <label>Аватар</label>
+                {{ profile_form.avatar }}
+            </div>
+
+            <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                <div class="profile-field">
+                    <label>Фамилия</label>
+                    {{ profile_form.last_name }}
+                </div>
+                <div class="profile-field">
+                    <label>Имя</label>
+                    {{ profile_form.first_name }}
+                </div>
+            </div>
+
+            <div class="profile-field" style="margin-top: 15px;">
+                <label>Телефон</label>
+                {{ profile_form.phone_number }}
+            </div>
+
+            <button type="submit" class="profile-save-btn">
+                💾 Сохранить изменения
+            </button>
+        </form>
+    </div>
+
+    <div class="profile-side-card">
+        <div class="profile-side-title">📍 Адрес доставки</div>
+        <form method="POST" class="profile-edit-form">
+            {% csrf_token %}
+            <input type="hidden" name="update_address" value="1">
+            <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
+                <div class="profile-field">
+                    <label>Страна</label>
+                    <input type="text" name="country" value="{{ address.country|default:'' }}" style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-color);" placeholder="Например: Россия">
+                </div>
+                <div class="profile-field">
+                    <label>Город</label>
+                    <input type="text" name="city" value="{{ address.city|default:'' }}" style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-color);" placeholder="Например: Москва">
+                </div>
+            </div>
+            <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                <div class="profile-field">
+                    <label>Улица, дом, квартира</label>
+                    <input type="text" name="street" value="{{ address.street|default:'' }}" style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-color);" placeholder="Например: ул. Ленина 1, кв. 42">
+                </div>
+                <div class="profile-field">
+                    <label>Почтовый индекс</label>
+                    <input type="text" name="zip_code" value="{{ address.zip_code|default:'' }}" style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-color);" placeholder="Например: 123456">
+                </div>
+            </div>
+            <button type="submit" class="profile-save-btn" style="margin-top: 15px;">
+                📍 Обновить адрес
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

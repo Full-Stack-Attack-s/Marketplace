@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 {% load static %}
 
@@ -16,9 +17,9 @@
         </div>
         
         <div class="auth-footer">
-            <p style="margin-bottom: 15px;">Перейдите по ссылке в письме, чтобы завершить регистрацию.</p>
+            <p class="mb-15">Перейдите по ссылке в письме, чтобы завершить регистрацию.</p>
             <p>Если письма нет, проверьте папку «Спам».</p>
-            <p style="margin-top: 20px;"><a href="{% url 'account_login' %}">Вернуться ко входу</a></p>
+            <p class="mt-20"><a href="{% url 'account_login' %}">Вернуться ко входу</a></p>
         </div>
     </div>
 </div>

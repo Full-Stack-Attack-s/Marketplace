@@ -8,7 +8,7 @@ class RegisterForm(UserCreationForm):
 class StoreVerificationForm(forms.ModelForm):
     class Meta:
         model = StoreProfiles
-        fields = ['company_name', 'inn', 'legal_address']
+        fields = ['company_name', 'inn', 'legal_address', 'description', 'logo']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -62,7 +62,7 @@ class ProductForm(forms.ModelForm):
 class UserProfileEditForm(forms.ModelForm):
     class Meta:
         model = UserProfiles
-        fields = ['first_name', 'last_name', 'birth_date', 'gender', 'avatar']
+        fields = ['first_name', 'last_name', 'patronymic', 'phone_number', 'birth_date', 'gender', 'avatar']
         widgets = {
             # Делаем так, чтобы браузер показывал удобный календарик
             'birth_date': forms.DateInput(attrs={'type': 'date'}), 
@@ -73,3 +73,8 @@ class AddressForm(forms.ModelForm):
         model = Addresses
         # Выводим нужные поля для доставки
         fields = ['country', 'city', 'street', 'zip_code']
+
+class UserEditForm(forms.ModelForm):
+    class Meta:
+        model = Users
+        fields = ['email']

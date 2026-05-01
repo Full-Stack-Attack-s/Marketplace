@@ -1,0 +1,338 @@
+/* ============================================ */
+
+/* PRODUCT_FORM.CSS                             */
+/* Стили для формы добавления/редактирования   */
+/* товара. Использует переменные из base.css   */
+/* ============================================ */
+
+/* ── Панель без glass-panel ─────────────────── */
+.pf-panel {
+    background: var(--card-bg) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+.pf-panel h2 {
+    color: var(--text-color) !important;
+}
+
+/* ── Форма ──────────────────────────────────── */
+.pf-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ── Секция ─────────────────────────────────── */
+.pf-section {
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.pf-section:last-of-type {
+    border-bottom: none;
+}
+
+.pf-section-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ── Grid для полей ─────────────────────────── */
+.pf-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.pf-full {
+    grid-column: 1 / -1;
+}
+
+/* ── form-group ─────────────────────────────── */
+.pf-form .form-group {
+    margin-bottom: 0;
+}
+
+.pf-form .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    margin-left: 2px;
+}
+
+.pf-required {
+    color: #ff4757;
+    margin-left: 3px;
+}
+
+/* ── Поля ввода ─────────────────────────────── */
+.pf-form input,
+.pf-form select,
+.pf-form textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-color);
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    font-family: inherit;
+}
+
+.pf-form input:focus,
+.pf-form select:focus,
+.pf-form textarea:focus {
+    border-color: var(--nav-active);
+    box-shadow: 0 0 0 3px rgba(102, 217, 168, 0.18);
+}
+
+.pf-form textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.pf-form select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='gray' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+    padding-right: 36px;
+    cursor: pointer;
+}
+
+[data-theme="dark"] .pf-form select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+/* ── Загрузка фото ──────────────────────────── */
+.pf-photo-hint {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: rgba(102, 217, 168, 0.07);
+    border-radius: 8px;
+    border-left: 3px solid var(--nav-active);
+}
+
+/* Зона drop */
+.pf-dropzone {
+    border: 2px dashed var(--border-color);
+    border-radius: 14px;
+    padding: 36px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg-secondary);
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.pf-dropzone:hover,
+.pf-dropzone--active {
+    border-color: var(--nav-active);
+    background: rgba(102, 217, 168, 0.05);
+}
+
+.pf-dropzone-icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+    line-height: 1;
+}
+
+.pf-dropzone-text {
+    font-size: 15px;
+    color: var(--text-color);
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.pf-browse-link {
+    color: var(--nav-active);
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.pf-dropzone-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.pf-dropzone-error {
+    background: rgba(255, 71, 87, 0.1);
+    border: 1px solid rgba(255, 71, 87, 0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #e03e4e;
+    margin-bottom: 12px;
+    animation: fadeIn 0.2s ease;
+}
+
+[data-theme="dark"] .pf-dropzone-error { color: #ff6b78; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Превью загружаемых фото */
+.pf-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.pf-preview-card {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid var(--border-color);
+    aspect-ratio: 1;
+    background: var(--bg-secondary);
+    transition: border-color 0.2s;
+}
+
+.pf-preview-card:first-child {
+    border-color: var(--nav-active);
+}
+
+.pf-preview-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.pf-preview-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 10px;
+    padding: 4px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Существующие фото при редактировании */
+.pf-existing-photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.pf-existing-photo {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid var(--border-color);
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+}
+
+.pf-existing-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pf-no-photos {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Бейдж "Главная" */
+.pf-main-badge {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    background: var(--nav-active);
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    pointer-events: none;
+}
+
+/* Кнопка удаления фото */
+.pf-delete-photo {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255,71,87,0.9);
+    color: #fff;
+    border: none;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.pf-delete-photo:hover {
+    background: #ff4757;
+    transform: scale(1.15);
+}
+
+/* ── Кнопки сохранения ──────────────────────── */
+.pf-actions {
+    display: flex;
+    gap: 12px;
+    padding-top: 24px;
+    flex-wrap: wrap;
+}
+
+.pf-submit {
+    padding: 13px 32px;
+    font-size: 15px;
+}
+
+/* ── Адаптивность ───────────────────────────── */
+/* ── Утилиты и модификаторы ─────────────────── */
+.auth-form.mt-20 { margin-top: 20px; }
+.dynamic-attributes-container { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+.card-actions-start { margin-top: 30px; justify-content: flex-start; }
+.max-w-200 { max-width: 200px; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.mb-15 { margin-bottom: 15px; }
+.text-danger { color: #ff4757; }
+.dynamic-attr-input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--input-text); margin-top: 5px; }
+.hidden { display: none !important; }
+
+@media (max-width: 768px) {
+    .pf-grid { grid-template-columns: 1fr; }
+    .pf-dropzone { padding: 24px 16px; }
+    .pf-preview-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+}

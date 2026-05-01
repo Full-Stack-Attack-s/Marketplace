@@ -22,7 +22,7 @@
     <div class="dashboard-content">
         <div class="dashboard-panel glass-panel">
             <h2>{{ title }}</h2>
-            <form method="POST" enctype="multipart/form-data" class="auth-form" style="margin-top: 20px;">
+            <form method="POST" enctype="multipart/form-data" class="auth-form mt-20">
                 {% csrf_token %}
                 
                 {% for field in form %}
@@ -32,12 +32,12 @@
                 </div>
                 {% endfor %}
 
-                <div id="dynamic-attributes-container" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                <div id="dynamic-attributes-container" class="dynamic-attributes-container">
                     </div>
 
-                <div class="dashboard-card-actions" style="margin-top: 30px; justify-content: flex-start;">
-                    <button type="submit" class="action-btn btn-edit" style="max-width: 200px;">Сохранить товар</button>
-                    <a href="#" class="action-btn profile-btn-outline" style="max-width: 200px; display: flex; align-items: center; justify-content: center;">Отмена</a>
+                <div class="dashboard-card-actions card-actions-start">
+                    <button type="submit" class="action-btn btn-edit max-w-200">Сохранить товар</button>
+                    <a href="#" class="action-btn profile-btn-outline max-w-200 flex-center">Отмена</a>
                 </div>
             </form>
         </div>
@@ -60,17 +60,17 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.length > 0) {
-                                let html = '<h4 style="margin-bottom: 15px;">Специфичные характеристики</h4>';
+                                let html = '<h4 class="mb-15">Специфичные характеристики</h4>';
                                 data.forEach(attr => {
                                     const requiredObj = attr.is_required ? 'required' : '';
                                     const reqLabel = attr.is_required ? '*' : '';
                                     
                                     html += `
                                         <div class="form-group">
-                                            <label>${attr.name} <span style="color: #ff4757;">${reqLabel}</span></label>
+                                            <label>${attr.name} <span class="text-danger">${reqLabel}</span></label>
                                             <input type="text" name="attr_${attr.name}" ${requiredObj} 
                                                 class="auth-form input" 
-                                                style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--input-text); margin-top: 5px;" 
+                                                class="dynamic-attr-input"
                                                 placeholder="Введите значение...">
                                         </div>
                                     `;

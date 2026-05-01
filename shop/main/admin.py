@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import *
 from mptt.admin import DraggableMPTTAdmin
 from .models import CategoryAttributes
+
 @admin.register(Categories)
 class CategoriesAdmin(DraggableMPTTAdmin):
     # tree_actions добавляет кнопки перемещения, indented_title — само дерево
@@ -125,5 +126,11 @@ class StocksAdmin(admin.ModelAdmin):
     list_display = ('id', 'product_variant', 'warehouse', 'quantity', 'reserved_quantity')
     search_fields = ('product_variant__sku', 'warehouse__name')
     list_filter = ('warehouse', 'product_variant__product__category')
+
+@admin.register(ProductAttributeValues)
+class ProductAttributeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'attribute', 'value')
+    list_filter = ('value', 'attribute')
+
 
 # Register your models here.

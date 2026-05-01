@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Поиск товаров — BDSM-A{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/catalog.css' %}">
+<link rel="stylesheet" href="{% static 'css/search.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="search-page">
+
+    <!-- ── Поисковая строка ────────────────── -->
+    <form method="GET" action="{% url 'search' %}" class="search-hero" id="searchForm">
+        <h1 class="search-hero-title">🔍 Поиск товаров</h1>
+        <div class="search-input-wrap">
+            <input type="text"
+                   name="q"
+                   id="searchQuery"
+                   value="{{ query }}"
+                   placeholder="Введите название, бренд или категорию..."
+                   autocomplete="off"
+                   class="search-main-input">
+            <button type="submit" class="search-submit-btn">Найти</button>
+        </div>
+
+        {% if query %}
+        <div class="search-result-count">
+            {% if total_count %}
+                Найдено: <strong>{{ total_count }}</strong> товаров по запросу «{{ query }}»
+            {% else %}
+                По запросу «{{ query }}» ничего не найдено
+            {% endif %}
+        </div>
+        {% endif %}
+    </form>
+
+    <!-- ── Основная сетка: фильтры + результаты ── -->
+    <div class="search-layout">
+
+        <!-- ФИЛЬТРЫ -->
+        <aside class="search-filters">
+            <form method="GET" action="{% url 'search' %}" id="filtersForm">
+                <input type="hidden" name="q" value="{{ query }}">
+
+                <div class="filter-block category-tree-block">
+                    <div class="filter-title">📂 Категория</div>
+                    <div class="filter-options category-tree">
+                        <label class="filter-radio">
+                            <input type="radio" name="category" value=""
+                                   {% if not selected_category %}checked{% endif %}
+                                   onchange="this.form.submit()">
+                            <span>Все категории</span>
+                        </label>
+                        {% load mptt_tags %}
+                        <ul class="mptt-tree root-tree">
+                            {% recursetree categories %}
+                                <li class="tree-node {% if not node.is_leaf_node %}has-children{% endif %}">
+                                    <div class="node-content">
+                                        {% if not node.is_leaf_node %}
+                                            <span class="tree-toggle"></span>
+                                        {% endif %}
+                                        <label class="filter-radio">
+                                            <input type="radio" name="category" value="{{ node.id }}"
+                                                   {% if selected_category == node.id|stringformat:"i" %}checked{% endif %}
+                                                   onchange="this.form.submit()">
+                                            <span>{{ node.name }}</span>
+                                        </label>
+                                    </div>
+                                    {% if not node.is_leaf_node %}
+                                        <ul class="mptt-tree child-tree">
+                                            {{ children }}
+                                        </ul>
+                                    {% endif %}
+                                </li>
+                            {% endrecursetree %}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="filter-block">
+                    <div class="filter-title">💰 Цена, ₽</div>
+                    <div class="price-range">
+                        <div class="price-input-group">
+                            <label>от</label>
+                            <input type="number" name="price_min" value="{{ price_min }}"
+                                   placeholder="0" min="0" class="price-input" id="priceMin">
+                        </div>
+                        <span class="price-dash">—</span>
+                        <div class="price-input-group">
+                            <label>до</label>
+                            <input type="number" name="price_max" value="{{ price_max }}"
+                                   placeholder="∞" min="0" class="price-input" id="priceMax">
+                        </div>
+                    </div>
+                    <button type="submit" class="filter-apply-btn">Применить</button>
+                </div>
+
+                <div class="filter-block">
+                    <div class="filter-title">📊 Сортировка</div>
+                    <div class="filter-options">
+                        {% for val, label in sort_options %}
+                        <label class="filter-radio">
+                            <input type="radio" name="sort" value="{{ val }}"
+                                   {% if selected_sort == val %}checked{% endif %}
+                                   onchange="this.form.submit()">
+                            <span>{{ label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="filter-block">
+                    <div class="filter-title">✅ Наличие</div>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" name="in_stock" value="1"
+                               {% if in_stock %}checked{% endif %}
+                               onchange="this.form.submit()">
+                        <span>Только в наличии</span>
+                    </label>
+                </div>
+
+                {% if query or selected_category or price_min or price_max or in_stock %}
+                <a href="{% url 'search' %}" class="filter-reset-btn">✖ Сбросить фильтры</a>
+                {% endif %}
+            </form>
+        </aside>
+
+        <!-- РЕЗУЛЬТАТЫ -->
+        <div class="search-results">
+            {% if products %}
+            <div class="search-grid">
+                {% for p in products %}
+                <div class="product-card">
+                    <button class="catalog-fav-btn"
+                            data-id="{{ p.id }}"
+                            onclick="addToFavorites(event, {{ p.id }}, this)"
+                            aria-label="Избранное">
+                        {% if p.id in user_favorites %}❤️{% else %}🤍{% endif %}
+                    </button>
+
+                    <a href="{% url 'product_detail' p.id %}" class="product-link">
+                        <div class="product-image">
+                            {% if p.main_image_url %}
+                                <img src="{{ p.main_image_url }}" alt="{{ p.name }}" loading="lazy">
+                            {% else %}
+                                <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото" loading="lazy">
+                            {% endif %}
+                        </div>
+                    </a>
+
+                    <div class="product-info">
+                        <a href="{% url 'product_detail' p.id %}" class="product-name-link">
+                            <div class="product-name">{{ p.name|truncatechars:52 }}</div>
+                        </a>
+                        <div class="product-price">{{ p.exact_price|floatformat:0 }} ₽</div>
+                        <button class="add-to-cart" onclick="addToCart('{{ p.default_variant_id }}')">
+                            🛒 В корзину
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Пагинация -->
+            {% if products.has_other_pages %}
+            <div class="search-pagination">
+                {% if products.has_previous %}
+                <a href="?q={{ query }}&page={{ products.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}{% if in_stock %}&in_stock=1{% endif %}"
+                   class="pagination-btn">← Назад</a>
+                {% endif %}
+
+                <span class="pagination-info">
+                    {{ products.number }} / {{ products.paginator.num_pages }}
+                </span>
+
+                {% if products.has_next %}
+                <a href="?q={{ query }}&page={{ products.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}{% if in_stock %}&in_stock=1{% endif %}"
+                   class="pagination-btn">Вперёд →</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% elif query %}
+            <div class="search-empty">
+                <div class="search-empty-icon">🔍</div>
+                <h3>Ничего не найдено</h3>
+                <p>По запросу «{{ query }}» товаров не найдено. Попробуйте изменить запрос или сбросить фильтры.</p>
+                <a href="{% url 'search' %}" class="filter-apply-btn filter-reset-btn">Сбросить всё</a>
+            </div>
+
+            {% else %}
+            <div class="search-empty">
+                <div class="search-empty-icon">🛍️</div>
+                <h3>Начните поиск</h3>
+                <p>Введите название товара, бренд или категорию в поле выше.</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

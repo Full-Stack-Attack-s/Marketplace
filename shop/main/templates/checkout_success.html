@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 80px auto; text-align: center; padding: 40px; background: var(--card-bg); border-radius: 24px; border: 1px solid var(--border-color); box-shadow: 0 10px 40px var(--shadow-light);">
+    <div style="font-size: 64px; margin-bottom: 20px;">🎉</div>
+    <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 15px;">Заказ оформлен!</h1>
+    <p style="color: var(--text-secondary); font-size: 16px; margin-bottom: 30px;">
+        Номер вашего заказа: <strong>#{{ order.id }}</strong>.<br>
+        Мы отправили подтверждение на вашу почту.
+    </p>
+    <div style="display: flex; gap: 15px; justify-content: center;">
+        <a href="/" class="place-order-btn" style="text-decoration: none; padding: 12px 25px; width: auto;">На главную</a>
+        <a href="{% url 'profile' %}" class="place-order-btn" style="text-decoration: none; padding: 12px 25px; width: auto; background: var(--bg-secondary); color: var(--text-color);">Мои заказы</a>
+    </div>
+</div>
+{% endblock %}

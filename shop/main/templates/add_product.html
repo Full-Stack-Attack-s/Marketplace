@@ -4,41 +4,106 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<link rel="stylesheet" href="{% static 'css/product_form.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-container">
-    <div class="dashboard-sidebar">
-        <h3>Управление</h3>
-        <p class="store-name">Магазин: {{ request.user.email }}</p>
-        <div class="dashboard-menu">
-            <a href="{% url 'seller_dashboard' %}">📊 Дашборд</a>
-            <a href="{% url 'manage_products' %}">📦 Мои товары</a>
-            <a href="{% url 'seller_profile' %}">👤 Профиль</a>
-            <hr>
-            <a href="/" class="back-link">← Вернуться на сайт</a>
-        </div>
-    </div>
 
+    <!-- ─── САЙДБАР ─────────────────────────────── -->
+    <aside class="dashboard-sidebar">
+        {% include 'includes/seller_sidebar.html' %}
+    </aside>
+
+    <!-- ─── ФОРМА ──────────────────────────────── -->
     <div class="dashboard-content">
-        <div class="dashboard-panel glass-panel auth-wide-container">
-            <h2>{{ title }}</h2>
-            <form method="POST" enctype="multipart/form-data" class="auth-form">
-                {% csrf_token %}
-                
-                {% for field in form %}
-                <div class="form-group">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                </div>
-                {% endfor %}
+        <div class="dashboard-panel pf-panel">
 
-                <div id="dynamic-attributes-container" class="profile-actions-grid">
+            <div class="panel-header">
+                <div>
+                    <h2>{{ title }}</h2>
+                    <div class="panel-subtitle">Заполните все обязательные поля и загрузите фотографии</div>
+                </div>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" class="pf-form auth-form">
+                {% csrf_token %}
+
+                <!-- ── Основные поля товара ─── -->
+                <div class="pf-section">
+                    <div class="pf-section-title">📋 Основная информация</div>
+                    <div class="pf-grid">
+                        {% for field in form %}
+                        <div class="form-group {% if field.name == 'description' %}pf-full{% endif %}">
+                            <label for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="pf-required">*</span>{% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <span class="help-text">{{ field.help_text }}</span>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- ── Динамические атрибуты категории ─── -->
+                <div id="dynamic-attributes-container" class="pf-section hidden">
+                    <div class="pf-section-title">⚙️ Характеристики товара</div>
+                    <div id="attrs-grid" class="pf-grid"></div>
+                </div>
+
+                <!-- ── Множественная загрузка фото ─── -->
+                <div class="pf-section">
+                    <div class="pf-section-title">📷 Фотографии товара</div>
+                    <div class="pf-photo-hint">
+                        Первая фотография станет главной. Рекомендуем загружать минимум 3 фото.
                     </div>
 
-                <div class="dashboard-card-actions">
-                    <button type="submit" class="action-btn btn-edit">Сохранить товар</button>
-                    <a href="{% url 'manage_products' %}" class="action-btn profile-btn-outline">Отмена</a>
+                    <!-- Существующие фото (при редактировании) -->
+                    {% if product %}
+                    <div class="pf-existing-photos" id="existingPhotos">
+                        {% for img in product.product_images_set.all %}
+                        <div class="pf-existing-photo" id="photo-{{ img.id }}">
+                            <img src="{{ img.image.url }}" alt="Фото {{ forloop.counter }}">
+                            {% if img.is_main %}<span class="pf-main-badge">Главная</span>{% endif %}
+                            <button type="button" class="pf-delete-photo"
+                                    onclick="deleteExistingPhoto({{ img.id }}, this)"
+                                    title="Удалить фото">×</button>
+                        </div>
+                        {% empty %}
+                        <p class="pf-no-photos">Фотографий нет</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Зона drag-and-drop для загрузки новых фото -->
+                    <div class="pf-dropzone" id="dropzone">
+                        <div class="pf-dropzone-icon">📁</div>
+                        <div class="pf-dropzone-text">
+                            Перетащите фото сюда или <label for="id_images" class="pf-browse-link">выберите файлы</label>
+                        </div>
+                        <div class="pf-dropzone-sub">JPG, PNG, WEBP · Максимум 10 файлов · до 5 МБ каждый</div>
+                        <input type="file" id="id_images" name="images" multiple accept="image/*"
+                               class="hidden">
+                    </div>
+
+                    <!-- Превью новых фото -->
+                    <div class="pf-preview-grid" id="previewGrid"></div>
+                </div>
+
+                <!-- ── Кнопки ─── -->
+                <div class="pf-actions">
+                    <button type="submit" class="action-btn btn-edit pf-submit">
+                        💾 Сохранить товар
+                    </button>
+                    <a href="{% url 'manage_products' %}" class="action-btn btn-outline">
+                        Отмена
+                    </a>
                 </div>
             </form>
         </div>
@@ -46,70 +111,194 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Ищем select по имени, так как ID может меняться
+// ─── Данные атрибутов для редактирования ───────────────────────
+const SAVED_ATTRS = {{ existing_attrs_json|default:"{}"|safe }};
+
+// ─── Динамические атрибуты по категории ────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
     const categorySelect = document.querySelector('select[name="category"]');
-    const attrContainer = document.querySelector('#dynamic-attributes-container');
+    const attrSection    = document.getElementById('dynamic-attributes-container');
+    const attrsGrid      = document.getElementById('attrs-grid');
 
-    console.log("Скрипт запущен! Select:", categorySelect, "Контейнер:", attrContainer);
-
-    if (!categorySelect || !attrContainer) {
-        console.error("КРИТИЧЕСКАЯ ОШИБКА: Поле категории или контейнер атрибутов не найдены в HTML.");
-        return;
-    }
+    if (!categorySelect) return;
 
     function fetchAttributes() {
         const categoryId = categorySelect.value;
-        console.log("Выбрана категория с ID:", categoryId);
-        
         if (!categoryId) {
-            attrContainer.innerHTML = '';
+            attrSection.style.display = 'none';
+            attrsGrid.innerHTML = '';
             return;
         }
-
-        const url = `/api/category-attributes/${categoryId}/`;
-        console.log("Отправляем запрос на:", url);
-
-        fetch(url)
-            .then(response => {
-                console.log("Статус ответа сервера:", response.status);
-                if (!response.ok) throw new Error('Ошибка сервера: ' + response.status);
-                return response.json();
-            })
+        fetch(`/api/category-attributes/${categoryId}/`)
+            .then(r => r.ok ? r.json() : Promise.reject(r.status))
             .then(data => {
-                console.log("Получены данные из БД:", data);
-                if (data.length === 0) {
-                    attrContainer.innerHTML = '<p style="color: #888; font-size: 13px;">Для этой категории нет характеристик.</p>';
+                if (!data.length) {
+                    attrSection.style.display = 'none';
                     return;
                 }
-
-                attrContainer.innerHTML = '<h3 style="color: var(--nav-active); margin-bottom: 15px; margin-top: 20px;">Характеристики</h3>';
+                attrsGrid.innerHTML = '';
+                attrSection.style.display = 'block';
                 data.forEach(attr => {
-                    const requiredHtml = attr.is_required ? '<span style="color: #ff4757;">*</span>' : '';
-                    const requiredAttr = attr.is_required ? 'required' : '';
-                    
-                    attrContainer.insertAdjacentHTML('beforeend', `
-                        <div class="form-group" style="margin-bottom: 15px;">
-                            <label style="display:block; margin-bottom: 5px;">${attr.name} ${requiredHtml}</label>
-                            <input type="text" 
-                                   name="attr_${attr.name}" 
-                                   class="auth-input" 
-                                   style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--input-text);"
-                                   ${requiredAttr}
-                                   placeholder="Введите значение...">
-                        </div>
-                    `);
+                    const savedVal = SAVED_ATTRS[attr.label] || SAVED_ATTRS[attr.name] || '';
+                    const div = document.createElement('div');
+                    div.className = 'form-group';
+                    div.innerHTML = `
+                        <label>${attr.label || attr.name}
+                            ${attr.is_required ? '<span class="pf-required">*</span>' : ''}
+                        </label>
+                        <input type="text"
+                               name="attr_${attr.label || attr.name}"
+                               value="${savedVal}"
+                               placeholder="Введите значение"
+                               class="auth-form input"
+                               ${attr.is_required ? 'required' : ''}>
+                    `;
+                    attrsGrid.appendChild(div);
                 });
             })
-            .catch(error => {
-                console.error("Ошибка Fetch API:", error);
-                attrContainer.innerHTML = '<p style="color: #ff4757;">Сбой запроса. Проверь консоль браузера.</p>';
+            .catch(err => {
+                console.warn('Ошибка загрузки атрибутов:', err);
+                attrSection.style.display = 'none';
             });
     }
 
     categorySelect.addEventListener('change', fetchAttributes);
-    // Принудительно вызываем один раз на случай, если категория уже выбрана (например, после обновления страницы)
-    fetchAttributes(); 
+    fetchAttributes(); // Вызов при загрузке (для режима редактирования)
 });
+
+// ─── Drag-and-drop + превью нескольких фото ─────────────────────
+(function () {
+    const dropzone    = document.getElementById('dropzone');
+    const fileInput   = document.getElementById('id_images');
+    const previewGrid = document.getElementById('previewGrid');
+
+    if (!dropzone || !fileInput) return;
+
+    // Клик по зоне открывает диалог
+    dropzone.addEventListener('click', function (e) {
+        if (e.target.tagName !== 'LABEL') fileInput.click();
+    });
+
+    // Drag over / leave
+    dropzone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropzone.classList.add('pf-dropzone--active');
+    });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('pf-dropzone--active'));
+
+    // Drop
+    dropzone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropzone.classList.remove('pf-dropzone--active');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    // File input change
+    fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+    // Храним выбранные файлы (DataTransfer trick)
+    let dt = new DataTransfer();
+
+    function handleFiles(files) {
+        const MAX_SIZE = 5 * 1024 * 1024; // 5 МБ
+        Array.from(files).forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+            if (file.size > MAX_SIZE) {
+                showDropzoneError(`«${file.name}» превышает 5 МБ`);
+                return;
+            }
+            if (dt.files.length >= 10) {
+                showDropzoneError('Максимум 10 фотографий');
+                return;
+            }
+            dt.items.add(file);
+            addPreview(file, dt.files.length - 1);
+        });
+        fileInput.files = dt.files;
+    }
+
+    function addPreview(file, index) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const card = document.createElement('div');
+            card.className = 'pf-preview-card';
+            card.dataset.index = index;
+            card.innerHTML = `
+                <img src="${e.target.result}" alt="${file.name}">
+                ${index === 0 ? '<span class="pf-main-badge">Главная</span>' : ''}
+                <button type="button" class="pf-delete-photo" onclick="removePreview(this, ${index})" title="Убрать">×</button>
+                <div class="pf-preview-name">${file.name}</div>
+            `;
+            previewGrid.appendChild(card);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    window.removePreview = function(btn, removeIndex) {
+        const card = btn.closest('.pf-preview-card');
+        card.remove();
+
+        // Перестраиваем DataTransfer без удалённого файла
+        const newDt = new DataTransfer();
+        Array.from(dt.files).forEach((f, i) => {
+            if (i !== removeIndex) newDt.items.add(f);
+        });
+        dt = newDt;
+        fileInput.files = dt.files;
+
+        // Переиндексация и обновление бейджа "Главная"
+        document.querySelectorAll('.pf-preview-card').forEach((c, i) => {
+            c.dataset.index = i;
+            const badge = c.querySelector('.pf-main-badge');
+            if (i === 0 && !badge) {
+                const b = document.createElement('span');
+                b.className = 'pf-main-badge';
+                b.textContent = 'Главная';
+                c.insertBefore(b, c.querySelector('button'));
+            } else if (i !== 0 && badge) {
+                badge.remove();
+            }
+        });
+    };
+
+    function showDropzoneError(msg) {
+        const el = document.createElement('div');
+        el.className = 'pf-dropzone-error';
+        el.textContent = '⚠ ' + msg;
+        dropzone.after(el);
+        setTimeout(() => el.remove(), 3500);
+    }
+})();
+
+// ─── Удаление существующих фото (AJAX) ──────────────────────────
+window.deleteExistingPhoto = function(photoId, btn) {
+    if (!confirm('Удалить фотографию?')) return;
+    fetch(`/product/image/delete/${photoId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            const card = document.getElementById(`photo-${photoId}`);
+            if (card) card.remove();
+        }
+    })
+    .catch(err => console.error('Ошибка удаления фото:', err));
+};
+
+function getCookie(name) {
+    let v = null;
+    if (document.cookie) {
+        document.cookie.split(';').forEach(c => {
+            c = c.trim();
+            if (c.startsWith(name + '=')) v = decodeURIComponent(c.slice(name.length + 1));
+        });
+    }
+    return v;
+}
 </script>
 {% endblock %}

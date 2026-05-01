@@ -7,71 +7,228 @@
 
 {% block content %}
 <div class="dashboard-container">
-    <div class="dashboard-sidebar">
-        <h3>Управление</h3>
-        <p class="store-name">Пользователь: {{ request.user.email }}</p>
-        <div class="dashboard-menu">
-            <a href="{% url 'seller_dashboard' %}">📊 Дашборд</a>
-            <a href="{% url 'manage_products' %}">📦 Мои товары</a>
-            <a href="{% url 'seller_profile' %}">👤 Профиль</a>
-            <hr>
-            <a href="/" class="back-link">← Вернуться на сайт</a>
-        </div>
-    </div>
 
+    <!-- ─── САЙДБАР ─────────────────────────────── -->
+    <aside class="dashboard-sidebar">
+        {% include 'includes/seller_sidebar.html' %}
+    </aside>
+
+    <!-- ─── ОСНОВНОЙ КОНТЕНТ ──────────────────── -->
     <div class="dashboard-content">
-        <div class="dashboard-panel glass-panel">
-            <h2>Комплексная панель продавца</h2>
-            
-            {% if store_profile.verification_status != 'approved' %}
-                <div class="sales-badge" style="background: rgba(255, 193, 7, 0.15); color: #ffc107; border-color: rgba(255, 193, 7, 0.3); padding: 10px; margin-bottom: 20px; font-size: 13px;">
-                    ⚠️ Ваш магазин не подтвержден. <a href="{% url 'seller_profile' %}" style="color: #ffc107; text-decoration: underline;">Заполните профиль компании</a>, чтобы получить статус проверенного продавца.
-                </div>
-            {% endif %}
 
-            <div class="dashboard-grid" style="margin-bottom: 30px;">
-                <div class="dashboard-card">
-                    <p class="dashboard-card-title">Баланс продаж</p>
-                    <p class="dashboard-card-status" style="font-size: 24px; color: var(--nav-active);">₽{{ sales_total|floatformat:2 }}</p>
-                </div>
-                <div class="dashboard-card">
-                    <p class="dashboard-card-title">Активные товары</p>
-                    <p class="dashboard-card-status" style="font-size: 24px; color: var(--text-color);">{{ active_products }}</p>
-                </div>
-                <div class="dashboard-card">
-                    <p class="dashboard-card-title">Новые заказы</p>
-                    <p class="dashboard-card-status" style="font-size: 24px; color: var(--text-color);">{{ new_orders }}</p>
+        <!-- Баннер верификации -->
+        {% if store_profile.verification_status != 'approved' %}
+        <div class="verification-banner">
+            <span class="banner-icon">⚠️</span>
+            <div>
+                Ваш магазин не подтверждён — товары могут быть ограничены в показе.
+                <a href="{% url 'seller_profile' %}">Заполните профиль компании</a>, чтобы получить статус проверенного продавца.
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ── KPI-карточки ───────────────────── -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Панель продавца</h2>
+                    <div class="panel-subtitle">Сводка за всё время</div>
                 </div>
             </div>
 
-            <h3>Последние заказы</h3>
+            <div class="stats-grid">
+
+                <!-- Выручка -->
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-icon green">💰</div>
+                        <span class="stat-trend up">↑ продажи</span>
+                    </div>
+                    <div class="stat-value accent">₽{{ sales_total|floatformat:0 }}</div>
+                    <div class="stat-label">Общая выручка</div>
+                    
+                    <!-- Sales Goal Progress -->
+                    <div class="sales-goal-box">
+                        <div class="goal-header">
+                            <span>Цель месяца</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="goal-bar">
+                            <div class="goal-progress" style="width: 75%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sparkline SVG -->
+                    <div class="sparkline-wrap">
+                        <svg viewBox="0 0 100 36" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="sparkGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#66d9a8" stop-opacity="0.5"/>
+                                    <stop offset="100%" stop-color="#66d9a8" stop-opacity="0"/>
+                                </linearGradient>
+                            </defs>
+                            <polyline class="spark-line"
+                                points="0,28 14,22 28,26 42,12 56,18 70,8 84,14 100,4"/>
+                            <polygon class="spark-fill"
+                                points="0,28 14,22 28,26 42,12 56,18 70,8 84,14 100,4 100,36 0,36"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Активные товары -->
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-icon blue">📦</div>
+                        {% if active_products > 0 %}
+                            <span class="stat-trend up">↑ активны</span>
+                        {% else %}
+                            <span class="stat-trend neutral">— нет</span>
+                        {% endif %}
+                    </div>
+                    <div class="stat-value">{{ active_products }}</div>
+                    <div class="stat-label">Активных товаров</div>
+                </div>
+
+                <!-- Новые заказы -->
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-icon orange">🛒</div>
+                        {% if new_orders > 0 %}
+                            <span class="stat-trend up">↑ ждут</span>
+                        {% else %}
+                            <span class="stat-trend neutral">— нет</span>
+                        {% endif %}
+                    </div>
+                    <div class="stat-value {% if new_orders > 0 %}accent{% endif %}">{{ new_orders }}</div>
+                    <div class="stat-label">Новых заказов</div>
+                </div>
+
+                <!-- Статус магазина -->
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-icon purple">🏅</div>
+                        {% if store_profile.verification_status == 'approved' %}
+                            <span class="stat-trend up">✓ ОК</span>
+                        {% elif store_profile.verification_status == 'pending' %}
+                            <span class="stat-trend neutral">⏳ ждёт</span>
+                        {% else %}
+                            <span class="stat-trend down">✗ нет</span>
+                        {% endif %}
+                    </div>
+                    <div class="stat-value status-text">
+                        {% if store_profile.verification_status == 'approved' %}
+                            Подтверждён
+                        {% elif store_profile.verification_status == 'pending' %}
+                            На проверке
+                        {% elif store_profile.verification_status == 'rejected' %}
+                            Отклонён
+                        {% else %}
+                            Не подтверждён
+                        {% endif %}
+                    </div>
+                    <div class="stat-label">Статус магазина</div>
+                </div>
+
+            </div><!-- /stats-grid -->
+        </div><!-- /panel -->
+
+        <!-- ── Топ товаров ───────────────────── -->
+        <div class="stats-grid top-selling-grid">
+            <div class="dashboard-panel full-width">
+                <div class="panel-header">
+                    <h3>🏆 Топ-3 товара</h3>
+                </div>
+                <div class="top-products-list">
+                    {% for item in top_selling %}
+                    <div class="top-product-item">
+                        <div class="tp-rank">{{ forloop.counter }}</div>
+                        <div class="tp-info">
+                            <a href="{% url 'product_detail' item.product_variant__product__id %}" class="tp-name">
+                                {{ item.product_variant__product__name }}
+                            </a>
+                            <div class="tp-stats">Продано: {{ item.total_qty }} шт. | Выручка: ₽{{ item.total_sum|floatformat:0 }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="empty-state">Нет данных о продажах</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Последние заказы ───────────────── -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <div>
+                    <h3>Последние заказы</h3>
+                    <div class="panel-subtitle">Последние 5 транзакций</div>
+                </div>
+            </div>
+
             <div class="dashboard-table-wrapper">
                 <table class="dashboard-table">
                     <thead>
                         <tr>
                             <th>Заказ</th>
                             <th>Товар</th>
+                            <th class="hide-mobile">Кол-во</th>
                             <th>Сумма</th>
                             <th>Статус</th>
-                            <th>Дата</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in recent_orders %}
                         <tr>
-                            <td>#{{ item.order.id }}</td>
-                            <td>{{ item.product_variant.product.name|truncatechars:30 }}</td>
-                            <td class="total-price">₽{{ item.total_price|floatformat:2 }}</td>
-                            <td><span class="sales-badge">{{ item.order.get_status_display }}</span></td>
-                            <td>{{ item.order.created_at|date:"d.m.Y" }}</td>
+                            <td class="order-id">#{{ item.order.id }}</td>
+                            <td>
+                                <div class="td-product-name">{{ item.product_variant.product.name|truncatechars:20 }}</div>
+                                <div class="td-sub show-mobile">× {{ item.quantity }}</div>
+                            </td>
+                            <td class="td-quantity hide-mobile">× {{ item.quantity }}</td>
+                            <td class="total-price">₽{{ item.total_price|floatformat:0 }}</td>
+                            <td>
+                                <form method="POST" class="status-update-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="order_id" value="{{ item.order.id }}">
+                                    <input type="hidden" name="update_order_status" value="1">
+                                    <select name="status" onchange="this.form.submit()" class="status-select status-{{ item.order.status }}">
+                                        <option value="pending"   {% if item.order.status == 'pending'   %}selected{% endif %}>Ожидает</option>
+                                        <option value="paid"      {% if item.order.status == 'paid'      %}selected{% endif %}>Оплачен</option>
+                                        <option value="shipped"   {% if item.order.status == 'shipped'   %}selected{% endif %}>Отправлен</option>
+                                        <option value="completed" {% if item.order.status == 'completed' %}selected{% endif %}>Завершен</option>
+                                        <option value="cancelled" {% if item.order.status == 'cancelled' %}selected{% endif %}>Отменен</option>
+                                    </select>
+                                </form>
+                            </td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="5" class="empty-state">Нет недавних заказов.</td></tr>
+                        <tr>
+                            <td colspan="5" class="empty-state">📭 Заказов пока нет</td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+        </div><!-- /panel -->
+
+        <!-- ── Быстрые действия ───────────────── -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <h3>Быстрые действия</h3>
+            </div>
+            <div class="quick-actions">
+                <a href="{% url 'add_product' %}" class="action-btn btn-edit">
+                    ＋ Добавить товар
+                </a>
+                <a href="{% url 'manage_products' %}" class="action-btn btn-outline">
+                    📦 Управление товарами
+                </a>
+                <a href="{% url 'seller_profile' %}" class="action-btn btn-outline">
+                    🏪 Настройки магазина
+                </a>
+            </div>
         </div>
-    </div>
-</div>
+
+    </div><!-- /dashboard-content -->
+</div><!-- /dashboard-container -->
 {% endblock %}

@@ -1,6 +1,78 @@
 {% extends "base.html"%}
-{% block title%}MainPage{% endblock title %}
+{% block title%}Каталог - OMNI{% endblock title %}
 {% load static %}
-{% block content%}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/catalog.css' %}">
+{% endblock %}
+
+{% block content%}
+<div class="catalog-ozon-container">
+    <!-- Левая колонка: Корневые категории -->
+    <aside class="catalog-ozon-sidebar">
+        <ul id="catalog-tabs">
+            {% for root in root_categories %}
+            <li class="catalog-tab {% if forloop.first %}active{% endif %}" data-target="cat-{{ root.id }}">
+                {{ root.name }}
+            </li>
+            {% empty %}
+            <li>Категории не найдены</li>
+            {% endfor %}
+        </ul>
+    </aside>
+
+    <!-- Правая колонка: Подкатегории -->
+    <main class="catalog-ozon-content">
+        {% for root in root_categories %}
+        <div id="cat-{{ root.id }}" class="catalog-pane {% if not forloop.first %}hidden{% endif %}">
+            <h2 class="pane-title">{{ root.name }}</h2>
+            <div class="subcategories-grid">
+                {% for sub in root.get_children %}
+                <div class="subcategory-group">
+                    <h3 class="subcategory-title">
+                        <a href="{% url 'search' %}?category={{ sub.id }}">{{ sub.name }}</a>
+                    </h3>
+                    <ul class="child-categories-list">
+                        {% for child in sub.get_children %}
+                        <li>
+                            <a href="{% url 'search' %}?category={{ child.id }}">{{ child.name }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% if sub.get_children %}
+                        <a href="{% url 'search' %}?category={{ sub.id }}" class="more-link">Еще <span class="arrow-down">⌄</span></a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.catalog-tab');
+    const panes = document.querySelectorAll('.catalog-pane');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active from all tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            // Add active to clicked tab
+            this.classList.add('active');
+
+            // Hide all panes
+            panes.forEach(p => p.classList.add('hidden'));
+            
+            // Show target pane
+            const targetId = this.getAttribute('data-target');
+            const targetPane = document.getElementById(targetId);
+            if(targetPane) {
+                targetPane.classList.remove('hidden');
+            }
+        });
+    });
+});
+</script>
 {% endblock content %}

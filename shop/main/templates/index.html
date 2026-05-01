@@ -1,51 +1,65 @@
 {% extends 'base.html' %}
-{% block title%}Главная страница - BDSM-A{% endblock title %}
+{% block title %}Главная страница - BDSM-A{% endblock title %}
 {% load static %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/catalog.css' %}">
 {% endblock %}
 
-{% block content%}
+{% block content %}
 <section class="sale-section">
-        <div class="carousel">
-            <button class="carousel-btn"><</button>
-            <div class="sale-banner">Spring sale</div>
-            <button class="carousel-btn right">></button>
-        </div>
+    <div class="carousel">
+        <button class="carousel-btn" id="carouselPrev">&#8249;</button>
+        <div class="sale-banner" id="saleBanner">Spring sale 🔥</div>
+        <button class="carousel-btn right" id="carouselNext">&#8250;</button>
+    </div>
 </section>
+
 <section class="products-section">
+    <div class="section-header">
+        <h2 class="section-title">Популярные товары</h2>
+        <a href="{% url 'search' %}" class="section-link">Смотреть все →</a>
+    </div>
     <div class="products-grid">
         {% for p in products %}
-        <div class="product-card" style="position: relative;">
-            <button class="catalog-fav-btn" data-id="{{ p.id }}" onclick="addToFavorites(event, {{ p.id }}, this)">
-                {% if p.id in user_favorites %}
-                    ❤️
-                {% else %}
-                    🤍
-                {% endif %}
+        <div class="product-card">
+            <button class="catalog-fav-btn"
+                    data-id="{{ p.id }}"
+                    onclick="addToFavorites(event, {{ p.id }}, this)"
+                    aria-label="Добавить в избранное">
+                {% if p.id in user_favorites %}❤️{% else %}🤍{% endif %}
             </button>
-            <div class="product-image">
-                {% if p.main_image_url %}
-                    <a href="{% url 'product_detail' p.id %}"> <img src="{{ p.main_image_url }}" alt="{{ p.name }}" /> </a>
-                {% else %}
-                    <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото" />
-                {% endif %}
-            </div>
+
+            <a href="{% url 'product_detail' p.id %}" class="product-link">
+                <div class="product-image">
+                    {% if p.main_image_url %}
+                        <img src="{{ p.main_image_url }}" alt="{{ p.name }}" loading="lazy">
+                    {% else %}
+                        <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото" loading="lazy">
+                    {% endif %}
+                </div>
+            </a>
 
             <div class="product-info">
+                <a href="{% url 'product_detail' p.id %}" class="product-name-link">
+                    <div class="product-name">{{ p.name|truncatechars:48 }}</div>
+                </a>
                 <div class="product-price">{{ p.exact_price|floatformat:0 }} ₽</div>
-                <div class="product-name">{{ p.name }}</div>
-
                 <button class="add-to-cart" onclick="addToCart('{{ p.default_variant_id }}')">
-                    <span class="cart-icon"></span> В корзину
+                    🛒 В корзину
                 </button>
             </div>
-
         </div>
         {% empty %}
-            <p>Товаров пока нет.</p>
+        <div class="empty-catalog">
+            <div class="empty-icon-lg">🛍️</div>
+            <p>Товаров пока нет</p>
+        </div>
         {% endfor %}
+    </div>
+
+    <div id="loadingIndicator" class="loading-indicator">
+        <div class="spinner"></div>
+        <p>Загрузка товаров...</p>
     </div>
 </section>
 {% endblock content %}
-{% csrf_token %}

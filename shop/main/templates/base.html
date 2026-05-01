@@ -14,6 +14,8 @@
 </head>
 
 <body class="body">
+    <!-- Скрытый токен CSRF для AJAX-запросов (корзина, избранное) -->
+    <div style="display: none;">{% csrf_token %}</div>
     <!-- ШАПКА ДЛЯ КОМПЬЮТЕРА -->
     <header class="header header-desktop">
     <div class="header-content-desktop">
@@ -23,7 +25,10 @@
         <a href="/catalog" class="catalog"></a>
 
         <div class="search-box">
-            <input type="text" placeholder="Найти на BDSM-A">
+            <form action="{% url 'search' %}" method="GET" class="search-form-wrapper">
+                <input type="text" name="q" placeholder="Найти на BDSM-A" class="search-input-field">
+                <button type="submit" class="search-submit-btn">Найти</button>
+            </form>
         </div>
 
         <nav class="navigation">
@@ -47,9 +52,16 @@
                     <img src="{% static 'img/icon_profile.png' %}" alt="Профиль">
                 </a>
 
-                <a href="/cart" class="icon cart">
+                <a href="{% url 'favorites' %}" class="icon favorites">
+                    <span class="fav-icon-placeholder">❤️</span>
+                    {% if favorites_count %}
+                        <span class="fav-badge">{{ favorites_count }}</span>
+                    {% endif %}
+                </a>
+
+                <a href="{% url 'cart' %}" class="icon cart">
                     <img src="{% static 'img/icon_cart.png' %}" alt="Корзина">
-                    <span class="cart-count">0</span>
+                    <span class="cart-count">{{ cart_count_global|default:0 }}</span>
                 </a>
             </div>
         </nav>
@@ -86,18 +98,28 @@
                     <img src="{% static 'img/icon_profile.png' %}" alt="Профиль">
                 </a>
 
-                <a href="/cart" class="icon cart">
+                <a href="{% url 'favorites' %}" class="icon favorites">
+                    <span class="fav-icon-placeholder">❤️</span>
+                    {% if favorites_count %}
+                        <span class="fav-badge">{{ favorites_count }}</span>
+                    {% endif %}
+                </a>
+
+                <a href="{% url 'cart' %}" class="icon cart">
                     <img src="{% static 'img/icon_cart.png' %}" alt="Корзина">
-                    <span class="cart-count">0</span>
+                    <span class="cart-count">{{ cart_count_global|default:0 }}</span>
                 </a>
             </div>
         </nav>
     </div>
 
     <!-- Второй ряд: Поиск -->
-    <div class="search-box">
-        <input type="text" placeholder="Найти на BDSM-A">
-    </div>
+        <div class="search-box">
+            <form action="{% url 'search' %}" method="GET" class="search-form-wrapper">
+                <input type="text" name="q" placeholder="Найти на BDSM-A" class="search-input-field">
+                <button type="submit" class="search-submit-btn">Найти</button>
+            </form>
+        </div>
 </header>
 
     <!-- Основной контент -->
