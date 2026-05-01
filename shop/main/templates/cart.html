@@ -1,38 +1,105 @@
 {% extends "base.html"%}
-{% block title%}MainPage{% endblock title %}
+{% block title%}Корзина - BDSM-A{% endblock title %}
 {% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/cart.css' %}">
+{% endblock %}
+
 {% block content%}
-<div class="cart-page" style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
-    <h1>Корзина</h1>
+<div class="cart-container">
+    <div class="cart-header">
+        <h1 class="cart-title">Корзина <span class="cart-count-badge">{{ items|length }}</span></h1>
+    </div>
 
     {% if items %}
-        <div class="cart-items">
-            {% for item in items %}
-                <div class="item" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #ddd; padding: 20px 0;">
-                    <img src="{{ item.product_variant.product.main_image_url }}" style="width: 80px; border-radius: 8px;">
-                    <div style="flex: 1; margin-left: 20px;">
-                        <h3 style="margin: 0;">{{ item.product_variant.product.name }}</h3>
-                        <p style="color: #666;">Количество: {{ item.quantity }} шт.</p>
+        <div class="cart-layout">
+            <!-- Список товаров -->
+            <div class="cart-main">
+                <div class="cart-card-list">
+                    {% for item in items %}
+                    <div class="cart-item-card" id="cart-item-{{ item.id }}">
+                        <div class="ci-image">
+                            {% if item.product_variant.product.main_image_url %}
+                                <img src="{{ item.product_variant.product.main_image_url }}" alt="{{ item.product_variant.product.name }}">
+                            {% else %}
+                                <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото">
+                            {% endif %}
+                        </div>
+                        
+                        <div class="ci-details">
+                            <a href="{% url 'product_detail' item.product_variant.product.id %}" class="ci-name">
+                                {{ item.product_variant.product.name }}
+                            </a>
+                            <div class="ci-variant">
+                                {% if item.product_variant.attribute_values.all %}
+                                    {% for av in item.product_variant.attribute_values.all %}
+                                        {{ av.attribute.label }}: {{ av.value }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <div class="ci-actions">
+                                <button class="ci-remove" onclick="removeFromCart({{ item.id }})">Удалить</button>
+                                <button class="ci-fav" onclick="addToFavorites(event, {{ item.product_variant.product.id }}, this)">В избранное</button>
+                            </div>
+                        </div>
+
+                        <div class="ci-quantity-price">
+                            <div class="ci-quantity-ctrl">
+                                <button onclick="changeQty({{ item.id }}, -1)">−</button>
+                                <input type="number" value="{{ item.quantity }}" id="qty-input-{{ item.id }}" readonly>
+                                <button onclick="changeQty({{ item.id }}, 1)">+</button>
+                            </div>
+                            <div class="ci-price-block">
+                                <div class="ci-total-item" id="item-total-{{ item.id }}">{{ item.product_variant.price|floatformat:0 }} ₽</div>
+                                <div class="ci-unit-price">{{ item.product_variant.price|floatformat:0 }} ₽/шт.</div>
+                            </div>
+                        </div>
                     </div>
-                    <div style="font-weight: bold;">
-                        {{ item.product_variant.price }} ₽
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Сайдбар с итогами -->
+            <aside class="cart-sidebar">
+                <div class="cart-summary-card">
+                    <a href="{% url 'checkout' %}" style="text-decoration: none;">
+                        <button class="btn-checkout-main">Перейти к оформлению</button>
+                    </a>
+                    
+                    <div class="summary-details">
+                        <div class="summary-title">Ваша корзина</div>
+                        <div class="summary-row">
+                            <span>Товары ({{ items|length }})</span>
+                            <span id="summary-subtotal">{{ total_price|floatformat:0 }} ₽</span>
+                        </div>
+                        <div class="summary-row discount">
+                            <span>Скидка</span>
+                            <span>0 ₽</span>
+                        </div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-row total">
+                            <span>Итого</span>
+                            <span id="summary-total">{{ total_price|floatformat:0 }} ₽</span>
+                        </div>
                     </div>
                 </div>
-            {% endfor %}
-        </div>
-
-        <div style="text-align: right; margin-top: 30px;">
-            <h2>Итого: {{ total_price }} ₽</h2>
-            <button style="background: #000; color: #fff; padding: 15px 40px; border: none; cursor: pointer; border-radius: 5px;">
-                Оформить заказ
-            </button>
+                
+                <div class="cart-info-block">
+                    🚚 <span>Доставка BDSM-A</span><br>
+                    <small>Бесплатно для заказов от 5000 ₽</small>
+                </div>
+            </aside>
         </div>
     {% else %}
-        <div style="text-align: center; padding: 100px 0;">
-            <p>Ваша корзина пуста 😭😭😭😭😭😭😭</p>
-            <a href="{% url 'index' %}" style="color: #000; font-weight: bold;">Вернуться за покупками</a>
+        <div class="cart-empty-state">
+            <div class="ce-icon">🛒</div>
+            <h2>В корзине пока пусто</h2>
+            <p>Загляните на главную, чтобы найти что-то интересное</p>
+            <a href="{% url 'index' %}" class="btn-primary-large">Перейти на главную</a>
         </div>
     {% endif %}
 </div>
 
+<script src="{% static 'js/cart.js' %}"></script>
 {% endblock content %}

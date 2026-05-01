@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'main',
+    'mptt',
 
     'allauth',
     'allauth.account',
@@ -106,6 +107,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'main.context_processors.favorites_context',
+                'main.context_processors.cart_context',
             ],
         },
     },
@@ -209,8 +211,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
 # Если у вас HTTPS через Nginx:
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 # Важно для работы за прокси:
 SESSION_COOKIE_HTTPONLY = True
@@ -218,5 +220,4 @@ CSRF_COOKIE_HTTPONLY = True
 
 ACCOUNT_RATE_LIMITS = {}
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = None
-ACCOUNT_RATE_LIMITS = {}
-ACCOUNT_LOGIN_ATTEMPTS_LIMIT = None
+

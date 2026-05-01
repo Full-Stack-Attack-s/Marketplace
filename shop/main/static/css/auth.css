@@ -182,3 +182,8 @@
 @media (max-width: 768px) {
     .auth-section { background: url('../img/auth_bg_mobile.png') no-repeat center center/cover; }
 }
+
+/* ── Утилиты ─────────────────────────────── */
+.mb-15 { margin-bottom: 15px; }
+.mt-20 { margin-top: 20px; }
+.help-text-block { display: block; margin-top: 5px; opacity: 0.8; }

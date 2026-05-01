@@ -1,0 +1,80 @@
+.chat-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow-light);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+.chat-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-color);
+}
+.dialog-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.dialog-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
+    color: var(--text-color);
+    transition: background 0.2s;
+}
+.dialog-item:hover {
+    background: var(--bg-secondary);
+}
+.dialog-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--header-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-weight: bold;
+    color: #000;
+    text-transform: uppercase;
+}
+.dialog-info {
+    flex-grow: 1;
+}
+.dialog-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.dialog-last-msg {
+    color: var(--text-secondary, #666);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 400px;
+}
+.dialog-meta {
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #999);
+}
+.unread-badge {
+    background: #e74c3c;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: inline-block;
+}
+
+[data-theme="dark"] .dialog-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+

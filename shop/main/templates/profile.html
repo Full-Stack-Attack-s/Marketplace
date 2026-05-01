@@ -1,56 +1,206 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Профиль — {{ user.email }}{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="profile-container">
-    
-    <section class="profile-header">
-        <div class="profile-avatar-wrapper">
-            <img src="{% static 'img/icon_profile.png' %}" alt="Аватар профиля" class="profile-avatar">
-        </div>
-        <div class="profile-info">
-            <h1 class="profile-email">
-                {% if user.is_authenticated %}{{ user.email }}{% else %}Гость{% endif %}
-            </h1>
-            <span class="profile-badge">Покупатель</span>
-        </div>
-    </section>
+<div class="profile-page">
 
-    <section class="profile-navigation">
-        <div class="profile-grid">
-            <a href="#" class="profile-card">
-                <div class="card-icon">📦</div>
-                <h3>Мои заказы</h3>
-                <p>История и отслеживание</p>
-            </a>
+    <!-- ── Hero-шапка ─────────────────────────────── -->
+    <div class="profile-hero">
+        <div class="profile-hero-bg"></div>
+        <div class="profile-hero-content">
+            <div class="profile-avatar-ring">
+                {% if user_profile and user_profile.avatar %}
+                    <img src="{{ user_profile.avatar.url }}" alt="Аватар" class="profile-avatar-img">
+                {% else %}
+                    <div class="profile-avatar-placeholder">
+                        {{ user.email|first|upper }}
+                    </div>
+                {% endif %}
+                <div class="profile-avatar-badge">✓</div>
+            </div>
+            <div class="profile-hero-info">
+                <h1 class="profile-fullname">
+                    {% if user_profile and user_profile.first_name %}
+                        {{ user_profile.first_name }} {{ user_profile.last_name }}
+                    {% else %}
+                        {{ user.email|truncatechars:32 }}
+                    {% endif %}
+                </h1>
+                <div class="profile-email-sub">{{ user.email }}</div>
+                <div class="profile-tags">
+                    <span class="profile-tag buyer">🛍️ Покупатель</span>
+                    {% if user.is_staff %}
+                        <span class="profile-tag admin">⭐ Администратор</span>
+                    {% endif %}
+                    <span class="profile-tag joined">📅 На сайте с {{ user_profile.created_at|date:"M Y" }}</span>
+                </div>
+            </div>
             
-            <a href="#" class="profile-card">
-                <div class="card-icon">❤️</div>
-                <h3>Избранное</h3>
-                <p>Сохраненные товары</p>
-            </a>
-            
-            <a href="#" class="profile-card">
-                <div class="card-icon">📍</div>
-                <h3>Адреса доставки</h3>
-                <p>Управление адресами</p>
-            </a>
-            
-            <a href="#" class="profile-card">
-                <div class="card-icon">⚙️</div>
-                <h3>Настройки</h3>
-                <p>Личные данные и пароль</p>
-            </a>
+            <div style="margin-left: auto;">
+                <a href="{% url 'profile_edit' %}" class="profile-save-btn" style="text-decoration: none; padding: 12px 25px;">
+                    ⚙️ Настройки профиля
+                </a>
+            </div>
         </div>
-    </section>
+    </div>
 
-    <section class="profile-danger-zone">
-        <a href="{% url 'account_logout' %}" class="btn-logout">Выйти из аккаунта</a>
-    </section>
+    <!-- ── Основной контент ────────────────────────── -->
+    <div class="profile-body">
+
+        <!-- ЛЕВЫЙ СТОЛБЕЦ: информация -->
+        <aside class="profile-side">
+            <div class="profile-side-card info-premium-card">
+                <div class="profile-side-header">
+                    <div class="profile-side-title">👤 Личные данные</div>
+                </div>
+                
+                <div class="profile-info-list">
+                    <div class="info-item">
+                        <div class="info-icon-box">🏷️</div>
+                        <div class="info-text">
+                            <span class="info-label">Фамилия</span>
+                            <span class="info-value">{{ user_profile.last_name|default:"—" }}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon-box">📝</div>
+                        <div class="info-text">
+                            <span class="info-label">Имя</span>
+                            <span class="info-value">{{ user_profile.first_name|default:"—" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-icon-box">📋</div>
+                        <div class="info-text">
+                            <span class="info-label">Отчество</span>
+                            <span class="info-value">{{ user_profile.patronymic|default:"—" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-icon-box">🎂</div>
+                        <div class="info-text">
+                            <span class="info-label">Дата рождения</span>
+                            <span class="info-value">{{ user_profile.birth_date|date:"d.m.Y"|default:"—" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-icon-box">📞</div>
+                        <div class="info-text">
+                            <span class="info-label">Телефон</span>
+                            <span class="info-value">{{ user_profile.phone_number|default:"—" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-side-card">
+                <div class="profile-side-title">📍 Адрес доставки</div>
+                <div class="profile-info-list">
+                    <div class="info-item">
+                        <span class="info-value">
+                            {% if default_address %}
+                                {% if default_address.city %}{{ default_address.city }}, {% endif %}
+                                {% if default_address.street %}{{ default_address.street }}{% endif %}
+                                {% if not default_address.city and not default_address.street %}Адрес не указан{% endif %}
+                            {% else %}
+                                Адрес не указан
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ПРАВЫЙ СТОЛБЕЦ: быстрые действия + заказы -->
+        <div class="profile-main">
+
+            <!-- Быстрый доступ -->
+            <div class="profile-quick-grid">
+                <a href="#" class="profile-quick-card">
+                    <div class="pq-icon pq-icon-orders">📦</div>
+                    <div class="pq-text">
+                        <div class="pq-title">Мои заказы</div>
+                        <div class="pq-sub">{{ orders_count|default:0 }} заказов</div>
+                    </div>
+                </a>
+                <a href="{% url 'favorites' %}" class="profile-quick-card">
+                    <div class="pq-icon pq-icon-fav">❤️</div>
+                    <div class="pq-text">
+                        <div class="pq-title">Избранное</div>
+                        <div class="pq-sub">{{ favorites_count|default:0 }} товаров</div>
+                    </div>
+                </a>
+                <a href="{% url 'chat_list' %}" class="profile-quick-card">
+                    <div class="pq-icon" style="background: rgba(0,123,255,0.1); color: #007bff;">💬</div>
+                    <div class="pq-text">
+                        <div class="pq-title">Мои сообщения</div>
+                        <div class="pq-sub">Чаты с продавцами</div>
+                    </div>
+                </a>
+                <a href="{% url 'friends_list' %}" class="profile-quick-card">
+                    <div class="pq-icon" style="background: rgba(40,167,69,0.1); color: #28a745;">👥</div>
+                    <div class="pq-text">
+                        <div class="pq-title">Мои друзья</div>
+                        <div class="pq-sub">Контакты</div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Последние заказы -->
+            <div class="profile-orders-card">
+                <div class="profile-section-title">
+                    📦 Последние заказы
+                    <a href="#" class="profile-section-link">Все заказы →</a>
+                </div>
+
+                {% if recent_orders %}
+                <div class="profile-orders-list">
+                    {% for order in recent_orders %}
+                    <div class="profile-order-row">
+                        <div class="por-id">#{{ order.id }}</div>
+                        <div class="por-date">{{ order.created_at|date:"d.m.Y" }}</div>
+                        <div class="por-amount">{{ order.total_amount|floatformat:0 }} ₽</div>
+                        <div class="por-status">
+                            <span class="status-badge {{ order.status }}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="profile-empty-orders">
+                    <div class="profile-empty-orders-icon">📭</div>
+                    <p>Заказов пока нет</p>
+                    <a href="{% url 'index' %}" class="profile-browse-btn">Перейти к покупкам</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Безопасность -->
+            <div class="profile-danger-card">
+                <div class="profile-section-title danger">🔒 Аккаунт</div>
+                <div class="profile-danger-actions">
+                    <a href="{% url 'account_logout' %}" class="profile-logout-btn">
+                        ↩ Выйти из аккаунта
+                    </a>
+                    <a href="{% url 'account_change_password' %}" class="profile-pass-btn">
+                        🔑 Сменить пароль
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
 
 </div>
-{% endblock content %}
+{% endblock %}

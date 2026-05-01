@@ -7,6 +7,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("cart/", views.cart, name="cart"),
     path("profile/", views.profile, name="profile"),
+    path("profile/edit/", views.profile_edit, name="profile_edit"),
     path("cards/", views.cards, name="cards"),
     path("catalog/", views.catalog, name="catalog"),
     path('accounts/', include('allauth.urls')),
@@ -21,7 +22,17 @@ urlpatterns = [
     path('api/category-attributes/<int:category_id>/', views.get_category_attributes, name='get_category_attributes'),
     path('cart/add/<int:variant_id>/', views.add_to_cart, name='add_to_cart'),
     path('favorite/toggle/<int:product_id>/', views.toggle_favorite, name='toggle_favorite'),
-
+    path('product/image/delete/<int:image_id>/', views.delete_product_image, name='delete_product_image'),
+    path('search/', views.search, name='search'),
+    path('favorites/', views.favorites, name='favorites'),
+    path('cart/update/<int:item_id>/', views.update_cart_quantity, name='update_cart_quantity'),
+    path('cart/remove/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('chats/', views.chat_list, name='chat_list'),
+    path('chats/<int:user_id>/', views.chat_detail, name='chat_detail'),
+    path('chats/<int:user_id>/new_messages/', views.chat_get_new_messages, name='chat_get_new_messages'),
+    path('friends/', views.friends_list, name='friends_list'),
+    path('friends/toggle/<int:friend_id>/', views.toggle_friend, name='toggle_friend'),
 ]
 
     #path('category/<path:category_path>/', views.category_detail)

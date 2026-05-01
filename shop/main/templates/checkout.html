@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+    <div class="checkout-main">
+        <div class="checkout-panel checkout-section">
+            <h2 class="checkout-title">Оформление заказа</h2>
+            
+            <div class="section-title">📍 Адрес доставки</div>
+            <form id="checkout-form" method="POST">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-group">
+                        <input type="text" name="first_name" placeholder="Имя" class="checkout-input" required value="{{ request.user.profile.first_name|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="last_name" placeholder="Фамилия" class="checkout-input" required value="{{ request.user.profile.last_name|default:'' }}">
+                    </div>
+                    <div class="form-group full">
+                        <input type="text" name="address" placeholder="Город, улица, дом, квартира" class="checkout-input" required value="{% if default_address %}{{ default_address.city|default:'' }}{% if default_address.city and default_address.street %}, {% endif %}{{ default_address.street|default:'' }}{% endif %}">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="phone" placeholder="Телефон" class="checkout-input" required value="{{ request.user.profile.phone_number|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Email" class="checkout-input" required value="{{ request.user.email }}">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="checkout-panel">
+            <div class="section-title">📦 Состав заказа</div>
+            <ul class="checkout-items">
+                {% for item in items %}
+                <li class="checkout-item">
+                    {% if item.product_variant.product.product_images_set.first %}
+                        <img src="{{ item.product_variant.product.product_images_set.first.image.url }}" alt="{{ item.product_variant.product.name }}">
+                    {% else %}
+                        <div style="width:60px; height:60px; background:#eee; border-radius:8px;"></div>
+                    {% endif %}
+                    <div class="item-info">
+                        <h4>{{ item.product_variant.product.name }}</h4>
+                        <p>{{ item.quantity }} шт. × ₽{{ item.product_variant.price|floatformat:0 }}</p>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="order-summary">
+        <div class="checkout-panel">
+            <h3 style="margin-bottom: 20px;">Итого</h3>
+            <div class="summary-row">
+                <span>Товары ({{ items.count }})</span>
+                <span>₽{{ total_price|floatformat:0 }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Доставка</span>
+                <span style="color: var(--nav-active);">Бесплатно</span>
+            </div>
+            <div class="summary-total">
+                <span>К оплате</span>
+                <span>₽{{ total_price|floatformat:0 }}</span>
+            </div>
+            
+            <button type="submit" form="checkout-form" class="place-order-btn">Оплатить и оформить</button>
+            <p style="font-size: 11px; color: var(--text-secondary); margin-top: 15px; text-align: center;">
+                Нажимая кнопку, вы соглашаетесь с условиями оферты и политикой конфиденциальности.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

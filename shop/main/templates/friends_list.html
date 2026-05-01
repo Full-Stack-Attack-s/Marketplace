@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мои друзья{% endblock %}
+
+{% block content %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/friends.css' %}">
+{% endblock %}
+
+<div class="friends-container">
+    <h1 style="margin-bottom: 25px;">Мои друзья</h1>
+
+    {% if friends %}
+        {% for friendship in friends %}
+        <div class="friend-card" id="friend-{{ friendship.friend.id }}">
+            <div class="friend-avatar">
+                {{ friendship.friend.email|first|upper }}
+            </div>
+            <div class="friend-info">
+                <div class="friend-name">
+                    {% if friendship.friend.profile.first_name %}
+                        {{ friendship.friend.profile.first_name }} {{ friendship.friend.profile.last_name }}
+                    {% else %}
+                        Пользователь #{{ friendship.friend.id }}
+                    {% endif %}
+                </div>
+                <div class="friend-email">{{ friendship.friend.email }}</div>
+            </div>
+            <div class="friend-actions">
+                <a href="{% url 'chat_detail' friendship.friend.id %}" class="btn-chat">💬 Написать</a>
+                <button onclick="removeFriend({{ friendship.friend.id }})" class="btn-remove">✖ Удалить</button>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div style="font-size: 40px; margin-bottom: 15px;">👥</div>
+            <h3>У вас пока нет друзей</h3>
+            <p>Вы можете добавлять покупателей в друзья через окно чата с ними.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script src="{% static 'js/friends.js' %}"></script>
+{% endblock %}

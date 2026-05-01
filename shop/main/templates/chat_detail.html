@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Чат с {{ other_user.email }}{% endblock %}
+
+{% block content %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/chat.css' %}">
+{% endblock %}
+
+<div class="chat-window">
+    <div class="chat-header">
+        <a href="{% url 'chat_list' %}" class="back-btn">←</a>
+        <div>
+            Чат с 
+            {% if other_user.store_profile %}
+                {{ other_user.store_profile.company_name|default:other_user.email }}
+            {% else %}
+                {{ other_user.email }}
+            {% endif %}
+        </div>
+        {% if other_user.role != 'seller' %}
+        <div style="margin-left: auto;">
+            <button onclick="toggleFriend({{ other_user.id }}, this)" class="add-friend-btn" style="background: none; border: 1px solid #007bff; color: #007bff; padding: 5px 15px; border-radius: 15px; cursor: pointer; transition: 0.2s;">
+                Добавить в друзья
+            </button>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="chat-messages" id="chatMessages">
+        {% for msg in messages %}
+            <div class="message {% if msg.sender == request.user %}msg-mine{% else %}msg-theirs{% endif %}" data-id="{{ msg.id }}">
+                <div>{{ msg.content }}</div>
+                <div class="msg-time">{{ msg.created_at|date:"H:i" }}</div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <form class="chat-input-area" id="chatForm">
+        {% csrf_token %}
+        <input type="text" id="msgContent" class="chat-input" placeholder="Введите сообщение..." autocomplete="off" required>
+        <button type="submit" class="chat-send-btn">➤</button>
+    </form>
+</div>
+
+<div id="chat-config" 
+     data-current-user-id="{{ request.user.id }}" 
+     data-other-user-id="{{ other_user.id }}"
+     data-chat-url="{% url 'chat_detail' other_user.id %}"
+     data-new-messages-url="{% url 'chat_get_new_messages' other_user.id %}">
+</div>
+<script src="{% static 'js/chat.js' %}"></script>
+{% endblock %}

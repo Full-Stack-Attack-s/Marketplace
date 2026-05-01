@@ -1,6 +1,43 @@
 /* ============================================ */
 /* CATALOG.CSS */
 /* ============================================ */
+
+/* ── Заголовок секции ────────────────── */
+.section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    max-width: 1400px;
+    margin: 0 auto 16px;
+    padding: 0 10px;
+}
+
+.section-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.section-link {
+    color: var(--nav-active);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.section-link:hover { opacity: 0.75; }
+
+/* ── Пустой каталог ─────────────────── */
+.empty-catalog {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+    font-size: 16px;
+}
 .sale-section {
     padding: 20px 10px;
     background: transparent;
@@ -102,9 +139,12 @@
 
 .product-image img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
 
-.product-info { padding: 12px; display: flex; flex-direction: column; flex: 1; }
-.product-price { font-size: 18px; font-weight: bold; color: var(--text-color); margin-bottom: 5px; }
-.product-seller { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+.product-info { padding: 12px; display: flex; flex-direction: column; flex: 1; gap: 6px; }
+.product-name-link { text-decoration: none; }
+.product-name { font-size: 13px; color: var(--text-secondary); line-height: 1.4; flex: 1; }
+.product-name:hover { color: var(--nav-active); }
+.product-price { font-size: 18px; font-weight: 700; color: var(--text-color); }
+.product-link { display: block; text-decoration: none; }
 
 .add-to-cart {
     width: 100%;
@@ -159,38 +199,184 @@
     top: 10px;
     right: 10px;
     z-index: 10;
-
-    /* Светлый полупрозрачный фон */
-    background: rgba(255, 255, 255, 0.8);
-
+    background: transparent;
     border: none;
-    border-radius: 50%;
     width: 32px;
     height: 32px;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    font-size: 18px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-    /* Плавное изменение цвета при переключении темы */
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-size: 22px;
+    box-shadow: none;
+    transition: transform 0.2s ease;
 }
 
 /* Легкое увеличение при наведении */
 .catalog-fav-btn:hover {
-    transform: scale(1.1);
+    transform: scale(1.2);
 }
 
 /* === СТИЛИ КНОПКИ ДЛЯ ТЕМНОЙ ТЕМЫ === */
-/* Я перечислил самые популярные классы темной темы.
-   Один из них точно сработает. */
 body.dark-theme .catalog-fav-btn,
 body.dark .catalog-fav-btn,
 body.dark-mode .catalog-fav-btn,
 [data-theme="dark"] .catalog-fav-btn {
-    /* Темный полупрозрачный фон (подогнал под цвет твоих темных карточек) */
-    background: rgba(30, 34, 45, 0.8);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    background: transparent;
+    box-shadow: none;
+}
+
+/* ── Стили страницы категорий (Каталог Ozon-style) ─────────────────── */
+.catalog-ozon-container {
+    display: flex;
+    max-width: 1400px;
+    margin: 20px auto;
+    background: var(--card-bg, #fff);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px var(--shadow-light, rgba(0,0,0,0.05));
+    overflow: hidden;
+    min-height: 600px;
+    border: 1px solid var(--border-color);
+}
+
+/* Левая колонка (Сайдбар) */
+.catalog-ozon-sidebar {
+    width: 280px;
+    background: var(--bg-secondary, #f8f9fa);
+    border-right: 1px solid var(--border-color, #eaeaea);
+    overflow-y: auto;
+}
+
+#catalog-tabs {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.catalog-tab {
+    padding: 16px 24px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-color, #333);
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+
+.catalog-tab:hover {
+    background: var(--card-bg, #fff);
+    color: var(--nav-active, #005bff);
+}
+
+.catalog-tab.active {
+    background: var(--card-bg, #fff);
+    color: var(--nav-active, #005bff);
+    border-left-color: var(--nav-active, #005bff);
+    font-weight: 700;
+}
+
+/* Правая колонка (Контент) */
+.catalog-ozon-content {
+    flex: 1;
+    padding: 32px;
+    overflow-y: auto;
+}
+
+.catalog-pane.hidden {
+    display: none;
+}
+
+.pane-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text-color);
+    margin-top: 0;
+    margin-bottom: 32px;
+}
+
+.subcategories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 32px;
+}
+
+.subcategory-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.subcategory-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text-color);
+}
+
+.subcategory-title a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s;
+}
+
+.subcategory-title a:hover {
+    color: var(--nav-active);
+}
+
+.child-categories-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.child-categories-list li a {
+    text-decoration: none;
+    color: var(--text-secondary, #666);
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.child-categories-list li a:hover {
+    color: var(--nav-active);
+}
+
+.more-link {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--nav-active, #005bff);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.more-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .catalog-ozon-container {
+        flex-direction: column;
+    }
+    .catalog-ozon-sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    #catalog-tabs {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .catalog-tab {
+        border-left: none;
+        border-bottom: 4px solid transparent;
+    }
+    .catalog-tab.active {
+        border-left-color: transparent;
+        border-bottom-color: var(--nav-active);
+    }
 }

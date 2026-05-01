@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Настройки профиля — {{ user.email }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<!-- Cropper.js -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.css">
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.js"></script>
+<style>
+    /* Стили для модалки кроппера */
+    .cropper-modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); z-index: 10000;
+        display: none; align-items: center; justify-content: center;
+        backdrop-filter: blur(5px);
+    }
+    .cropper-modal-content {
+        background: var(--card-bg); width: 90%; max-width: 600px;
+        padding: 24px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    .cropper-container-box {
+        width: 100%; height: 400px; background: #000;
+        border-radius: 12px; overflow: hidden; margin-bottom: 20px;
+    }
+    .cropper-actions { display: flex; gap: 12px; justify-content: flex-end; }
+    .crop-btn {
+        padding: 10px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none;
+    }
+    .crop-btn-save { background: var(--nav-active); color: #000; }
+    .crop-btn-cancel { background: var(--bg-secondary); color: var(--text-color); }
+
+    /* Flatpickr Dark Theme Customization */
+    .flatpickr-calendar {
+        background: var(--card-bg) !important;
+        border: 1px solid var(--border-color) !important;
+        box-shadow: 0 10px 30px var(--shadow-medium) !important;
+        border-radius: 16px !important;
+    }
+    .flatpickr-day, .flatpickr-weekday, .flatpickr-current-month {
+        color: var(--text-color) !important;
+    }
+    .flatpickr-day.selected {
+        background: var(--nav-active) !important;
+        border-color: var(--nav-active) !important;
+        color: #000 !important;
+    }
+    .flatpickr-day:hover {
+        background: var(--bg-secondary) !important;
+    }
+    .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month {
+        fill: var(--text-color) !important;
+    }
+</style>
+<!-- Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/ru.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <a href="{% url 'profile' %}" class="back-link">← Вернуться в профиль</a>
+    
+    <h1 class="profile-fullname" style="margin-bottom: 32px;">Настройки аккаунта</h1>
+
+    <div class="profile-side-card" style="margin-bottom: 24px;">
+        <div class="profile-side-title">Личные данные</div>
+        <form method="POST" enctype="multipart/form-data" class="profile-edit-form">
+            {% csrf_token %}
+            <input type="hidden" name="update_user" value="1">
+            
+            <div class="profile-field" style="text-align: center; margin-bottom: 25px;">
+                <label for="{{ profile_form.avatar.id_for_label }}" style="cursor: pointer; display: inline-block;">
+                    <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--bg-secondary); border: 2px dashed var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 10px; color: var(--text-secondary); overflow: hidden; position: relative;">
+                        {% if user_profile.avatar %}
+                            <img src="{{ user_profile.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            📷
+                        {% endif %}
+                    </div>
+                    <span style="color: var(--nav-active); font-weight: bold; font-size: 14px;">Выбрать новое фото</span>
+                </label>
+                <div style="display: none;">
+                    {{ profile_form.avatar }}
+                </div>
+            </div>
+
+            <script src="{% static 'js/profile.js' %}"></script>
+
+            <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                <div class="profile-field">
+                    <label>Фамилия</label>
+                    {{ profile_form.last_name }}
+                </div>
+                <div class="profile-field">
+                    <label>Имя</label>
+                    {{ profile_form.first_name }}
+                </div>
+                <div class="profile-field">
+                    <label>Отчество</label>
+                    {{ profile_form.patronymic }}
+                </div>
+                <div class="profile-field">
+                    <label>Дата рождения</label>
+                    {{ profile_form.birth_date }}
+                </div>
+            </div>
+
+            <div class="profile-field" style="margin-top: 15px;">
+                <label>Телефон</label>
+                {{ profile_form.phone_number }}
+            </div>
+
+            <button type="submit" class="profile-save-btn">
+                💾 Сохранить изменения
+            </button>
+        </form>
+    </div>
+
+    <div class="profile-side-card">
+        <div class="profile-side-title">📍 Адрес доставки</div>
+        <form method="POST" class="profile-edit-form">
+            {% csrf_token %}
+            <input type="hidden" name="update_address" value="1">
+            <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
+                <div class="profile-field">
+                    <label>Страна</label>
+                    <input type="text" name="country" value="{{ address.country|default:'' }}" style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-color);" placeholder="Например: Россия">
+                </div>
+                <div class="profile-field">
+                    <label>Город</label>
+                    <input type="text" name="city" value="{{ address.city|default:'' }}" style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-color);" placeholder="Например: Москва">
+                </div>
+            </div>
+            <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                <div class="profile-field">
+                    <label>Улица, дом, квартира</label>
+                    <input type="text" name="street" value="{{ address.street|default:'' }}" style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-color);" placeholder="Например: ул. Ленина 1, кв. 42">
+                </div>
+                <div class="profile-field">
+                    <label>Почтовый индекс</label>
+                    <input type="text" name="zip_code" value="{{ address.zip_code|default:'' }}" style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-color);" placeholder="Например: 123456">
+                </div>
+            </div>
+            <button type="submit" class="profile-save-btn" style="margin-top: 15px;">
+                📍 Обновить адрес
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно для обрезки -->
+<div id="cropperModal" class="cropper-modal-overlay">
+    <div class="cropper-modal-content">
+        <h3 style="margin-bottom: 15px;">Выберите ракурс фото</h3>
+        <div class="cropper-container-box">
+            <img id="cropperImage" style="max-width: 100%;">
+        </div>
+        <div class="cropper-actions">
+            <button type="button" class="crop-btn crop-btn-cancel" onclick="closeCropper()">Отмена</button>
+            <button type="button" class="crop-btn crop-btn-save" onclick="saveCroppedAvatar()">💾 Применить</button>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/profile.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        flatpickr("#id_birth_date", {
+            locale: "ru",
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            disableMobile: "true"
+        });
+    });
+</script>
+{% endblock %}

@@ -9,6 +9,7 @@ from django.dispatch import receiver
 from decimal import Decimal
 from django.core.validators import MinValueValidator
 from mptt.models import MPTTModel, TreeForeignKey
+from .validators import validate_image_size
 
 
 # TODO 1. Добавить валидацию для полей, например, для email или для числовых полей.
@@ -55,7 +56,7 @@ class Brands(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.TextField("Название", max_length=100)
     slug = models.TextField("Слаг",unique=True, null=True, blank=True)
-    logo_image = models.ImageField("Лого", upload_to="brands/")
+    logo_image = models.ImageField("Лого", upload_to="brands/", validators=[validate_image_size])
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -231,7 +232,7 @@ class Product_images(models.Model):
         Products,
         on_delete=models.CASCADE,
     )
-    image = models.ImageField(upload_to="products/")
+    image = models.ImageField(upload_to="products/", validators=[validate_image_size])
     sort_order = models.IntegerField(default=1)
     is_main = models.BooleanField(default=False)
     
@@ -333,8 +334,9 @@ class UserProfiles(models.Model):
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True, related_name='profile')
     first_name = models.CharField("Имя", max_length=50, null=True, blank=True)
     last_name = models.CharField("Фамилия", max_length=50, null=True, blank=True)
+    patronymic = models.CharField("Отчество", max_length=50, null=True, blank=True)
     birth_date = models.DateField("Дата рождения", null=True, blank=True)
-    avatar = models.ImageField("Аватар", upload_to='avatars/', null=True, blank=True)
+    avatar = models.ImageField("Аватар", upload_to='avatars/', null=True, blank=True, validators=[validate_image_size])
     phone_number = models.CharField("Телефон", max_length=20, null=True, blank=True)
     # preferences = models.JSONField("Настройки", default=dict, blank=True) 
     # TODO: сделать при переходе на PostgreSQL
@@ -384,7 +386,7 @@ class StoreProfiles(models.Model):
     legal_address = models.TextField(blank=True, null=True, verbose_name="Юридический адрес")
     verification_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='unverified', verbose_name="Статус верификации")
     description = models.TextField("Описание", null=True, blank=True)
-    logo = models.ImageField("Логотип", upload_to='store_logos/', null=True, blank=True)
+    logo = models.ImageField("Логотип", upload_to='store_logos/', null=True, blank=True, validators=[validate_image_size])
     
     # max_digits=3, decimal_places=2 позволяет хранить значения от 0.00 до 9.99
     # rating = models.DecimalField("Рейтинг", max_digits=3, decimal_places=2, default=0.00) 
@@ -623,3 +625,18 @@ class Favorites(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.product.name}"
+
+class Friends(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='friends')
+    friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='friends_with')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'friends'
+        unique_together = ('user', 'friend')
+        verbose_name = 'Друг'
+        verbose_name_plural = 'Друзья'
+
+    def __str__(self):
+        return f"{self.user.email} -> {self.friend.email}"

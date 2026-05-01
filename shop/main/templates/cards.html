@@ -1,9 +1,8 @@
 {% extends "base.html" %}
+
 {% load static %}
 
-{% block title %}
-    {{ product.name }} | BDSM-A
-{% endblock %}
+{% block title %}{{ product.name }} | BDSM-A{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/cards.css' %}">
@@ -11,24 +10,40 @@
 
 {% block content %}
 <section class="product-detail">
+
+    <!-- Хлебные крошки -->
+    <nav class="breadcrumbs" aria-label="Навигация">
+        <a href="/">Главная</a>
+        <span class="sep">›</span>
+        {% if product.category %}
+            {% if product.category.parent %}
+                <a href="#">{{ product.category.parent.name }}</a>
+                <span class="sep">›</span>
+            {% endif %}
+            <a href="#">{{ product.category.name }}</a>
+            <span class="sep">›</span>
+        {% endif %}
+        <span class="current">{{ product.name|truncatechars:40 }}</span>
+    </nav>
+
+    <!-- Основная сетка -->
     <div class="product-page">
 
         <!-- 1. ВЕРТИКАЛЬНАЯ ГАЛЕРЕЯ МИНИАТЮР -->
         <div class="gallery-sidebar">
-            <div class="thumb active" data-image="{% if product.main_image_url %}{{ product.main_image_url }}{% else %}{% static 'img/no-image.jpg' %}{% endif %}">
+            <div class="thumb active"
+                 data-image="{% if product.main_image_url %}{{ product.main_image_url }}{% else %}{% static 'img/no-image.jpg' %}{% endif %}">
                 {% if product.main_image_url %}
                     <img src="{{ product.main_image_url }}" alt="Фото 1">
                 {% else %}
                     <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото">
                 {% endif %}
             </div>
-            {% if product.images %}
-                {% for img in product.images.all %}
-                    <div class="thumb" data-image="{{ img.image.url }}">
-                        <img src="{{ img.image.url }}" alt="Фото {{ forloop.counter|add:1 }}">
-                    </div>
-                {% endfor %}
-            {% endif %}
+            {% for img in product.product_images_set.all %}
+                <div class="thumb" data-image="{{ img.image.url }}">
+                    <img src="{{ img.image.url }}" alt="Фото {{ forloop.counter|add:1 }}">
+                </div>
+            {% endfor %}
         </div>
 
         <!-- 2. ОСНОВНОЕ ИЗОБРАЖЕНИЕ -->
@@ -44,21 +59,30 @@
 
         <!-- 3. ИНФОРМАЦИЯ О ТОВАРЕ -->
         <div class="product-info">
-            <div class="brand-name">BDSM-A</div>
+
+            <!-- Бренд -->
+            {% if product.brand %}
+                <div class="brand-name">{{ product.brand }}</div>
+            {% else %}
+                <div class="brand-name">BDSM-A</div>
+            {% endif %}
+
+            <!-- Название -->
             <h1 class="product-name">{{ product.name }}</h1>
 
+            <!-- Рейтинг (заглушка до появления системы отзывов) -->
             <div class="rating-bar">
-                <span class="star-icon">★ 5</span>
-                <span>2 168 оценок</span>
-                <a href="#" class="questions-link"> 30 вопросов</a>
+                <span class="star-icon">★ 5.0</span>
+                <span>Нет отзывов</span>
+                <a href="#" class="questions-link">Задать вопрос</a>
             </div>
 
             <!-- Выбор цвета -->
             <div class="color-section">
-                <div class="color-label">Цвет: <span>белый</span></div>
+                <div class="color-label">Цвет: <span>стандартный</span></div>
                 <div class="color-option active">
                     {% if product.main_image_url %}
-                        <img src="{{ product.main_image_url }}" alt="Белый">
+                        <img src="{{ product.main_image_url }}" alt="Цвет">
                     {% else %}
                         <img src="{% static 'img/no-image.jpg' %}" alt="Цвет">
                     {% endif %}
@@ -67,49 +91,55 @@
 
             <!-- Характеристики -->
             <div class="specs-table">
+                <div class="specs-section-title">Характеристики</div>
+
+                <!-- Артикул -->
                 <div class="spec-row">
                     <span class="spec-label">Артикул</span>
                     <span class="spec-dots"></span>
                     <span class="spec-value">BDSM-{{ product.id|stringformat:"06d" }}</span>
                 </div>
+
+                <!-- Категория -->
+                {% if product.category %}
                 <div class="spec-row">
-                    <span class="spec-label">Состояние</span>
+                    <span class="spec-label">Категория</span>
                     <span class="spec-dots"></span>
-                    <span class="spec-value">Новый</span>
+                    <span class="spec-value">{{ product.category.name }}</span>
                 </div>
+                {% endif %}
+
+                <!-- Динамические атрибуты из БД -->
+                {% for attr_val in product.attribute_values.all %}
+                <div class="spec-row">
+                    <span class="spec-label">{{ attr_val.attribute.label }}</span>
+                    <span class="spec-dots"></span>
+                    <span class="spec-value">{{ attr_val.value }}</span>
+                </div>
+                {% empty %}
+                <div class="spec-row">
+                    <span class="spec-label spec-empty">
+                        Характеристики не указаны
+                    </span>
+                </div>
+                {% endfor %}
+
+                <!-- Бренд в характеристиках -->
                 {% if product.brand %}
                 <div class="spec-row">
                     <span class="spec-label">Бренд</span>
                     <span class="spec-dots"></span>
-                    <span class="spec-value">{{product.brand}}</span>
+                    <span class="spec-value">{{ product.brand }}</span>
                 </div>
                 {% endif %}
             </div>
-        </div>
-<!--            <div class="return-link">-->
-<!--                <span>↩</span>-->
-<!--                <span>Возврат через заявку</span>-->
-<!--                <span class="info-icon">ⓘ</span>-->
-<!--            </div>-->
 
-            <!-- Категории -->
-<!--            <div class="categories">-->
-<!--                <a href="#" class="cat-link">-->
-<!--                    <span>🏷</span>-->
-<!--                    <span>Роботы-Стеклоочистители</span>-->
-<!--                </a>-->
-<!--                <a href="#" class="cat-link">-->
-<!--                    <span>→</span>-->
-<!--                    <span>В каталог бренда</span>-->
-<!--                </a>-->
-<!--                <a href="#" class="cat-link">-->
-<!--                    <span>📦</span>-->
-<!--                    <span>Все товары категории</span>-->
-<!--                </a>-->
-<!--            </div>-->
+        </div><!-- /product-info -->
 
         <!-- 4. ПАНЕЛЬ ПОКУПКИ (прилипающая) -->
         <div class="purchase-panel">
+
+            <!-- Цена -->
             <div class="price-area">
                 <div class="price-row">
                     <span class="price-current">{{ product.exact_price|floatformat:0 }} ₽</span>
@@ -118,37 +148,80 @@
                     {% endif %}
                 </div>
                 <div class="review-bonus">
-                    💬 <span>400 Б за отзыв</span>
+                    💬 <span>400 Б</span> за отзыв с фото
                 </div>
             </div>
 
-
-            <!-- КНОПКИ -->
+            <!-- Кнопки -->
             <div class="product-actions">
                 <button class="btn-cart" onclick="addToCart({{ product.default_variant_id }})">
-                    🛒 Добавить в корзину
+                    🛒 В корзину
                 </button>
-                    <button class="btn-favorite" data-id="{{ product.id }}" onclick="addToFavorites(event, {{ product.id }}, this)">
-                        {% if product.id in user_favorites %}
-                            ❤️ В избранном
-                        {% else %}
-                            🤍 В избранное
-                        {% endif %}
-                    </button>
-
+                <button class="btn-favorite"
+                        id="favoriteBtn-{{ product.id }}"
+                        onclick="addToFavorites(event, {{ product.id }}, this)">
+                    {% if product.id in user_favorites %}
+                        ❤️ В избранном
+                    {% else %}
+                        🤍 В избранное
+                    {% endif %}
+                </button>
             </div>
-        </div>
 
-    </div>
+            <!-- Доставка -->
+            <div class="delivery-area">
+                <div class="delivery-line">
+                    <span class="dl-icon">🚚</span>
+                    <span><strong>Доставка</strong> рассчитывается при оформлении</span>
+                </div>
+                <div class="delivery-line">
+                    <span class="dl-icon">↩️</span>
+                    <span>Возврат через заявку в течение 14 дней</span>
+                </div>
+            </div>
+
+            <!-- Продавец -->
+            {% if product.seller %}
+            <div class="seller-section">
+                <div class="seller-section-label">Продавец</div>
+                <div class="seller-card">
+                    <div class="seller-avatar">🏪</div>
+                    <div>
+                        <div class="seller-name">
+                            {% if product.seller.store_profile.company_name %}
+                                {{ product.seller.store_profile.company_name|truncatechars:20 }}
+                            {% else %}
+                                {{ product.seller.email|truncatechars:20 }}
+                            {% endif %}
+                        </div>
+                        <div class="seller-status">
+                            {% if product.seller.store_profile.verification_status == 'approved' %}
+                                ✓ Проверенный продавец
+                            {% else %}
+                                Продавец на платформе
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% if request.user.is_authenticated and product.seller.id != request.user.id %}
+                <a href="{% url 'chat_detail' product.seller.id %}" style="display: block; text-align: center; margin-top: 10px; padding: 10px; background: #e0f0ff; color: #007bff; border-radius: 8px; text-decoration: none; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#cce5ff'" onmouseout="this.style.background='#e0f0ff'">
+                    💬 Написать продавцу
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        </div><!-- /purchase-panel -->
+
+    </div><!-- /product-page -->
 
     <!-- ОПИСАНИЕ -->
     <div class="product-description">
         <h3>Описание товара</h3>
         <p>{{ product.description|default:"Описание пока отсутствует."|linebreaks }}</p>
     </div>
+
 </section>
-
-
 
 <script src="{% static 'js/cards.js' %}"></script>
 {% endblock %}
