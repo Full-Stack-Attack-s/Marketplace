@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Чат с {{ other_user.email }}{% endblock %}
+
+{% block content %}
+<style>
+.chat-window {
+    max-width: 800px;
+    margin: 20px auto;
+    background: var(--bg-card, #fff);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    height: 70vh;
+}
+.chat-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color, #eee);
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+}
+.back-btn {
+    margin-right: 15px;
+    text-decoration: none;
+    color: #333;
+    font-size: 1.2rem;
+}
+.chat-messages {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f5f5f5;
+}
+.message {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    position: relative;
+    word-wrap: break-word;
+}
+.msg-mine {
+    background: #007bff;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 5px;
+}
+.msg-theirs {
+    background: white;
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 5px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.msg-time {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin-top: 5px;
+    text-align: right;
+}
+.chat-input-area {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid var(--border-color, #eee);
+    display: flex;
+    gap: 10px;
+}
+.chat-input {
+    flex-grow: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    outline: none;
+}
+.chat-send-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+.chat-send-btn:hover {
+    background: #0056b3;
+}
+</style>
+
+<div class="chat-window">
+    <div class="chat-header">
+        <a href="{% url 'chat_list' %}" class="back-btn">←</a>
+        <div>
+            Чат с 
+            {% if other_user.store_profile %}
+                {{ other_user.store_profile.company_name|default:other_user.email }}
+            {% else %}
+                {{ other_user.email }}
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="chat-messages" id="chatMessages">
+        {% for msg in messages %}
+            <div class="message {% if msg.sender == request.user %}msg-mine{% else %}msg-theirs{% endif %}" data-id="{{ msg.id }}">
+                <div>{{ msg.content }}</div>
+                <div class="msg-time">{{ msg.created_at|date:"H:i" }}</div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <form class="chat-input-area" id="chatForm">
+        {% csrf_token %}
+        <input type="text" id="msgContent" class="chat-input" placeholder="Введите сообщение..." autocomplete="off" required>
+        <button type="submit" class="chat-send-btn">➤</button>
+    </form>
+</div>
+
+<script>
+    const chatMessages = document.getElementById('chatMessages');
+    const chatForm = document.getElementById('chatForm');
+    const msgContent = document.getElementById('msgContent');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const currentUserId = {{ request.user.id }};
+    const otherUserId = {{ other_user.id }};
+    
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    scrollToBottom();
+    
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const content = msgContent.value.trim();
+        if (!content) return;
+        
+        const formData = new FormData();
+        formData.append('content', content);
+        
+        fetch("{% url 'chat_detail' other_user.id %}", {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                appendMessage(data);
+                msgContent.value = '';
+                scrollToBottom();
+            }
+        });
+    });
+    
+    function appendMessage(msg) {
+        if (document.querySelector(`.message[data-id="${msg.id}"]`)) return;
+        
+        const div = document.createElement('div');
+        div.className = `message ${msg.sender_id == currentUserId ? 'msg-mine' : 'msg-theirs'}`;
+        div.dataset.id = msg.id;
+        
+        div.innerHTML = `
+            <div>${msg.content}</div>
+            <div class="msg-time">${msg.created_at}</div>
+        `;
+        
+        chatMessages.appendChild(div);
+        scrollToBottom();
+    }
+    
+    function fetchNewMessages() {
+        const messages = document.querySelectorAll('.message');
+        let lastMsgId = 0;
+        if (messages.length > 0) {
+            lastMsgId = messages[messages.length - 1].dataset.id;
+        }
+        
+        fetch(`{% url 'chat_get_new_messages' other_user.id %}?last_message_id=${lastMsgId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.messages && data.messages.length > 0) {
+                let needsScroll = (chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 50);
+                
+                data.messages.forEach(msg => appendMessage(msg));
+                
+                if (needsScroll) {
+                    scrollToBottom();
+                }
+            }
+        });
+    }
+    
+    setInterval(fetchNewMessages, 3000);
+</script>
+{% endblock %}

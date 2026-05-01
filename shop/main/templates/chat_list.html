@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мои сообщения{% endblock %}
+
+{% block content %}
+<style>
+.chat-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background: var(--bg-card, #fff);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+.chat-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color, #eee);
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+.dialog-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.dialog-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color, #eee);
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.2s;
+}
+.dialog-item:hover {
+    background: var(--bg-hover, #f9f9f9);
+}
+.dialog-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-weight: bold;
+    color: #555;
+    text-transform: uppercase;
+}
+.dialog-info {
+    flex-grow: 1;
+}
+.dialog-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.dialog-last-msg {
+    color: #666;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 400px;
+}
+.dialog-meta {
+    text-align: right;
+    font-size: 0.8rem;
+    color: #999;
+}
+.unread-badge {
+    background: #e74c3c;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: inline-block;
+}
+</style>
+
+<div class="chat-container">
+    <div class="chat-header">Мои сообщения</div>
+    <ul class="dialog-list">
+        {% for dialog in dialogs %}
+        <a href="{% url 'chat_detail' dialog.other_user.id %}" class="dialog-item">
+            <div class="dialog-avatar">
+                {{ dialog.other_user.email|first }}
+            </div>
+            <div class="dialog-info">
+                <div class="dialog-name">
+                    {% if dialog.other_user.store_profile %}
+                        {{ dialog.other_user.store_profile.company_name|default:dialog.other_user.email }}
+                    {% else %}
+                        {{ dialog.other_user.email }}
+                    {% endif %}
+                </div>
+                <div class="dialog-last-msg">{{ dialog.last_message.content }}</div>
+            </div>
+            <div class="dialog-meta">
+                <div>{{ dialog.last_message.created_at|date:"d.m.Y H:i" }}</div>
+                {% if dialog.unread_count > 0 %}
+                <div class="unread-badge">{{ dialog.unread_count }}</div>
+                {% endif %}
+            </div>
+        </a>
+        {% empty %}
+        <div style="padding: 30px; text-align: center; color: #777;">
+            У вас пока нет сообщений. Вы можете начать диалог, написав продавцу со страницы товара.
+        </div>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

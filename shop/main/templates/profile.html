@@ -123,11 +123,11 @@
                         <div class="pq-sub">{{ favorites_count|default:0 }} товаров</div>
                     </div>
                 </a>
-                <a href="#" class="profile-quick-card">
-                    <div class="pq-icon pq-icon-reviews">⭐</div>
+                <a href="{% url 'chat_list' %}" class="profile-quick-card">
+                    <div class="pq-icon" style="background: rgba(0,123,255,0.1); color: #007bff;">💬</div>
                     <div class="pq-text">
-                        <div class="pq-title">Мои отзывы</div>
-                        <div class="pq-sub">{{ reviews_count|default:0 }} написано</div>
+                        <div class="pq-title">Мои сообщения</div>
+                        <div class="pq-sub">Чаты с продавцами</div>
                     </div>
                 </a>
             </div>

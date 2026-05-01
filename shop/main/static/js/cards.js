@@ -15,9 +15,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const newSrc = this.getAttribute('data-image');
             if (newSrc && mainImage) {
+                // Простая проверка безопасности: предотвращаем javascript: URL
+                if (newSrc.trim().toLowerCase().startsWith('javascript:')) {
+                    console.error('Invalid image source');
+                    return;
+                }
                 mainImage.style.opacity = '0';
                 setTimeout(() => {
-                    mainImage.src = newSrc;
+                    mainImage.setAttribute('src', newSrc);
                     mainImage.style.opacity = '1';
                 }, 150);
             }
