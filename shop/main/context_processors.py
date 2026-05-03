@@ -20,6 +20,23 @@ def cart_context(request):
     
     count = 0
     if cart:
-        count = cart.items.count()
+        # Суммируем количество всех товаров в корзине (не только уникальных)
+        count = sum(item.quantity for item in cart.items.all())
         
     return {'cart_count_global': count}
+
+def store_context(request):
+    from .models import StoreProfiles
+    if request.user.is_authenticated and request.user.role in ['seller', 'admin']:
+        store_profile, _ = StoreProfiles.objects.get_or_create(
+            user=request.user,
+            defaults={'company_name': f"Магазин {request.user.email.split('@')[0]}"}
+        )
+        return {'store_profile': store_profile}
+    return {}
+
+def settings_context(request):
+    from django.conf import settings
+    return {
+        'YANDEX_MAPS_KEY': getattr(settings, 'YANDEX_MAPS_KEY', '')
+    }

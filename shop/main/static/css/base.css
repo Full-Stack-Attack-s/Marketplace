@@ -79,7 +79,7 @@
 
 .body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Montserrat', sans-serif;
     background: var(--bg-color);
     background-image:
         radial-gradient(at 0% 0%, hsla(153, 58%, 63%, 0.15) 0px, transparent 50%),
@@ -87,9 +87,10 @@
         radial-gradient(at 100% 0%, hsla(153, 58%, 63%, 0.15) 0px, transparent 50%);
     background-attachment: fixed;
     color: var(--text-color);
-    padding-bottom: 70px;
     transition: background-color 0.3s ease, color 0.3s ease;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     line-height: 1.6;
     overflow-x: hidden;
 }
@@ -122,18 +123,49 @@
 .container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 10px;
+    padding: 0 20px;
+    flex-grow: 1;
+    width: 100%;
 }
 
 .header-desktop {
     display: none;
     background: var(--header-gradient);
-    padding: 15px 40px;
+    padding: 20px 40px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
     z-index: 1000;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+.header-location-bar {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 8px 40px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+}
+
+.location-selector {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    color: var(--text-color);
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.location-selector:hover {
+    color: var(--nav-active);
+}
+
+.location-icon {
+    font-size: 16px;
 }
 
 .header-content-desktop {
@@ -221,19 +253,57 @@
 
 .header-desktop .search-box {
     flex: 1;
-    max-width: 500px;
-    margin: 0 auto;
+    max-width: 800px;
+    margin: 0 40px;
 }
 
 .header-desktop .search-box input {
     width: 100%;
-    padding: 12px 20px;
-    border: none;
-    font-size: 14px;
+    padding: 14px 24px;
+    font-size: 16px;
     background: transparent;
     color: var(--input-text);
     outline: none;
     transition: all 0.3s ease;
+}
+
+.header-desktop .search-box input:focus {
+    color: var(--text-color);
+}
+
+.search-box {
+    position: relative;
+}
+
+.live-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    border: 1.5px solid var(--border-color);
+    border-radius: 0 0 16px 16px;
+    margin-top: 5px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 1000;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.live-search-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: var(--text-color);
+}
+
+.live-search-item:hover {
+    background: var(--nav-active);
+    color: #000;
+}
+
+.live-search-item strong {
+    font-weight: 800;
 }
 
 .search-form-wrapper {
@@ -248,9 +318,9 @@
 .search-submit-btn {
     background: var(--button-gradient);
     border: none;
-    padding: 0 25px;
+    padding: 0 35px;
     color: #000;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -526,8 +596,8 @@
 .site-footer {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
-    padding: 60px 0 30px;
-    margin-top: 60px;
+    padding: 80px 0 50px;
+    margin-top: auto;
     transition: background-color 0.3s ease;
 }
 

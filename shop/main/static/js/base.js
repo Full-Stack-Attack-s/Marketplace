@@ -28,34 +28,202 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', toggleTheme);
     });
 
-    // --- Дерево категорий: Раскрытие/Свертывание ---
-    const toggles = document.querySelectorAll('.tree-toggle');
-    toggles.forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const node = this.closest('.tree-node');
-            if (node) {
-                node.classList.toggle('expanded');
+    // Авто-скрытие уведомлений
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.auto-hide');
+        alerts.forEach(alert => {
+            alert.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+            alert.style.opacity = "0";
+            alert.style.transform = "translateY(-10px)";
+            setTimeout(() => alert.remove(), 600);
+        });
+    }, 5000);
+
+    // --- Локация: Выбор и Карта ---
+    const locationSelector = document.getElementById('locationSelector');
+    const locationModal = document.getElementById('locationModal');
+    const closeLocationModal = document.getElementById('closeLocationModal');
+    const confirmLocationBtn = document.getElementById('confirmLocation');
+    const manualLocationInput = document.getElementById('manualLocation');
+    const currentLocationText = document.getElementById('currentLocation');
+
+    let myMap, myPlacemark;
+    
+    function initMap() {
+        if (myMap) return;
+        
+        ymaps.ready(() => {
+            myMap = new ymaps.Map("map", {
+                center: [55.7558, 37.6173], // Москва
+                zoom: 14,
+                controls: ['zoomControl', 'fullscreenControl', 'geolocationControl']
+            });
+
+            // Клик по карте
+            myMap.events.add('click', function (e) {
+                const coords = e.get('coords');
+                placeMarker(coords);
+            });
+        });
+    }
+
+    function placeMarker(coords) {
+        if (myPlacemark) {
+            myPlacemark.geometry.setCoordinates(coords);
+        } else {
+            myPlacemark = new ymaps.Placemark(coords, {}, {
+                preset: 'islands#blueDotIconWithCaption',
+                draggable: true
+            });
+            myMap.geoObjects.add(myPlacemark);
+            
+            // Слушаем завершение перетаскивания
+            myPlacemark.events.add('dragend', function() {
+                getAddress(myPlacemark.geometry.getCoordinates());
+            });
+        }
+        getAddress(coords);
+    }
+
+    function getAddress(coords) {
+        const input = document.getElementById('manualLocation');
+        if (input) {
+            input.value = "";
+            input.placeholder = "⌛ Определение адреса...";
+        }
+
+        ymaps.geocode(coords).then(function (res) {
+            const firstGeoObject = res.geoObjects.get(0);
+            if (firstGeoObject) {
+                const address = firstGeoObject.getAddressLine() || 
+                              firstGeoObject.properties.get('text') ||
+                              firstGeoObject.properties.get('name');
+                if (input) {
+                    input.value = address;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            } else {
+                if (input) input.placeholder = "📍 Адрес не найден, введите вручную";
+            }
+        }).catch(err => {
+            console.error('Yandex Geocode Error:', err);
+            if (input) input.placeholder = "❌ Ошибка сервиса (проверьте API-ключ)";
+        });
+    }
+
+    if (locationSelector) {
+        locationSelector.addEventListener('click', () => {
+            locationModal.style.display = 'flex';
+            setTimeout(initMap, 100);
+        });
+    }
+
+    if (closeLocationModal) {
+        closeLocationModal.addEventListener('click', () => {
+            locationModal.style.display = 'none';
+        });
+    }
+
+    if (confirmLocationBtn) {
+        confirmLocationBtn.addEventListener('click', () => {
+            const val = manualLocationInput.value.trim();
+            if (val) {
+                currentLocationText.textContent = val;
+                localStorage.setItem('user_location', val);
+                locationModal.style.display = 'none';
+                showToast('📍 Местоположение сохранено', 'success');
             }
         });
+    }
+
+    // Восстанавливаем локацию
+    const savedLoc = localStorage.getItem('user_location');
+    if (savedLoc && currentLocationText) {
+        currentLocationText.textContent = savedLoc;
+    }
+
+    // --- Живой поиск ---
+    const searchForm = document.getElementById('headerSearchForm');
+    const searchInput = document.getElementById('headerSearchInput');
+    const liveResults = document.getElementById('liveSearchResults');
+
+    if (searchForm) {
+        searchForm.addEventListener('submit', (e) => {
+            if (!searchInput.value.trim()) {
+                e.preventDefault();
+                showToast('🔍 Введите поисковый запрос', 'info');
+            }
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            if (query.length > 2) {
+                // Имитация живого поиска
+                liveResults.style.display = 'block';
+                liveResults.innerHTML = `
+                    <div class="live-search-item" onclick="location.href='/search/?q=${query}'">
+                        🔍 Поиск «<strong>${query}</strong>» в каталоге
+                    </div>
+                `;
+            } else {
+                liveResults.style.display = 'none';
+            }
+        });
+
+        // Скрывать результаты при клике вне
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !liveResults.contains(e.target)) {
+                liveResults.style.display = 'none';
+            }
+        });
+    }
+
+    // --- Перевод (RU/EN) ---
+    const langBtns = document.querySelectorAll('.lang-btn');
+    const translations = {
+        'RU': {
+            'search_placeholder': 'Найти на BDSM-A',
+            'catalog': 'Каталог',
+            'cart': 'Корзина',
+            'favorites': 'Избранное',
+            'profile': 'Профиль'
+        },
+        'EN': {
+            'search_placeholder': 'Find on BDSM-A',
+            'catalog': 'Catalog',
+            'cart': 'Cart',
+            'favorites': 'Favorites',
+            'profile': 'Profile'
+        }
+    };
+
+    function switchLanguage(lang) {
+        const t = translations[lang];
+        if (!t) return;
+
+        document.querySelectorAll('.search-input-field').forEach(i => i.placeholder = t.search_placeholder);
+        document.querySelectorAll('.catalog-mobile, .catalog').forEach(el => {
+            // У каталога есть псевдоэлемент, поэтому меняем текст хитро
+            // Или просто меняем текст внутри если он там есть
+        });
+        
+        localStorage.setItem('lang', lang);
+        langBtns.forEach(btn => {
+            btn.classList.toggle('active', btn.textContent === lang);
+        });
+        
+        // В реальном приложении тут был бы i18next или Django i18n
+        // Для демонстрации ограничимся этим
+    }
+
+    langBtns.forEach(btn => {
+        btn.addEventListener('click', () => switchLanguage(btn.textContent));
     });
 
-    // Авто-раскрытие дерева, если выбрана подкатегория
-    const selectedRadio = document.querySelector('.mptt-tree input[type="radio"]:checked');
-    if (selectedRadio) {
-        let parent = selectedRadio.closest('.tree-node');
-        // Раскрываем всех родителей
-        while (parent) {
-            parent.classList.add('expanded');
-            const parentList = parent.parentElement; // <ul>
-            if (parentList) {
-                parent = parentList.closest('.tree-node');
-            } else {
-                parent = null;
-            }
-        }
-    }
+    const savedLang = localStorage.getItem('lang') || 'RU';
+    switchLanguage(savedLang);
 });
 
 
@@ -167,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // ДОБАВЛЕНИЕ В КОРЗИНУ И ИЗБРАННОЕ
 // ============================================
 
-window.addToCart = function (variantId) {
+window.addToCart = function (variantId, btnElement) {
     if (!variantId || variantId === 'None') {
         showToast('❌ Товар недоступен для добавления в корзину', 'error');
         return;
@@ -187,22 +355,69 @@ window.addToCart = function (variantId) {
     .then(data => {
         if (data.status === 'ok') {
             showToast('✅ Товар добавлен в корзину!', 'success');
-            // Обновляем счётчик везде
-            document.querySelectorAll('.cart-count').forEach(el => {
-                el.textContent = data.cart_count || (parseInt(el.textContent || 0) + 1);
-                
-                // Анимация
-                el.style.transform = 'scale(1.3)';
-                setTimeout(() => {
-                    el.style.transform = 'scale(1)';
-                }, 200);
-            });
+            
+            // Если передан элемент кнопки, превращаем его в селектор
+            if (btnElement && !btnElement.closest('.quantity-selector')) {
+                const parent = btnElement.parentElement;
+                const qtySelector = document.createElement('div');
+                qtySelector.className = 'quantity-selector';
+                qtySelector.innerHTML = `
+                    <button class="qty-btn minus" onclick="updateCartQty('${variantId}', -1, this)">-</button>
+                    <span class="qty-value">1</span>
+                    <button class="qty-btn plus" onclick="updateCartQty('${variantId}', 1, this)">+</button>
+                `;
+                btnElement.replaceWith(qtySelector);
+            }
+
+            // Обновляем счётчик
+            updateCartCounter(data.cart_count);
         } else {
             showToast('❌ Не удалось добавить товар', 'error');
         }
     })
     .catch(() => showToast('❌ Ошибка сети. Попробуйте ещё раз', 'error'));
 };
+
+window.updateCartQty = function(variantId, delta, btn) {
+    const qtySpan = btn.parentElement.querySelector('.qty-value');
+    const parent = btn.parentElement.parentElement; // .product-info
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
+    
+    const formData = new FormData();
+    formData.append('delta', delta);
+
+    fetch('/cart/update-variant/' + variantId + '/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            if (data.removed) {
+                // Возвращаем кнопку "В корзину"
+                const addBtn = document.createElement('button');
+                addBtn.className = 'add-to-cart';
+                addBtn.onclick = () => addToCart(variantId, addBtn);
+                addBtn.innerHTML = '🛒 В корзину';
+                btn.parentElement.replaceWith(addBtn);
+                showToast('🗑️ Удалено из корзины', 'info');
+            } else {
+                qtySpan.textContent = data.quantity;
+            }
+            updateCartCounter(data.cart_count);
+        }
+    })
+    .catch(() => showToast('❌ Ошибка обновления', 'error'));
+};
+
+function updateCartCounter(count) {
+    document.querySelectorAll('.cart-count').forEach(el => {
+        el.textContent = count;
+        el.style.transform = 'scale(1.3)';
+        setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
+    });
+}
 
 window.addToFavorites = function (event, productId, btnElement) {
     if (event) {
@@ -319,3 +534,54 @@ function getCookie(name) {
     }
     return v;
 }
+
+// ============================================
+// ГЛОБАЛЬНАЯ ВАЛИДАЦИЯ ТЕЛЕФОНА (+7...)
+// ============================================
+document.addEventListener('input', function(e) {
+    const el = e.target;
+    if (el.name === 'phone' || el.name === 'phone_number') {
+        el.setAttribute('maxlength', '12');
+        let val = el.value;
+
+        // Если пусто — ставим +7
+        if (!val) {
+            el.value = '+7';
+            return;
+        }
+
+        // Если удалили +7 — возвращаем его
+        if (!val.startsWith('+7')) {
+            let digits = val.replace(/[^0-9]/g, '');
+            // Если вставили номер с 7 или 8 в начале, убираем их перед приклеиванием +7
+            if (digits.startsWith('7') || digits.startsWith('8')) {
+                digits = digits.substring(1);
+            }
+            el.value = '+7' + digits;
+        } else {
+            // Разрешаем только цифры после префикса
+            el.value = '+7' + val.substring(2).replace(/[^0-9]/g, '');
+        }
+
+        // Жесткое ограничение 12 символов
+        if (el.value.length > 12) {
+            el.value = el.value.substring(0, 12);
+        }
+    }
+});
+
+document.addEventListener('focusin', function(e) {
+    const el = e.target;
+    if ((el.name === 'phone' || el.name === 'phone_number') && !el.value) {
+        el.value = '+7';
+    }
+});
+
+document.addEventListener('blur', function(e) {
+    const el = e.target;
+    if (el.name === 'phone' || el.name === 'phone_number') {
+        if (el.value.length > 2 && el.value.length < 12) {
+            showToast('⚠️ Номер телефона должен содержать 11 цифр (+7...)', 'warning');
+        }
+    }
+}, true);

@@ -9,7 +9,7 @@
 {% block content%}
 <div class="cart-container">
     <div class="cart-header">
-        <h1 class="cart-title">Корзина <span class="cart-count-badge">{{ items|length }}</span></h1>
+        <h1 class="cart-title">Корзина <span class="cart-count-badge">{{ cart_count_global }}</span></h1>
     </div>
 
     {% if items %}
@@ -70,7 +70,7 @@
                     <div class="summary-details">
                         <div class="summary-title">Ваша корзина</div>
                         <div class="summary-row">
-                            <span>Товары ({{ items|length }})</span>
+                            <span>Товары (<span id="summary-items-count">{{ cart_count_global }}</span>)</span>
                             <span id="summary-subtotal">{{ total_price|floatformat:0 }} ₽</span>
                         </div>
                         <div class="summary-row discount">

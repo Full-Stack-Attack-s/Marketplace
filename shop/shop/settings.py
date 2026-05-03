@@ -35,6 +35,9 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 SITE_ID = 1
 ALLOWED_HOSTS = ['bdsm-a.ru', 'www.bdsm-a.ru', '159.194.215.89', 'localhost', '127.0.0.1']
 
+# Ключи сторонних сервисов
+YANDEX_MAPS_KEY = os.getenv('YANDEX_MAPS_KEY', '')
+
 
 CSRF_TRUSTED_ORIGINS = [
     'https://bdsm-a.ru',
@@ -108,6 +111,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'main.context_processors.favorites_context',
                 'main.context_processors.cart_context',
+                'main.context_processors.store_context',
+                'main.context_processors.settings_context',
             ],
         },
     },

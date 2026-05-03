@@ -106,6 +106,10 @@
                     <label>Дата рождения</label>
                     {{ profile_form.birth_date }}
                 </div>
+                <div class="profile-field">
+                    <label>Пол</label>
+                    {{ profile_form.gender }}
+                </div>
             </div>
 
             <div class="profile-field" style="margin-top: 15px;">
@@ -120,7 +124,17 @@
     </div>
 
     <div class="profile-side-card">
-        <div class="profile-side-title">📍 Адрес доставки</div>
+        <div class="profile-side-title">📍 Доставка и местоположение</div>
+        
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Выберите точку на карте</label>
+            <div class="location-selector-profile" id="locationSelector" style="background: var(--bg-secondary); padding: 15px; border-radius: 14px; border: 1.5px solid var(--border-color); cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <span class="location-icon" style="font-size: 20px;">📍</span>
+                <span id="currentLocation" style="font-weight: 600;">{% if user_profile.location %}{{ user_profile.location }}{% else %}Выбрать на карте{% endif %}</span>
+            </div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 0;">Это поможет точнее рассчитывать доставку.</p>
+        </div>
+
         <form method="POST" class="profile-edit-form">
             {% csrf_token %}
             <input type="hidden" name="update_address" value="1">
@@ -141,11 +155,13 @@
                 </div>
                 <div class="profile-field">
                     <label>Почтовый индекс</label>
-                    <input type="text" name="zip_code" value="{{ address.zip_code|default:'' }}" style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-color);" placeholder="Например: 123456">
+                    <input type="text" name="zip_code" value="{{ address.zip_code|default:'' }}" 
+                           style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-color);" 
+                           placeholder="Например: 123456" maxlength="6" id="id_zip_code">
                 </div>
             </div>
-            <button type="submit" class="profile-save-btn" style="margin-top: 15px;">
-                📍 Обновить адрес
+            <button type="submit" class="profile-save-btn" style="margin-top: 20px; width: 100%;">
+                📍 Обновить данные доставки
             </button>
         </form>
     </div>
@@ -168,12 +184,41 @@
 <script src="{% static 'js/profile.js' %}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const birthDateInput = document.getElementById('id_birth_date');
+        const initialBirthDate = birthDateInput.value;
+
         flatpickr("#id_birth_date", {
             locale: "ru",
             dateFormat: "Y-m-d",
             allowInput: true,
-            disableMobile: "true"
+            disableMobile: "true",
+            onClose: function(selectedDates, dateStr, instance) {
+                if (initialBirthDate && dateStr !== initialBirthDate) {
+                    if (confirm('⚠️ Изменение даты рождения возможно только через службу поддержки. Перейти в чат поддержки?')) {
+                        window.location.href = "{% url 'chat_list' %}"; // Или точный URL поддержки
+                        instance.setDate(initialBirthDate); // Возвращаем назад
+                    } else {
+                        instance.setDate(initialBirthDate);
+                    }
+                }
+            }
         });
+
+        // Ограничение индекса только цифрами
+        const zipInput = document.getElementById('id_zip_code');
+        if (zipInput) {
+            zipInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        }
+
+        // Ограничение индекса только цифрами
+        const zipInput = document.getElementById('id_zip_code');
+        if (zipInput) {
+            zipInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        }
     });
 </script>
 {% endblock %}

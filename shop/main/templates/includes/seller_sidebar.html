@@ -21,6 +21,9 @@
         <a href="{% url 'manage_products' %}" class="{% if request.resolver_match.url_name == 'manage_products' or request.resolver_match.url_name == 'edit_product' %}active-nav{% endif %}">
             <span>📦</span> Мои товары
         </a>
+        <a href="{% url 'inventory_manage' %}" class="{% if request.resolver_match.url_name == 'inventory_manage' %}active-nav{% endif %}">
+            <span>📉</span> Склад
+        </a>
         <a href="{% url 'seller_profile' %}" class="{% if request.resolver_match.url_name == 'seller_profile' %}active-nav{% endif %}">
             <span>👤</span> Профиль
         </a>

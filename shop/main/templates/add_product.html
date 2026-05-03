@@ -125,40 +125,62 @@ document.addEventListener('DOMContentLoaded', function () {
     function fetchAttributes() {
         const categoryId = categorySelect.value;
         if (!categoryId) {
-            attrSection.style.display = 'none';
+            attrSection.classList.add('hidden');
             attrsGrid.innerHTML = '';
             return;
         }
+
+        // Показываем индикатор загрузки
+        attrsGrid.innerHTML = '<div class="pf-loading">⏳ Загрузка характеристик...</div>';
+        attrSection.classList.remove('hidden');
+
         fetch(`/api/category-attributes/${categoryId}/`)
             .then(r => r.ok ? r.json() : Promise.reject(r.status))
             .then(data => {
                 if (!data.length) {
-                    attrSection.style.display = 'none';
+                    attrSection.classList.add('hidden');
                     return;
                 }
                 attrsGrid.innerHTML = '';
-                attrSection.style.display = 'block';
+                attrSection.classList.remove('hidden');
+                
                 data.forEach(attr => {
                     const savedVal = SAVED_ATTRS[attr.label] || SAVED_ATTRS[attr.name] || '';
                     const div = document.createElement('div');
                     div.className = 'form-group';
+                    
+                    let inputHtml = '';
+                    const inputName = `attr_${attr.label || attr.name}`;
+                    const isRequired = attr.is_required ? 'required' : '';
+                    const placeholder = `Например: ${attr.type === 'number' ? '10' : 'значение'}`;
+
+                    if (attr.type === 'number') {
+                        inputHtml = `<input type="number" step="any" name="${inputName}" value="${savedVal}" placeholder="${placeholder}" class="auth-form input" ${isRequired}>`;
+                    } else if (attr.type === 'boolean' || attr.type === 'bool') {
+                        const checked = (savedVal === 'true' || savedVal === '1' || savedVal === 'on' || savedVal === 'Yes' || savedVal === 'Да') ? 'checked' : '';
+                        inputHtml = `
+                            <label class="pf-checkbox-label">
+                                <input type="checkbox" name="${inputName}" ${checked} class="pf-checkbox">
+                                <span class="pf-checkbox-text">${savedVal === 'true' ? 'Да' : 'Нет'} (отметьте, если есть)</span>
+                            </label>
+                        `;
+                    } else {
+                        // По умолчанию текст
+                        inputHtml = `<input type="text" name="${inputName}" value="${savedVal}" placeholder="${placeholder}" class="auth-form input" ${isRequired}>`;
+                    }
+
                     div.innerHTML = `
                         <label>${attr.label || attr.name}
                             ${attr.is_required ? '<span class="pf-required">*</span>' : ''}
                         </label>
-                        <input type="text"
-                               name="attr_${attr.label || attr.name}"
-                               value="${savedVal}"
-                               placeholder="Введите значение"
-                               class="auth-form input"
-                               ${attr.is_required ? 'required' : ''}>
+                        ${inputHtml}
                     `;
                     attrsGrid.appendChild(div);
                 });
             })
             .catch(err => {
                 console.warn('Ошибка загрузки атрибутов:', err);
-                attrSection.style.display = 'none';
+                attrSection.classList.add('hidden');
             });
     }
 
