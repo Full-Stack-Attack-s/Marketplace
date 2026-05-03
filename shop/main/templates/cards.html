@@ -96,7 +96,6 @@
                 <!-- Артикул -->
                 <div class="spec-row">
                     <span class="spec-label">Артикул</span>
-                    <span class="spec-dots"></span>
                     <span class="spec-value">BDSM-{{ product.id|stringformat:"06d" }}</span>
                 </div>
 
@@ -104,7 +103,6 @@
                 {% if product.category %}
                 <div class="spec-row">
                     <span class="spec-label">Категория</span>
-                    <span class="spec-dots"></span>
                     <span class="spec-value">{{ product.category.name }}</span>
                 </div>
                 {% endif %}
@@ -113,7 +111,6 @@
                 {% for attr_val in product.attribute_values.all %}
                 <div class="spec-row">
                     <span class="spec-label">{{ attr_val.attribute.label }}</span>
-                    <span class="spec-dots"></span>
                     <span class="spec-value">{{ attr_val.value }}</span>
                 </div>
                 {% empty %}
@@ -128,7 +125,6 @@
                 {% if product.brand %}
                 <div class="spec-row">
                     <span class="spec-label">Бренд</span>
-                    <span class="spec-dots"></span>
                     <span class="spec-value">{{ product.brand }}</span>
                 </div>
                 {% endif %}
@@ -185,20 +181,19 @@
             <div class="seller-section">
                 <div class="seller-section-label">Продавец</div>
                 <div class="seller-card">
-                    <div class="seller-avatar">🏪</div>
+                    <div class="seller-avatar">
+                        {% if product.seller.store_profile.logo %}
+                            <img src="{{ product.seller.store_profile.logo.url }}" alt="Logo">
+                        {% else %}
+                            🏪
+                        {% endif %}
+                    </div>
                     <div>
                         <div class="seller-name">
                             {% if product.seller.store_profile.company_name %}
                                 {{ product.seller.store_profile.company_name|truncatechars:20 }}
                             {% else %}
                                 {{ product.seller.email|truncatechars:20 }}
-                            {% endif %}
-                        </div>
-                        <div class="seller-status">
-                            {% if product.seller.store_profile.verification_status == 'approved' %}
-                                ✓ Проверенный продавец
-                            {% else %}
-                                Продавец на платформе
                             {% endif %}
                         </div>
                     </div>

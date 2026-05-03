@@ -336,3 +336,44 @@
     .pf-dropzone { padding: 24px 16px; }
     .pf-preview-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
 }
+
+/* ── Dynamic Attributes Additional Styles ────── */
+.pf-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.pf-checkbox-label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px;
+    padding: 11px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 5px;
+}
+
+.pf-checkbox-label:hover {
+    border-color: var(--nav-active);
+    background: rgba(102, 217, 168, 0.05);
+}
+
+.pf-checkbox {
+    width: 18px !important;
+    height: 18px !important;
+    accent-color: var(--nav-active);
+    cursor: pointer;
+}
+
+.pf-checkbox-text {
+    font-size: 14px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+

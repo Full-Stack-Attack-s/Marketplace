@@ -11,7 +11,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!input) return;
         
         let newQty = parseInt(input.value) + delta;
-        if (newQty < 1) return;
+        if (newQty < 1) {
+            removeFromCart(itemId, true); // true means skip confirmation
+            return;
+        }
 
         try {
             const response = await fetch(`/cart/update/${itemId}/`, {
@@ -36,15 +39,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (totalEl) totalEl.innerText = Math.round(data.total_price) + ' ₽';
                 
                 // Обновление глобального счетчика в хедере
-                updateGlobalCartCount();
+                updateGlobalCartCount(data.total_count);
             }
         } catch (e) {
             console.error('Ошибка обновления количества:', e);
         }
     };
 
-    window.removeFromCart = async function(itemId) {
-        if (!confirm('Удалить товар из корзины?')) return;
+    window.removeFromCart = async function(itemId, skipConfirm = false) {
+        if (!skipConfirm && !confirm('Удалить товар из корзины?')) return;
 
         try {
             const response = await fetch(`/cart/remove/${itemId}/`, {
@@ -68,9 +71,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     if (subtotalEl) subtotalEl.innerText = Math.round(data.total_price) + ' ₽';
                     if (totalEl) totalEl.innerText = Math.round(data.total_price) + ' ₽';
-                    if (badge) badge.innerText = parseInt(badge.innerText) - 1;
                     
-                    updateGlobalCartCount();
+                    updateGlobalCartCount(data.total_count);
                 }
             }
         } catch (e) {
@@ -78,11 +80,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
-    function updateGlobalCartCount() {
+    function updateGlobalCartCount(count) {
         const badge = document.querySelector('.cart-count-badge');
-        const globalCount = document.querySelector('.cart-count');
-        if (badge && globalCount) {
-            globalCount.textContent = badge.textContent;
-        }
+        const headerCounts = document.querySelectorAll('.cart-count');
+        const summaryItemsCount = document.getElementById('summary-items-count');
+        
+        if (badge) badge.textContent = count;
+        if (summaryItemsCount) summaryItemsCount.textContent = count;
+        headerCounts.forEach(el => el.textContent = count);
     }
 });

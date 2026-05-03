@@ -187,12 +187,17 @@
                 </div>
             </a>
             <div class="fav-actions">
-                <!-- Берем ID первого доступного варианта -->
-                {% with variant=p.product_variants_set.first %}
-                <button class="fav-to-cart-btn" onclick="addToCart({{ variant.id|default:'null' }})">
-                    В корзину
+                {% if p.in_cart_qty > 0 %}
+                <div class="quantity-selector" style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary); border-radius: 10px; padding: 5px 10px;">
+                    <button class="qty-btn minus" style="background:none; border:none; cursor:pointer; font-size:18px;" onclick="updateCartQty('{{ p.default_variant_id }}', -1, this)">-</button>
+                    <span class="qty-value" style="font-weight:700;">{{ p.in_cart_qty }}</span>
+                    <button class="qty-btn plus" style="background:none; border:none; cursor:pointer; font-size:18px;" onclick="updateCartQty('{{ p.default_variant_id }}', 1, this)">+</button>
+                </div>
+                {% else %}
+                <button class="fav-to-cart-btn" onclick="addToCart('{{ p.default_variant_id }}', this)">
+                    🛒 В корзину
                 </button>
-                {% endwith %}
+                {% endif %}
             </div>
         </div>
         {% endwith %}

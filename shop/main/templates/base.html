@@ -9,6 +9,10 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/favorites.css' %}">
+    
+    <!-- Yandex Maps API -->
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey={{ YANDEX_MAPS_KEY }}" type="text/javascript"></script>
+
     {% block extra_css %}{% endblock %}
 
 </head>
@@ -25,10 +29,11 @@
         <a href="/catalog" class="catalog"></a>
 
         <div class="search-box">
-            <form action="{% url 'search' %}" method="GET" class="search-form-wrapper">
-                <input type="text" name="q" placeholder="Найти на BDSM-A" class="search-input-field">
+            <form action="{% url 'search' %}" method="GET" class="search-form-wrapper" id="headerSearchForm">
+                <input type="text" name="q" placeholder="Найти на BDSM-A" class="search-input-field" id="headerSearchInput" autocomplete="off">
                 <button type="submit" class="search-submit-btn">Найти</button>
             </form>
+            <div id="liveSearchResults" class="live-search-results" style="display: none;"></div>
         </div>
 
         <nav class="navigation">
@@ -124,6 +129,16 @@
 
     <!-- Основной контент -->
     <div class="container">
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} auto-hide">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% block content %}
         <!-- Баннер -->
         <section class="sale-section">
@@ -151,7 +166,7 @@
                         <div class="product-price">{{ p.exact_price|floatformat:0 }} ₽</div>
                         <div class="product-seller">{{ p.name }}</div>
 
-                        <button class="add-to-cart" onclick="addToCart({{ p.default_variant_id }})">
+                        <button class="add-to-cart" onclick="addToCart({{ p.default_variant_id }}, this)">
                             <span class="cart-icon">🛒</span> В корзину
                         </button>
                     </div>
@@ -238,6 +253,78 @@
             </div>
         </div>
     </footer>
+    
+    <!-- Модальное окно выбора местоположения -->
+    <div id="locationModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content location-modal">
+            <div class="modal-header">
+                <h3>Выберите ваше местоположение</h3>
+                <button class="close-modal" id="closeLocationModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="map" style="height: 300px; border-radius: 12px; margin-bottom: 15px;"></div>
+                <div class="location-input-group">
+                    <input type="text" id="manualLocation" placeholder="Введите адрес вручную..." class="modal-input">
+                    <button id="confirmLocation" class="modal-btn">Подтвердить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        backdrop-filter: blur(5px);
+    }
+    .modal-content.location-modal {
+        background: var(--bg-secondary);
+        padding: 25px;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--text-color);
+    }
+    .modal-input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        background: var(--input-bg);
+        color: var(--text-color);
+        margin-bottom: 15px;
+    }
+    .modal-btn {
+        width: 100%;
+        padding: 12px;
+        background: var(--button-gradient);
+        border: none;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    </style>
 
     <!-- Подключаем JavaScript -->
     <script src="{% static 'js/base.js' %}"></script>

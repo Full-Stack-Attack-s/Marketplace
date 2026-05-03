@@ -32,15 +32,17 @@
                     <h3 class="subcategory-title">
                         <a href="{% url 'search' %}?category={{ sub.id }}">{{ sub.name }}</a>
                     </h3>
-                    <ul class="child-categories-list">
+                    <ul class="child-categories-list" id="list-{{ sub.id }}">
                         {% for child in sub.get_children %}
-                        <li>
+                        <li {% if forloop.counter > 5 %}class="hidden-item" style="display: none;"{% endif %}>
                             <a href="{% url 'search' %}?category={{ child.id }}">{{ child.name }}</a>
                         </li>
                         {% endfor %}
                     </ul>
-                    {% if sub.get_children %}
-                        <a href="{% url 'search' %}?category={{ sub.id }}" class="more-link">Еще <span class="arrow-down">⌄</span></a>
+                    {% if sub.get_children|length > 5 %}
+                        <a href="javascript:void(0)" class="more-link" onclick="toggleCategoryList(this, 'list-{{ sub.id }}')">
+                            Еще <span class="arrow-down">⌄</span>
+                        </a>
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -74,5 +76,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+function toggleCategoryList(btn, listId) {
+    const list = document.getElementById(listId);
+    const hiddenItems = list.querySelectorAll('.hidden-item');
+    const isExpanded = btn.getAttribute('data-expanded') === 'true';
+
+    hiddenItems.forEach(item => {
+        item.style.display = isExpanded ? 'none' : 'block';
+    });
+
+    if (isExpanded) {
+        btn.innerHTML = 'Еще <span class="arrow-down">⌄</span>';
+        btn.setAttribute('data-expanded', 'false');
+    } else {
+        btn.innerHTML = 'Свернуть <span class="arrow-up">⌃</span>';
+        btn.setAttribute('data-expanded', 'true');
+    }
+}
 </script>
 {% endblock content %}

@@ -31,8 +31,70 @@
                         <input type="email" name="email" placeholder="Email" class="checkout-input" required value="{{ request.user.email }}">
                     </div>
                 </div>
+
+                <div class="section-title" style="margin-top: 30px;">💳 Способ оплаты</div>
+                <div class="card-payment-box">
+                    <div class="form-group full">
+                        <label class="field-label">Номер карты</label>
+                        <input type="text" id="card_number" name="card_number" placeholder="0000 0000 0000 0000" class="checkout-input card-input" required maxlength="19">
+                        <div id="card-error" class="input-error-msg" style="display: none;">Проверьте корректность ввода данных!</div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="field-label">Срок действия</label>
+                            <input type="text" name="card_expiry" placeholder="ММ/ГГ" class="checkout-input" required maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label class="field-label">CVC/CVV</label>
+                            <input type="password" name="card_cvv" placeholder="***" class="checkout-input" required maxlength="3">
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
+
+        <script>
+            document.getElementById('card_number').addEventListener('input', function(e) {
+                // Formatting: 0000 0000 0000 0000
+                let value = e.target.value.replace(/\D/g, '');
+                let formatted = value.match(/.{1,4}/g)?.join(' ') || '';
+                e.target.value = formatted.substring(0, 19);
+                
+                // Clear error while typing
+                document.getElementById('card-error').style.display = 'none';
+                this.classList.remove('input-invalid');
+            });
+
+            function validateLuhn(cardNumStr) {
+                // Преобразуем строку в массив цифр (убираем пробелы)
+                let cardNum = cardNumStr.replace(/\s+/g, '').split('').map(Number);
+                
+                // Реализация вашего алгоритма Луна
+                for (let i = cardNum.length - 2; i >= 0; i -= 2) {
+                    cardNum[i] = cardNum[i] * 2;
+                    if (cardNum[i] > 9) {
+                        // sum(divmod(cardNum[num], 10))
+                        cardNum[i] = Math.floor(cardNum[i] / 10) + (cardNum[i] % 10);
+                    }
+                }
+                
+                let cardSum = cardNum.reduce((a, b) => a + b, 0);
+                return cardSum % 10 === 0;
+            }
+
+            document.getElementById('checkout-form').addEventListener('submit', function(e) {
+                const cardInput = document.getElementById('card_number');
+                const cardValue = cardInput.value;
+                const errorDiv = document.getElementById('card-error');
+                
+                if (!validateLuhn(cardValue)) {
+                    e.preventDefault();
+                    errorDiv.style.display = 'block';
+                    cardInput.classList.add('input-invalid');
+                    cardInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        </script>
 
         <div class="checkout-panel">
             <div class="section-title">📦 Состав заказа</div>

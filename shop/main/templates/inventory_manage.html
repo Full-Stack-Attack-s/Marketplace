@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+    .inventory-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .inventory-table th, .inventory-table td { padding: 12px; border-bottom: 1px solid var(--border-color); text-align: left; }
+    .inventory-table th { color: var(--text-secondary); font-size: 12px; text-transform: uppercase; }
+    .stock-badge { padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 12px; }
+    .stock-low { background: rgba(255, 71, 87, 0.1); color: #ff4757; }
+    .stock-ok { background: rgba(102, 217, 168, 0.1); color: var(--nav-active); }
+    .supply-form { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; background: var(--bg-secondary); padding: 20px; border-radius: 16px; margin-bottom: 30px; border: 1px solid var(--border-color); }
+    .supply-form .form-group { flex: 1; min-width: 150px; }
+    .supply-form label { display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; }
+    .supply-form input, .supply-form select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); }
+    .supply-btn { background: var(--nav-active); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; height: 40px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="dashboard-sidebar">
+        {% include 'includes/seller_sidebar.html' %}
+    </aside>
+
+    <div class="dashboard-content">
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <div>
+                    <h2>📦 Управление остатками</h2>
+                    <div class="panel-subtitle">Отслеживание запасов и оформление новых поставок</div>
+                </div>
+            </div>
+
+            <!-- Форма добавления поставки -->
+            <form action="{% url 'add_supply' %}" method="POST" class="supply-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Товар</label>
+                    <select name="variant_id" required>
+                        <option value="">Выберите товар...</option>
+                        {% for variant in variants %}
+                            <option value="{{ variant.id }}">{{ variant.product.name }} ({{ variant.sku }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Склад</label>
+                    <select name="warehouse_id" required>
+                        {% for wh in warehouses %}
+                            <option value="{{ wh.id }}">{{ wh.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 0 0 100px;">
+                    <label>Количество</label>
+                    <input type="number" name="quantity" min="1" required placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label>Примечание (опционально)</label>
+                    <input type="text" name="note" placeholder="Номер накладной и т.д.">
+                </div>
+                <button type="submit" class="supply-btn">＋ Добавить поставку</button>
+            </form>
+
+            <!-- Таблица остатков -->
+            <div class="dashboard-table-wrapper">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Товар / Артикул</th>
+                            <th>Склад</th>
+                            <th>В наличии</th>
+                            <th>Резерв</th>
+                            <th>Доступно</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for variant in variants %}
+                            {% for stock in variant.stock.all %}
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        {% if variant.product.main_image_url %}
+                                            <img src="{{ variant.product.main_image_url }}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                                        {% else %}
+                                            <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid var(--border-color);">📦</div>
+                                        {% endif %}
+                                        <div>
+                                            <div style="font-weight: 700;">{{ variant.product.name }}</div>
+                                            <div style="font-size: 11px; color: var(--text-secondary);">{{ variant.sku }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ stock.warehouse.name }}</td>
+                                <td>
+                                    <span class="stock-badge {% if stock.quantity < 5 %}stock-low{% else %}stock-ok{% endif %}">
+                                        {{ stock.quantity }} шт.
+                                    </span>
+                                </td>
+                                <td>{{ stock.reserved_quantity }} шт.</td>
+                                <td style="font-weight: 800; color: var(--nav-active);">{{ stock.quantity|add:0 }} шт.</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        {% if variant.product.main_image_url %}
+                                            <img src="{{ variant.product.main_image_url }}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color); opacity: 0.6;">
+                                        {% else %}
+                                            <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid var(--border-color); opacity: 0.6;">📦</div>
+                                        {% endif %}
+                                        <div>
+                                            <div style="font-weight: 700; color: var(--text-secondary);">{{ variant.product.name }}</div>
+                                            <div style="font-size: 11px; color: var(--text-secondary);">{{ variant.sku }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td colspan="4" style="color: var(--text-secondary); font-style: italic;">Нет данных об остатках (добавьте поставку)</td>
+                            </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Последние поставки -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <h3>📜 Последние 10 поставок</h3>
+            </div>
+            <div class="dashboard-table-wrapper">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Товар</th>
+                            <th>Кол-во</th>
+                            <th>Склад</th>
+                            <th>Примечание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for supply in recent_supplies %}
+                        <tr>
+                            <td style="font-size: 12px; color: var(--text-secondary);">{{ supply.created_at|date:"d.m.Y H:i" }}</td>
+                            <td>{{ supply.product_variant.product.name }}</td>
+                            <td style="font-weight: 700; color: var(--nav-active);">+{{ supply.quantity }}</td>
+                            <td>{{ supply.warehouse.name }}</td>
+                            <td style="font-size: 12px;">{{ supply.note|default:"—" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="empty-state">Поставок пока не было</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -15,82 +15,147 @@
 
         <!-- ОСНОВНОЙ КОНТЕНТ -->
         <main class="dashboard-content">
-            <div class="profile-layout" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px;">
+            <div class="profile-layout" style="display: block; max-width: 800px; margin: 0 auto;">
                 
-                <!-- Личные данные -->
-                <div class="dashboard-panel">
-                    <div class="panel-header">
-                        <h3>👤 Личные данные</h3>
-                    </div>
-                    
-                    <form method="POST" class="quick-edit-form" style="border:none; padding:0; gap: 20px;">
-                        {% csrf_token %}
-                        {% for field in user_form %}
-                        <div class="profile-field">
-                            <label>{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.errors %}
-                                <div style="color: #ff4757; font-size: 11px; margin-top: 4px;">{{ field.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                        <button type="submit" name="update_user" class="action-btn btn-edit" style="width: 100%; justify-content: center; margin-top: 10px;">
-                            Обновить данные
-                        </button>
-                    </form>
-                </div>
-
                 <!-- Верификация магазина -->
                 <div class="dashboard-panel">
                     <div class="panel-header">
-                        <h3>🏢 Статус магазина</h3>
+                        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                            <h3>🏢 Профиль магазина</h3>
+                            {% if store_profile.verification_status == 'approved' %}
+                                <span class="status-badge paid">Подтвержден</span>
+                            {% elif store_profile.verification_status == 'pending' %}
+                                <span class="status-badge pending">На проверке</span>
+                            {% elif store_profile.verification_status == 'rejected' %}
+                                <span class="status-badge cancelled">Отклонен</span>
+                            {% else %}
+                                <span class="status-badge neutral">Не подтвержден</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="verification-info-box">
                         {% if store_profile.verification_status == 'approved' %}
-                            <span class="status-badge paid">Подтвержден</span>
+                            <div class="v-banner success">
+                                <span class="v-icon">✅</span>
+                                <div class="v-text">Ваш магазин полностью верифицирован и виден покупателям.</div>
+                            </div>
                         {% elif store_profile.verification_status == 'pending' %}
-                            <span class="status-badge pending">На проверке</span>
+                            <div class="v-banner warning">
+                                <span class="v-icon">⏳</span>
+                                <div class="v-text">Заявка на проверке модератором. Это займет до 3-х рабочих дней.</div>
+                            </div>
                         {% elif store_profile.verification_status == 'rejected' %}
-                            <span class="status-badge cancelled">Отклонен</span>
+                            <div class="v-banner danger">
+                                <span class="v-icon">❌</span>
+                                <div class="v-text">Заявка отклонена. Исправьте ошибки ниже и отправьте повторно.</div>
+                            </div>
                         {% else %}
-                            <span class="status-badge pending" style="background: rgba(136,136,136,0.1); color: var(--text-secondary);">Не подтвержден</span>
+                            <div class="v-banner info">
+                                <span class="v-icon">ℹ️</span>
+                                <div class="v-text">Заполните данные для прохождения верификации и начала продаж.</div>
+                            </div>
                         {% endif %}
                     </div>
 
-                    {% if store_profile.verification_status == 'approved' %}
-                        <div class="profile-info-card" style="background: rgba(102, 217, 168, 0.05); border-color: rgba(102, 217, 168, 0.2); margin-bottom: 20px;">
-                            <p><span class="label">Компания</span> <strong>{{ store_profile.company_name }}</strong></p>
-                            <p><span class="label">ИНН</span> <strong>{{ store_profile.inn }}</strong></p>
-                        </div>
-                    {% endif %}
-
-                    {% if store_profile.verification_status == 'rejected' %}
-                        <div class="verification-banner" style="background: rgba(255, 71, 87, 0.1); border-color: rgba(255, 71, 87, 0.2); color: #ff4757;">
-                            <span class="banner-icon">⚠️</span>
-                            <div>Данные отклонены. Проверьте ИНН и юридический адрес.</div>
-                        </div>
-                    {% endif %}
-
-                    <form method="POST" enctype="multipart/form-data" class="quick-edit-form" style="border:none; padding:0; gap: 20px;">
+                    <form method="POST" enctype="multipart/form-data" class="profile-form">
                         {% csrf_token %}
-                        {% for field in store_form %}
-                            {% if store_profile.verification_status == 'approved' and field.name in 'company_name,inn,legal_address' %}
-                                {# Скрываем поля верификации если уже подтверждено #}
-                            {% else %}
-                                <div class="profile-field">
-                                    <label>{{ field.label }}</label>
-                                    {{ field }}
-                                    {% if field.errors %}
-                                        <div style="color: #ff4757; font-size: 11px; margin-top: 4px;">{{ field.errors.0 }}</div>
+                        
+                        <div class="form-grid">
+                            {% for field in store_form %}
+                                {% if store_profile.verification_status == 'approved' and field.name in 'company_name,inn,legal_address' %}
+                                    <input type="hidden" name="{{ field.name }}" value="{{ field.value|default:'' }}">
+                                    {% if forloop.first %}
+                                        <div class="approved-info">
+                                            <div class="info-row">
+                                                <span class="info-label">Компания:</span>
+                                                <span class="info-value">{{ store_profile.company_name }}</span>
+                                            </div>
+                                            <div class="info-row">
+                                                <span class="info-label">ИНН:</span>
+                                                <span class="info-value">{{ store_profile.inn }}</span>
+                                            </div>
+                                        </div>
                                     {% endif %}
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                        <button type="submit" name="verify_store" class="action-btn btn-edit" style="width: 100%; justify-content: center; margin-top: 10px;">
+                                {% else %}
+                                    <div class="form-group {% if field.name == 'description' or field.name == 'legal_address' %}full-width{% endif %}">
+                                        <label class="form-label">{{ field.label }}</label>
+                                        
+                                        {% if field.name == 'logo' %}
+                                            <div class="logo-upload-box">
+                                                <div class="logo-preview-container" onclick="document.getElementById('{{ field.id_for_label }}').click()">
+                                                    {% if store_profile.logo %}
+                                                        <img src="{{ store_profile.logo.url }}" class="logo-preview-img" id="logo-preview-img" alt="Logo">
+                                                    {% else %}
+                                                        <div class="logo-placeholder" id="logo-placeholder">🏪</div>
+                                                    {% endif %}
+                                                    <div class="logo-overlay">
+                                                        <span class="overlay-icon">📸</span>
+                                                        <span class="overlay-text">Изменить</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="upload-info">
+                                                    <div class="upload-title">Логотип магазина</div>
+                                                    <p class="upload-tip">Рекомендуемый размер: 512x512px.<br>Поддерживаются форматы JPG, PNG, WEBP.</p>
+                                                    
+                                                    <!-- Скрытый реальный input от Django -->
+                                                    <input type="file" 
+                                                           name="{{ field.name }}" 
+                                                           id="{{ field.id_for_label }}" 
+                                                           class="hidden-file-input" 
+                                                           accept="image/*">
+                                                </div>
+                                            </div>
+
+                                            <script>
+                                                (function() {
+                                                    const logoInput = document.getElementById('{{ field.id_for_label }}');
+                                                    if (logoInput) {
+                                                        logoInput.addEventListener('change', function(e) {
+                                                            if (this.files && this.files[0]) {
+                                                                const reader = new FileReader();
+                                                                reader.onload = function(e) {
+                                                                    const previewImg = document.getElementById('logo-preview-img');
+                                                                    const placeholder = document.getElementById('logo-placeholder');
+                                                                    const container = document.querySelector('.logo-preview-container');
+                                                                    
+                                                                    if (previewImg) {
+                                                                        previewImg.src = e.target.result;
+                                                                    } else if (placeholder) {
+                                                                        placeholder.remove();
+                                                                        const img = document.createElement('img');
+                                                                        img.id = 'logo-preview-img';
+                                                                        img.className = 'logo-preview-img';
+                                                                        img.src = e.target.result;
+                                                                        container.prepend(img);
+                                                                    }
+                                                                }
+                                                                reader.readAsDataURL(this.files[0]);
+                                                            }
+                                                        });
+                                                    }
+                                                })();
+                                            </script>
+                                        {% else %}
+                                            <div class="input-wrapper">
+                                                {{ field }}
+                                            </div>
+                                        {% endif %}
+
+                                        {% if field.errors %}
+                                            <div class="field-error">{{ field.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <button type="submit" name="verify_store" class="action-btn btn-edit primary-btn">
                             {% if store_profile.verification_status == 'approved' %}
-                                Обновить профиль магазина
-                            {% elif store_profile.verification_status == 'rejected' %}
-                                Переподать заявку
+                                <span>Обновить информацию</span>
                             {% else %}
-                                Сохранить и отправить на проверку
+                                <span>Отправить на проверку</span>
                             {% endif %}
                         </button>
                     </form>

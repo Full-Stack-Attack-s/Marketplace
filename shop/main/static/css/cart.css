@@ -134,12 +134,16 @@
 
 .ci-quantity-ctrl input {
     width: 44px;
+    height: 100%;
     text-align: center;
     border: none;
     background: transparent;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 700;
     color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .ci-price-block {

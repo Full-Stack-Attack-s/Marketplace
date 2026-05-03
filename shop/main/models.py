@@ -430,6 +430,7 @@ class Orders(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Ожидает оплаты'),
         ('paid', 'Оплачен'),
+        ('assembling', 'Сборка'),
         ('shipped', 'Отправлен'),
         ('completed', 'Завершен'),
         ('cancelled', 'Отменен')
@@ -640,3 +641,19 @@ class Friends(models.Model):
 
     def __str__(self):
         return f"{self.user.email} -> {self.friend.email}"
+
+class Supplies(models.Model):
+    id = models.AutoField(primary_key=True)
+    seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='supplies', verbose_name="Продавец")
+    product_variant = models.ForeignKey(Product_variants, on_delete=models.CASCADE, verbose_name="Вариант товара")
+    warehouse = models.ForeignKey(Warehouses, on_delete=models.CASCADE, verbose_name="Склад")
+    quantity = models.PositiveIntegerField("Количество поставки")
+    created_at = models.DateTimeField("Дата поставки", auto_now_add=True)
+    note = models.TextField("Примечание", blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Поставка"
+        verbose_name_plural = "Поставки"
+
+    def __str__(self):
+        return f"Поставка #{self.id} - {self.product_variant.product.name} ({self.quantity} шт.)"

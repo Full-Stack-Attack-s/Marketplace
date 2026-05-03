@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
+from django.contrib import messages
 import json
 
 from .forms import (
@@ -15,7 +16,7 @@ from .models import (
     Product_variants, Product_images, OrderItems, ProductAttributeValues, 
     Products, UserProfiles, models, CategoryAttributes, Addresses, 
     Stocks, Warehouses, StoreProfiles, Carts, CartItems, 
-    Favorites, Categories, Messages, Users, Orders
+    Favorites, Categories, Messages, Users, Orders, Supplies
 )
 
 
@@ -32,6 +33,23 @@ from .models import (
 @login_required
 def manage_products(request):
     if request.method == 'POST':
+        # ─── Массовые действия ───────────────────
+        if 'bulk_action' in request.POST:
+            action = request.POST.get('bulk_action')
+            product_ids = request.POST.getlist('product_ids')
+            
+            if action == 'activate':
+                Products.objects.filter(id__in=product_ids, seller=request.user).update(status='active')
+                messages.success(request, f"🚀 {len(product_ids)} товаров активировано")
+            elif action == 'archive':
+                Products.objects.filter(id__in=product_ids, seller=request.user).update(status='archived')
+                messages.success(request, f"📁 {len(product_ids)} товаров отправлено в архив")
+            elif action == 'delete':
+                Products.objects.filter(id__in=product_ids, seller=request.user).delete()
+                messages.success(request, f"🗑️ {len(product_ids)} товаров удалено")
+            
+            return redirect('manage_products')
+
         product_id = request.POST.get('product_id')
         product = get_object_or_404(Products, id=product_id, seller=request.user)
         
@@ -59,10 +77,36 @@ def manage_products(request):
                     stock_record.quantity = int(new_stock)
                     stock_record.save(update_fields=['quantity'])
                     
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'ok', 'message': 'Товар успешно обновлен'})
+            
         return redirect('manage_products')
 
-    products = Products.objects.filter(seller=request.user).prefetch_related('product_variants_set', 'product_images_set').order_by('-created_at')
-    return render(request, 'products_list.html', {'products': products})
+    products = Products.objects.filter(seller=request.user).prefetch_related('product_variants_set__stock', 'category').order_by('-created_at')
+    
+    # Расчет статистики
+    total_count = products.count()
+    active_count = products.filter(status='active').count()
+    
+    # Считаем товары, у которых остаток 0 на всех складах первого варианта (для простоты)
+    out_of_stock_count = 0
+    for p in products:
+        variant = p.product_variants_set.first()
+        if variant:
+            total_stock = sum(s.quantity for s in variant.stock.all())
+            if total_stock == 0:
+                out_of_stock_count += 1
+                
+    # Уникальные категории для фильтра
+    seller_categories = Categories.objects.filter(products__seller=request.user).distinct()
+                
+    return render(request, 'products_list.html', {
+        'products': products,
+        'total_count': total_count,
+        'active_count': active_count,
+        'out_of_stock_count': out_of_stock_count,
+        'seller_categories': seller_categories
+    })
 
 # ============================================
 # Seller Dashboard & Profile
@@ -76,26 +120,36 @@ def seller_dashboard(request):
     if request.method == 'POST' and 'update_order_status' in request.POST:
         order_id = request.POST.get('order_id')
         new_status = request.POST.get('status')
+        reason = request.POST.get('reason', '').strip()
         order = get_object_or_404(Orders, id=order_id)
+        
+        # Проверка прав: только assembling, shipped, cancelled
+        if new_status not in ['assembling', 'shipped', 'cancelled']:
+            messages.error(request, "❌ Вы не можете устанавливать этот статус")
+            return redirect('seller_dashboard')
+
         # Проверка: заказ должен содержать товары этого продавца
         if OrderItems.objects.filter(order=order, product_variant__product__seller=user).exists():
             order.status = new_status
+            if new_status == 'cancelled' and reason:
+                order.cancellation_reason = reason
             order.save()
+            messages.success(request, f"✅ Статус заказа #{order_id} изменен на {order.get_status_display()}")
             return redirect('seller_dashboard')
     
     # 1. Активные товары
     active_products = Products.objects.filter(seller=user, status='active').count()
     
-    # 2. Новые заказы (по товарам этого продавца)
+    # 2. Новые заказы (только оплаченные, которые нужно начать собирать)
     new_orders = OrderItems.objects.filter(
         product_variant__product__seller=user, 
-        order__status='pending'
-    ).count()
+        order__status='paid'
+    ).values('order').distinct().count()
     
     # 3. Общая выручка (только оплаченные/завершенные)
     sales_total = OrderItems.objects.filter(
         product_variant__product__seller=user, 
-        order__status__in=['paid', 'completed']
+        order__status__in=['paid', 'assembling', 'shipped', 'completed']
     ).aggregate(total=Sum('total_price'))['total'] or 0.00
 
     # 4. Последние заказы
@@ -142,11 +196,15 @@ def seller_profile(request):
             store_form = StoreVerificationForm(request.POST, request.FILES, instance=store_profile)
             if store_form.is_valid():
                 store = store_form.save(commit=False)
-                # Если уже подтвержден - не сбрасываем статус при обновлении лого/описания
                 if store_profile.verification_status != 'approved':
                     store.verification_status = 'pending'
+                    messages.success(request, '✅ Заявка на проверку магазина успешно отправлена! Мы скоро её рассмотрим.')
+                else:
+                    messages.success(request, '✅ Профиль магазина обновлен.')
                 store.save()
                 return redirect('seller_profile')
+            else:
+                messages.error(request, '❌ Ошибка в форме. Пожалуйста, проверьте введенные данные.')
     else:
         user_form = UserProfileForm(instance=user_profile)
         store_form = StoreVerificationForm(instance=store_profile)
@@ -156,6 +214,62 @@ def seller_profile(request):
         'store_form': store_form,
         'store_profile': store_profile,
     })
+
+@login_required
+def inventory_manage(request):
+    user = request.user
+    # Получаем все варианты товаров продавца с их текущими остатками
+    variants = Product_variants.objects.filter(product__seller=user).prefetch_related('stock__warehouse', 'product')
+    
+    # Последние 10 поставок
+    recent_supplies = Supplies.objects.filter(seller=user).select_related('product_variant__product', 'warehouse').order_by('-created_at')[:10]
+    
+    # Для формы добавления поставки
+    warehouses = Warehouses.objects.filter(store__user=user)
+    
+    return render(request, 'inventory_manage.html', {
+        'variants': variants,
+        'recent_supplies': recent_supplies,
+        'warehouses': warehouses
+    })
+
+@login_required
+@require_POST
+def add_supply(request):
+    user = request.user
+    variant_id = request.POST.get('variant_id')
+    warehouse_id = request.POST.get('warehouse_id')
+    quantity = int(request.POST.get('quantity', 0))
+    note = request.POST.get('note', '')
+
+    if quantity <= 0:
+        messages.error(request, "Количество должно быть больше нуля.")
+        return redirect('inventory_manage')
+
+    variant = get_object_or_404(Product_variants, id=variant_id, product__seller=user)
+    warehouse = get_object_or_404(Warehouses, id=warehouse_id, store__user=user)
+
+    # Создаем запись о поставке
+    Supplies.objects.create(
+        seller=user,
+        product_variant=variant,
+        warehouse=warehouse,
+        quantity=quantity,
+        note=note
+    )
+
+    # Обновляем остатки
+    stock, created = Stocks.objects.get_or_create(
+        product_variant=variant,
+        warehouse=warehouse,
+        defaults={'quantity': 0}
+    )
+    stock.quantity += quantity
+    stock.save()
+
+    messages.success(request, f"✅ Поставка успешно добавлена: +{quantity} шт. для {variant.product.name}")
+    return redirect('inventory_manage')
+
 
 def get_category_attributes(request, category_id):
     # Получаем все атрибуты, привязанные к конкретной категории
@@ -433,7 +547,10 @@ def get_attributes(request, category_id):
 
 def index(request):
     #Cчитаем реальные остатки прямо внутри SQL-запроса
-    popular_products = Products.objects.filter(status='active').annotate(
+    popular_products = Products.objects.filter(
+        status='active',
+        seller__store_profile__verification_status='approved'
+    ).annotate(
         # Суммируем количество со всех складов для всех вариантов товара.
         # Coalesce нужен, чтобы заменить NULL на 0, если складов еще нет.
         total_quantity=Coalesce(Sum('product_variants__stock__quantity'), 0, output_field=IntegerField()),
@@ -446,13 +563,24 @@ def index(request):
         available_stock__gt=0
     ).order_by('-sales_count')[:30] # Ограничим до 30 самых популярных товаров
     user_favorites = []
+    cart_items = {}
+    
     if request.user.is_authenticated:
-        # Собираем ID всех лайкнутых товаров текущего юзера
         user_favorites = Favorites.objects.filter(user=request.user).values_list('product_id', flat=True)
+    
+    # Получаем текущую корзину (по сессии или юзеру)
+    cart = get_or_create_cart(request)
+    if cart:
+        cart_items = {item.product_variant_id: item.quantity for item in cart.items.all()}
+
+    # Примешиваем количество в корзине к каждому товару
+    for p in popular_products:
+        p.in_cart_qty = cart_items.get(p.default_variant_id, 0)
 
     return render(request, 'index.html', {
         'products': popular_products,
-        'user_favorites': list(user_favorites)})
+        'user_favorites': list(user_favorites)
+    })
 
 
 
@@ -499,7 +627,6 @@ def add_to_cart(request, variant_id):
     cart = get_or_create_cart(request)
     variant = get_object_or_404(Product_variants, id=variant_id)
 
-    # есть ли уже такой товар в корзине
     item, created = CartItems.objects.get_or_create(
         cart=cart,
         product_variant=variant
@@ -509,10 +636,41 @@ def add_to_cart(request, variant_id):
         item.quantity += 1
         item.save()
 
-    #  чтобы JS понял что всё ок
+    total_count = sum(i.quantity for i in cart.items.all())
     return JsonResponse({
         'status': 'ok',
-        'cart_count': cart.items.count()
+        'cart_count': total_count
+    })
+
+@require_POST
+def update_cart_variant(request, variant_id):
+    cart = get_or_create_cart(request)
+    variant = get_object_or_404(Product_variants, id=variant_id)
+    delta = int(request.POST.get('delta', 0))
+    
+    item = CartItems.objects.filter(cart=cart, product_variant=variant).first()
+    
+    if not item:
+        if delta > 0:
+            item = CartItems.objects.create(cart=cart, product_variant=variant, quantity=delta)
+            removed = False
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Item not in cart'})
+    else:
+        item.quantity += delta
+        if item.quantity <= 0:
+            item.delete()
+            removed = True
+        else:
+            item.save()
+            removed = False
+            
+    total_count = sum(i.quantity for i in cart.items.all())
+    return JsonResponse({
+        'status': 'ok',
+        'quantity': 0 if removed else item.quantity,
+        'cart_count': total_count,
+        'removed': removed
     })
 
 
@@ -565,7 +723,21 @@ def toggle_favorite(request, product_id):
 
 @login_required
 def favorites(request):
-    fav_items = Favorites.objects.filter(user=request.user).select_related('product').prefetch_related('product__product_variants_set')
+    fav_items = Favorites.objects.filter(
+        user=request.user,
+        product__status='active',
+        product__seller__store_profile__verification_status='approved'
+    ).select_related('product').prefetch_related('product__product_variants_set')
+    
+    # Синхронизация с корзиной
+    cart = get_or_create_cart(request)
+    cart_items = {item.product_variant_id: item.quantity for item in cart.items.all()}
+    
+    for fav in fav_items:
+        # Проставляем количество в корзине для основного варианта товара
+        variant_id = fav.product.default_variant_id
+        fav.product.in_cart_qty = cart_items.get(variant_id, 0)
+        
     return render(request, 'favorites.html', {'favorites': fav_items})
 
 
@@ -581,13 +753,16 @@ def update_cart_quantity(request, item_id):
             item.quantity = new_quantity
             item.save()
             
-            # Пересчитываем общую сумму
-            total_price = sum(i.product_variant.price * i.quantity for i in cart.items.all())
+            # Пересчитываем общую сумму и общее количество
+            all_items = cart.items.all()
+            total_price = sum(i.product_variant.price * i.quantity for i in all_items)
+            total_count = sum(i.quantity for i in all_items)
             item_total = item.product_variant.price * item.quantity
             
             return JsonResponse({
                 'status': 'ok', 
                 'total_price': float(total_price),
+                'total_count': total_count,
                 'item_total': float(item_total)
             })
     except Exception as e:
@@ -601,11 +776,14 @@ def remove_from_cart(request, item_id):
     item = get_object_or_404(CartItems, id=item_id, cart=cart)
     item.delete()
     
-    total_price = sum(i.product_variant.price * i.quantity for i in cart.items.all())
+    all_items = cart.items.all()
+    total_price = sum(i.product_variant.price * i.quantity for i in all_items)
+    total_count = sum(i.quantity for i in all_items)
     return JsonResponse({
         'status': 'ok', 
         'total_price': float(total_price),
-        'cart_empty': not cart.items.exists()
+        'total_count': total_count,
+        'cart_empty': not all_items.exists()
     })
 
 
@@ -622,6 +800,14 @@ def product_detail(request, product_id):
         ),
         id=product_id
     )
+
+    # Если продавец не подтвержден — не даем смотреть товар анонимам и покупателям
+    is_verified = product.seller and hasattr(product.seller, 'store_profile') and product.seller.store_profile.verification_status == 'approved'
+    
+    if not is_verified and product.seller != request.user:
+        messages.warning(request, 'Этот товар временно недоступен (продавец на проверке).')
+        return redirect('index')
+
     user_favorites = []
     if request.user.is_authenticated:
         user_favorites = Favorites.objects.filter(user=request.user).values_list('product_id', flat=True)
@@ -659,8 +845,11 @@ def search(request):
     sort_by = request.GET.get('sort', '-created_at')
     in_stock = request.GET.get('in_stock', '')
 
-    # Base queryset: only active products
-    products = Products.objects.filter(status='active').annotate(
+    # Base queryset: only active products from verified sellers
+    products = Products.objects.filter(
+        status='active',
+        seller__store_profile__verification_status='approved'
+    ).annotate(
         total_quantity=Coalesce(Sum('product_variants__stock__quantity'), 0, output_field=IntegerField()),
         total_reserved=Coalesce(Sum('product_variants__stock__reserved_quantity'), 0, output_field=IntegerField())
     ).annotate(

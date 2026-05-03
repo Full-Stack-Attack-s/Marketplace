@@ -279,6 +279,32 @@
 
 .price-input:focus { border-color: var(--nav-active); }
 
+.price-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.clear-price {
+    position: absolute;
+    right: 8px;
+    font-size: 18px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    line-height: 1;
+    display: none; /* Будет показываться через JS если нужно, или просто висеть */
+    transition: color 0.2s;
+}
+
+.price-input-wrapper:hover .clear-price {
+    display: block;
+}
+
+.clear-price:hover {
+    color: #ff4757;
+}
+
 .price-dash {
     color: var(--text-secondary);
     font-weight: 600;

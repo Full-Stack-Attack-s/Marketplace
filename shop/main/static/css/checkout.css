@@ -137,8 +137,45 @@
     color: var(--text-secondary);
 }
 
-@media (max-width: 768px) {
     .checkout-container {
         grid-template-columns: 1fr;
     }
+}
+
+/* ── Card Payment Styles ────────────────── */
+.card-payment-box {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.field-label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    margin-left: 4px;
+}
+
+.input-error-msg {
+    color: #ff4757;
+    font-size: 12px;
+    margin-top: 6px;
+    margin-left: 4px;
+    font-weight: 600;
+}
+
+.input-invalid {
+    border-color: #ff4757 !important;
+    background: rgba(255, 71, 87, 0.05) !important;
+}
+
+.card-input {
+    letter-spacing: 2px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px !important;
+    font-weight: 700;
 }

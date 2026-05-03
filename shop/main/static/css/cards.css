@@ -215,7 +215,6 @@
     flex-direction: column;
     gap: 14px;
     padding-right: 8px;
-    border-right: 1px solid var(--border-color);
 }
 
 .brand-name {
@@ -309,6 +308,7 @@
 .spec-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 15px 0;
     font-size: 15px;
     border-bottom: 1px solid var(--border-color);
@@ -328,14 +328,7 @@
     min-width: 160px;
 }
 
-.spec-dots {
-    flex: 1;
-    border-bottom: 2px dotted var(--border-color);
-    margin: 0 4px;
-    min-width: 10px;
-    align-self: center;
-    opacity: 0.4;
-}
+
 
 .spec-value {
     color: var(--text-color);
@@ -496,8 +489,8 @@
 }
 
 .seller-avatar {
-    width: 34px;
-    height: 34px;
+    width: 28px;
+    height: 28px;
     border-radius: 8px;
     background: var(--header-gradient);
     display: flex;
@@ -505,6 +498,14 @@
     justify-content: center;
     font-size: 16px;
     flex-shrink: 0;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.seller-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .seller-name {

@@ -38,7 +38,7 @@
                     {% if user.is_staff %}
                         <span class="profile-tag admin">⭐ Администратор</span>
                     {% endif %}
-                    <span class="profile-tag joined">📅 На сайте с {{ user_profile.created_at|date:"M Y" }}</span>
+                    <span class="profile-tag joined" style="background: var(--nav-active); color: #000; font-weight: bold;">📅 На сайте с {{ user_profile.created_at|date:"d.m.Y" }}</span>
                 </div>
             </div>
             
@@ -89,6 +89,14 @@
                         <div class="info-text">
                             <span class="info-label">Дата рождения</span>
                             <span class="info-value">{{ user_profile.birth_date|date:"d.m.Y"|default:"—" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon-box">⚧️</div>
+                        <div class="info-text">
+                            <span class="info-label">Пол</span>
+                            <span class="info-value">{{ user_profile.get_gender_display|default:"—" }}</span>
                         </div>
                     </div>
 

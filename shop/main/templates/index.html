@@ -2,7 +2,7 @@
 {% block title %}Главная страница - BDSM-A{% endblock title %}
 {% load static %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/catalog.css' %}">
+<link rel="stylesheet" href="{% static 'css/catalog.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -17,24 +17,22 @@
 <section class="products-section">
     <div class="section-header">
         <h2 class="section-title">Популярные товары</h2>
-        <a href="{% url 'search' %}" class="section-link">Смотреть все →</a>
     </div>
     <div class="products-grid">
         {% for p in products %}
         <div class="product-card">
-            <button class="catalog-fav-btn"
-                    data-id="{{ p.id }}"
-                    onclick="addToFavorites(event, {{ p.id }}, this)"
-                    aria-label="Добавить в избранное">
+            <button class="catalog-fav-btn" data-id="{{ p.id }}" onclick="addToFavorites(event, {{ p.id }}, this)"
+                aria-label="Добавить в избранное">
                 {% if p.id in user_favorites %}❤️{% else %}🤍{% endif %}
             </button>
+
 
             <a href="{% url 'product_detail' p.id %}" class="product-link">
                 <div class="product-image">
                     {% if p.main_image_url %}
-                        <img src="{{ p.main_image_url }}" alt="{{ p.name }}" loading="lazy">
+                    <img src="{{ p.main_image_url }}" alt="{{ p.name }}" loading="lazy">
                     {% else %}
-                        <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото" loading="lazy">
+                    <img src="{% static 'img/no-image.jpg' %}" alt="Нет фото" loading="lazy">
                     {% endif %}
                 </div>
             </a>
@@ -43,10 +41,26 @@
                 <a href="{% url 'product_detail' p.id %}" class="product-name-link">
                     <div class="product-name">{{ p.name|truncatechars:48 }}</div>
                 </a>
+                <div class="product-seller-box">
+                    {% if p.seller.store_profile.logo %}
+                        <img src="{{ p.seller.store_profile.logo.url }}" class="seller-mini-avatar" alt="Shop">
+                    {% else %}
+                        <div class="seller-mini-placeholder">🏪</div>
+                    {% endif %}
+                    <span class="seller-name">{{ p.seller.store_profile.company_name|default:p.seller.email }}</span>
+                </div>
                 <div class="product-price">{{ p.exact_price|floatformat:0 }} ₽</div>
-                <button class="add-to-cart" onclick="addToCart('{{ p.default_variant_id }}')">
+                {% if p.in_cart_qty > 0 %}
+                <div class="quantity-selector">
+                    <button class="qty-btn minus" onclick="updateCartQty('{{ p.default_variant_id }}', -1, this)">-</button>
+                    <span class="qty-value">{{ p.in_cart_qty }}</span>
+                    <button class="qty-btn plus" onclick="updateCartQty('{{ p.default_variant_id }}', 1, this)">+</button>
+                </div>
+                {% else %}
+                <button class="add-to-cart" onclick="addToCart('{{ p.default_variant_id }}', this)">
                     🛒 В корзину
                 </button>
+                {% endif %}
             </div>
         </div>
         {% empty %}
