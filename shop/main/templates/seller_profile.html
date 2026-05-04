@@ -107,36 +107,6 @@
                                                            accept="image/*">
                                                 </div>
                                             </div>
-
-                                            <script>
-                                                (function() {
-                                                    const logoInput = document.getElementById('{{ field.id_for_label }}');
-                                                    if (logoInput) {
-                                                        logoInput.addEventListener('change', function(e) {
-                                                            if (this.files && this.files[0]) {
-                                                                const reader = new FileReader();
-                                                                reader.onload = function(e) {
-                                                                    const previewImg = document.getElementById('logo-preview-img');
-                                                                    const placeholder = document.getElementById('logo-placeholder');
-                                                                    const container = document.querySelector('.logo-preview-container');
-                                                                    
-                                                                    if (previewImg) {
-                                                                        previewImg.src = e.target.result;
-                                                                    } else if (placeholder) {
-                                                                        placeholder.remove();
-                                                                        const img = document.createElement('img');
-                                                                        img.id = 'logo-preview-img';
-                                                                        img.className = 'logo-preview-img';
-                                                                        img.src = e.target.result;
-                                                                        container.prepend(img);
-                                                                    }
-                                                                }
-                                                                reader.readAsDataURL(this.files[0]);
-                                                            }
-                                                        });
-                                                    }
-                                                })();
-                                            </script>
                                         {% else %}
                                             <div class="input-wrapper">
                                                 {{ field }}
@@ -165,4 +135,6 @@
         </main>
     </div>
 </div>
+
+<script src="{% static 'js/seller_profile.js' %}"></script>
 {% endblock %}

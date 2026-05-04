@@ -38,12 +38,12 @@
                     {% if user.is_staff %}
                         <span class="profile-tag admin">⭐ Администратор</span>
                     {% endif %}
-                    <span class="profile-tag joined" style="background: var(--nav-active); color: #000; font-weight: bold;">📅 На сайте с {{ user_profile.created_at|date:"d.m.Y" }}</span>
+                    <span class="profile-tag joined">📅 На сайте с {{ user_profile.created_at|date:"d.m.Y" }}</span>
                 </div>
             </div>
             
-            <div style="margin-left: auto;">
-                <a href="{% url 'profile_edit' %}" class="profile-save-btn" style="text-decoration: none; padding: 12px 25px;">
+            <div class="profile-hero-actions">
+                <a href="{% url 'profile_edit' %}" class="profile-settings-btn">
                     ⚙️ Настройки профиля
                 </a>
             </div>
@@ -148,14 +148,14 @@
                     </div>
                 </a>
                 <a href="{% url 'chat_list' %}" class="profile-quick-card">
-                    <div class="pq-icon" style="background: rgba(0,123,255,0.1); color: #007bff;">💬</div>
+                    <div class="pq-icon pq-icon-chat">💬</div>
                     <div class="pq-text">
                         <div class="pq-title">Мои сообщения</div>
                         <div class="pq-sub">Чаты с продавцами</div>
                     </div>
                 </a>
                 <a href="{% url 'friends_list' %}" class="profile-quick-card">
-                    <div class="pq-icon" style="background: rgba(40,167,69,0.1); color: #28a745;">👥</div>
+                    <div class="pq-icon pq-icon-friends">👥</div>
                     <div class="pq-text">
                         <div class="pq-title">Мои друзья</div>
                         <div class="pq-sub">Контакты</div>

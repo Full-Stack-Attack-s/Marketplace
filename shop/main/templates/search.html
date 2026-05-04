@@ -13,7 +13,7 @@
 
     <!-- Результаты поиска -->
     {% if query %}
-    <div class="search-result-count" style="margin-bottom: 20px; font-size: 1.1rem; color: var(--text-color);">
+    <div class="search-result-count">
         {% if total_count %}
             Найдено: <strong>{{ total_count }}</strong> товаров по запросу «{{ query }}»
         {% else %}
@@ -35,8 +35,7 @@
                     <div class="filter-options category-tree">
                         <label class="filter-radio">
                             <input type="radio" name="category" value=""
-                                   {% if not selected_category %}checked{% endif %}
-                                   onchange="this.form.submit()">
+                                   {% if not selected_category %}checked{% endif %}>
                             <span>Все категории</span>
                         </label>
                         {% load mptt_tags %}
@@ -49,8 +48,7 @@
                                         {% endif %}
                                         <label class="filter-radio">
                                             <input type="radio" name="category" value="{{ node.id }}"
-                                                   {% if selected_category == node.id|stringformat:"i" %}checked{% endif %}
-                                                   onchange="this.form.submit()">
+                                                   {% if selected_category == node.id|stringformat:"i" %}checked{% endif %}>
                                             <span>{{ node.name }}</span>
                                         </label>
                                     </div>
@@ -73,7 +71,7 @@
                             <div class="price-input-wrapper">
                                 <input type="number" name="price_min" value="{{ price_min }}"
                                        placeholder="0" min="0" class="price-input" id="priceMin">
-                                <span class="clear-price" onclick="document.getElementById('priceMin').value=''; this.style.display='none';">&times;</span>
+                                <span class="clear-price">&times;</span>
                             </div>
                         </div>
                         <span class="price-dash">—</span>
@@ -82,7 +80,7 @@
                             <div class="price-input-wrapper">
                                 <input type="number" name="price_max" value="{{ price_max }}"
                                        placeholder="∞" min="0" class="price-input" id="priceMax">
-                                <span class="clear-price" onclick="document.getElementById('priceMax').value=''; this.style.display='none';">&times;</span>
+                                <span class="clear-price">&times;</span>
                             </div>
                         </div>
                     </div>
@@ -95,8 +93,7 @@
                         {% for val, label in sort_options %}
                         <label class="filter-radio">
                             <input type="radio" name="sort" value="{{ val }}"
-                                   {% if selected_sort == val %}checked{% endif %}
-                                   onchange="this.form.submit()">
+                                   {% if selected_sort == val %}checked{% endif %}>
                             <span>{{ label }}</span>
                         </label>
                         {% endfor %}
@@ -107,8 +104,7 @@
                     <div class="filter-title">✅ Наличие</div>
                     <label class="filter-checkbox">
                         <input type="checkbox" name="in_stock" value="1"
-                               {% if in_stock %}checked{% endif %}
-                               onchange="this.form.submit()">
+                               {% if in_stock %}checked{% endif %}>
                         <span>Только в наличии</span>
                     </label>
                 </div>
@@ -201,4 +197,6 @@
 
     </div>
 </div>
+
+<script src="{% static 'js/search.js' %}"></script>
 {% endblock %}

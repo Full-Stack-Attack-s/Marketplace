@@ -1078,3 +1078,36 @@ def toggle_friend(request, friend_id):
 def friends_list(request):
     friends = Friends.objects.filter(user=request.user).select_related('friend')
     return render(request, 'friends_list.html', {'friends': friends})
+
+def product_list_api(request):
+    products = Products.objects.filter(
+        status='active',
+        seller__store_profile__verification_status='approved'
+    ).select_related('category', 'brand', 'seller__store_profile').prefetch_related('product_images_set', 'product_variants_set')
+
+    data = []
+    for p in products:
+        variant = p.product_variants_set.first()
+        images = [img.image.url for img in p.product_images_set.all() if img.image]
+        
+        data.append({
+            'id': p.id,
+            'name': p.name,
+            'slug': p.slug,
+            'description': p.description,
+            'price': float(variant.price) if variant else 0.0,
+            'category': {
+                'id': p.category.id,
+                'name': p.category.name
+            },
+            'brand': {
+                'id': p.brand.id,
+                'name': p.brand.name
+            },
+            'images': images,
+            'seller': p.seller.store_profile.company_name if p.seller and hasattr(p.seller, 'store_profile') else 'Marketplace',
+            'created_at': p.created_at.isoformat(),
+        })
+
+    return JsonResponse({'products': data}, safe=False)
+

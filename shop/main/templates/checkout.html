@@ -53,56 +53,13 @@
             </form>
         </div>
 
-        <script>
-            document.getElementById('card_number').addEventListener('input', function(e) {
-                // Formatting: 0000 0000 0000 0000
-                let value = e.target.value.replace(/\D/g, '');
-                let formatted = value.match(/.{1,4}/g)?.join(' ') || '';
-                e.target.value = formatted.substring(0, 19);
-                
-                // Clear error while typing
-                document.getElementById('card-error').style.display = 'none';
-                this.classList.remove('input-invalid');
-            });
-
-            function validateLuhn(cardNumStr) {
-                // Преобразуем строку в массив цифр (убираем пробелы)
-                let cardNum = cardNumStr.replace(/\s+/g, '').split('').map(Number);
-                
-                // Реализация вашего алгоритма Луна
-                for (let i = cardNum.length - 2; i >= 0; i -= 2) {
-                    cardNum[i] = cardNum[i] * 2;
-                    if (cardNum[i] > 9) {
-                        // sum(divmod(cardNum[num], 10))
-                        cardNum[i] = Math.floor(cardNum[i] / 10) + (cardNum[i] % 10);
-                    }
-                }
-                
-                let cardSum = cardNum.reduce((a, b) => a + b, 0);
-                return cardSum % 10 === 0;
-            }
-
-            document.getElementById('checkout-form').addEventListener('submit', function(e) {
-                const cardInput = document.getElementById('card_number');
-                const cardValue = cardInput.value;
-                const errorDiv = document.getElementById('card-error');
-                
-                if (!validateLuhn(cardValue)) {
-                    e.preventDefault();
-                    errorDiv.style.display = 'block';
-                    cardInput.classList.add('input-invalid');
-                    cardInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            });
-        </script>
-
         <div class="checkout-panel">
             <div class="section-title">📦 Состав заказа</div>
             <ul class="checkout-items">
                 {% for item in items %}
                 <li class="checkout-item">
-                    {% if item.product_variant.product.product_images_set.first %}
-                        <img src="{{ item.product_variant.product.product_images_set.first.image.url }}" alt="{{ item.product_variant.product.name }}">
+                    {% if item.product_variant.product.main_image_url %}
+                        <img src="{{ item.product_variant.product.main_image_url }}" alt="{{ item.product_variant.product.name }}">
                     {% else %}
                         <div style="width:60px; height:60px; background:#eee; border-radius:8px;"></div>
                     {% endif %}
@@ -139,4 +96,6 @@
         </div>
     </div>
 </div>
+
+<script src="{% static 'js/checkout.js' %}"></script>
 {% endblock %}
