@@ -3,41 +3,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<style>
-    /* Дополнительные стили для профессиональной таблицы товаров */
-    .product-list-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px; }
-    .product-list-table th { background: var(--bg-secondary); padding: 16px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 10; }
-    .product-list-table td { padding: 16px; border-bottom: 1px solid var(--border-color); vertical-align: middle; transition: background 0.2s; }
-    .product-list-table tr:hover td { background: rgba(102, 217, 168, 0.03); }
-    
-    .p-info { display: flex; align-items: center; gap: 16px; }
-    .p-img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: var(--bg-secondary); border: 1px solid var(--border-color); flex-shrink: 0; }
-    .p-meta { display: flex; flex-direction: column; gap: 2px; }
-    .p-name { font-weight: 700; font-size: 14px; color: var(--text-color); text-decoration: none; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-    .p-name:hover { color: var(--nav-active); }
-    .p-sku { font-size: 11px; color: var(--text-secondary); font-family: monospace; }
-    
-    .p-price { font-weight: 800; color: var(--text-color); white-space: nowrap; }
-    .p-stock { font-size: 13px; font-weight: 600; }
-    .p-stock.low { color: #ff4757; }
-    
-    .p-actions { display: flex; gap: 8px; }
-    .p-action-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-secondary); transition: all 0.2s; cursor: pointer; text-decoration: none; }
-    .p-action-btn:hover { border-color: var(--nav-active); color: var(--nav-active); background: rgba(102, 217, 168, 0.1); transform: translateY(-2px); }
-    .p-action-btn.delete:hover { border-color: #ff4757; color: #ff4757; background: rgba(255, 71, 87, 0.1); }
-    
-    .filter-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 20px; flex-wrap: wrap; }
-    .search-wrapper { position: relative; flex: 1; min-width: 250px; }
-    .search-wrapper input { width: 100%; padding: 12px 16px 12px 40px; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-color); font-size: 14px; outline: none; transition: border-color 0.2s; }
-    .search-wrapper input:focus { border-color: var(--nav-active); }
-    .search-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
-    
-    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .stat-mini-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
-    .stat-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
-    .stat-value { font-size: 24px; font-weight: 800; color: var(--text-color); }
-    .stat-value span { font-size: 14px; font-weight: 400; color: var(--text-secondary); margin-left: 4px; }
-</style>
+<link rel="stylesheet" href="{% static 'css/products_list.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -195,108 +161,9 @@
                         <tr>
                             <td colspan="7" style="text-align: center; padding: 60px;">
                                 <div style="font-size: 48px; margin-bottom: 16px;">📦</div>
-                                <div style="color: var(--text-secondary);">У вас пока нет добавленных товаров</div>
-                                <a href="{% url 'add_product' %}" class="action-btn btn-edit" style="display: inline-flex; margin-top: 20px;">
-                                    ＋ Добавить первый товар
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('productSearch');
-    const statusFilter = document.getElementById('statusFilter');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const stockFilter = document.getElementById('stockFilter');
-    const table = document.getElementById('productsTable');
-    const rows = table.querySelectorAll('.product-row');
-    
-    // Multi-select logic
-    // Multi-select logic
-    const selectAll = document.getElementById('selectAll');
-    const checkboxes = document.querySelectorAll('.product-checkbox');
-    const bulkBar = document.getElementById('bulkActionsBar');
-    const selectedCount = document.getElementById('selectedCount');
-
-    function updateBulkBar() {
-        const checked = document.querySelectorAll('.product-checkbox:checked');
-        if (checked.length > 0) {
-            bulkBar.style.display = 'flex';
-            selectedCount.textContent = checked.length;
-        } else {
-            bulkBar.style.display = 'none';
-        }
-    }
-
-    selectAll.addEventListener('change', function() {
-        checkboxes.forEach(cb => {
-            if (cb.closest('tr').style.display !== 'none') {
-                cb.checked = this.checked;
-            }
-        });
-        updateBulkBar();
-    });
-
-    checkboxes.forEach(cb => {
-        cb.addEventListener('change', updateBulkBar);
-    });
-
-    window.submitBulkAction = function(action) {
-        const checked = document.querySelectorAll('.product-checkbox:checked');
-        if (checked.length === 0) return;
-
-        let confirmMsg = `Применить действие "${action}" к ${checked.length} товарам?`;
-        if (action === 'delete') confirmMsg = `ВНИМАНИЕ! Вы уверены, что хотите УДАЛИТЬ ${checked.length} товаров? Это действие необратимо.`;
-        
-        if (!confirm(confirmMsg)) return;
-
-        const form = document.getElementById('bulkActionForm');
-        const container = document.getElementById('bulkIdsContainer');
-        const actionInput = document.getElementById('bulkActionInput');
-
-        actionInput.value = action;
-        container.innerHTML = '';
-        checked.forEach(cb => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'product_ids';
-            input.value = cb.value;
-            container.appendChild(input);
-        });
-
-        form.submit();
-    };
-
-
-    // Filter logic
-    function filterProducts() {
-        const query = searchInput.value.toLowerCase();
-        const status = statusFilter.value;
-        const category = categoryFilter.value;
-        const stockMode = stockFilter.value;
-
-        rows.forEach(row => {
-            const name = row.querySelector('.p-name').textContent.toLowerCase();
-            const sku = row.querySelector('.p-sku').textContent.toLowerCase();
-            const rowStatus = row.dataset.status;
-            const rowCategory = row.dataset.category;
-            const rowStock = parseInt(row.dataset.stock) || 0;
-
-            const matchesSearch = name.includes(query) || sku.includes(query);
-            const matchesStatus = status === 'all' || rowStatus === status;
-            const matchesCategory = category === 'all' || rowCategory === category;
-            
-            let matchesStock = true;
-            if (stockMode === 'in_stock') matchesStock = rowStock > 0;
-            else if (stockMode === 'low_stock') matchesStock = rowStock > 0 && rowStock <= 5;
-            else if (stockMode === 'out_of_stock') matchesStock = rowStock === 0;
+                                <div style="color: var(--text-secondary);">У вас пока нет �<script src="{% static 'js/products_list.js' %}"></script>
+{% endblock %}
+;
 
             if (matchesSearch && matchesStatus && matchesCategory && matchesStock) {
                 row.style.display = '';

@@ -1,0 +1,103 @@
+.inventory-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 20px; 
+}
+
+.inventory-table th, 
+.inventory-table td { 
+    padding: 12px; 
+    border-bottom: 1px solid var(--border-color); 
+    text-align: left; 
+}
+
+.inventory-table th { 
+    color: var(--text-secondary); 
+    font-size: 12px; 
+    text-transform: uppercase; 
+}
+
+.stock-badge { 
+    padding: 4px 10px; 
+    border-radius: 8px; 
+    font-weight: 800; 
+    font-size: 12px; 
+    display: inline-block;
+}
+
+.stock-low { 
+    background: rgba(255, 71, 87, 0.1); 
+    color: #ff4757; 
+    border: 1px solid rgba(255, 71, 87, 0.2);
+}
+
+.stock-ok { 
+    background: rgba(102, 217, 168, 0.1); 
+    color: var(--nav-active); 
+    border: 1px solid rgba(102, 217, 168, 0.3);
+}
+
+.supply-form { 
+    display: flex; 
+    gap: 15px; 
+    align-items: flex-end; 
+    flex-wrap: wrap; 
+    background: var(--bg-secondary); 
+    padding: 24px; 
+    border-radius: 20px; 
+    margin-bottom: 30px; 
+    border: 1px solid var(--border-color); 
+}
+
+.supply-form .form-group { 
+    flex: 1; 
+    min-width: 150px; 
+}
+
+.supply-form label { 
+    display: block; 
+    font-size: 11px; 
+    color: var(--text-secondary); 
+    margin-bottom: 8px; 
+    text-transform: uppercase; 
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.supply-form input, 
+.supply-form select { 
+    width: 100%; 
+    padding: 12px; 
+    border-radius: 12px; 
+    border: 1.5px solid var(--border-color); 
+    background: var(--card-bg); 
+    color: var(--text-color); 
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.supply-form input:focus, 
+.supply-form select:focus {
+    border-color: var(--nav-active);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(102, 217, 168, 0.1);
+}
+
+.supply-btn { 
+    background: var(--button-gradient); 
+    color: #000; 
+    border: none; 
+    padding: 0 24px; 
+    border-radius: 12px; 
+    font-weight: 800; 
+    cursor: pointer; 
+    height: 44px; 
+    font-size: 14px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px var(--catalog-shadow);
+}
+
+.supply-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--catalog-shadow);
+}

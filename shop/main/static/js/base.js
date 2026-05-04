@@ -224,6 +224,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const savedLang = localStorage.getItem('lang') || 'RU';
     switchLanguage(savedLang);
+
+    // --- Отображение системных сообщений Django через Toast ---
+    const djangoMessages = document.querySelectorAll('.messages-container .alert');
+    djangoMessages.forEach(msg => {
+        const text = msg.textContent.trim();
+        const type = msg.classList.contains('alert-success') ? 'success' : 
+                     (msg.classList.contains('alert-error') || msg.classList.contains('alert-danger')) ? 'error' : 'info';
+        showToast(text, type);
+        msg.remove(); // Удаляем из DOM, так как показали в Toast
+    });
 });
 
 
